@@ -138,7 +138,96 @@ class OT:
                     value["Value"] = value["Default"]
 
     def adjust(self):
-        print("TODO: implement adjust")
+        self.adjust_min_max()
+        self.adjust_ddls()
+        self.adjust_bools()
+        self.adjust_integers()
+        self.adjust_nulls()
+        return self
+
+    def adjust_min_max(self):
+        """Ensures that numerical values fulfil 'Min <= Value <= Max'. Sets Value to 'Max' if 'Value>Max', and to 'Min' if 'Value<Min'. Sets to 'Default' if not'Min<=Value<=Max'."""
+        for parameter, value in self.arguments.items():
+            value_type = value.get("Type")
+            if value_type is not None:
+                value_type = value_type.lower()
+            convert_func = None
+
+            # Determine the conversion function based on the type
+            if value_type == "integer":
+                convert_func = int
+            elif value_type == "number":
+                convert_func = float
+            else:
+                continue  # Skip if the type is not recognized
+
+            # # Try to convert the current value
+            # try:
+            #     current_value = convert_func(value["Value"])
+            # except (ValueError, TypeError):
+            #     # Handle cases where the conversion fails, e.g., set to Default
+            #     if "Default" in value:
+            #         value["Value"] = convert_func(
+            #             value["Default"]
+            #         )  # Convert Default value if necessary
+            #     continue  # Skip further checks if conversion fails
+
+            if "Max" in value and convert_func(value["Value"]) > convert_func(
+                value["Max"]
+            ):
+                value["Value"] = convert_func(value["Max"])
+
+            if "Min" in value and convert_func(value["Min"]) > convert_func(
+                value["Value"]
+            ):
+                value["Value"] = convert_func(value["Min"])
+
+            if "Max" in value and "Min" in value:
+                if not (
+                    convert_func(value["Min"])
+                    <= convert_func(value["Value"])
+                    <= convert_func(value["Max"])
+                ):
+                    value["Value"] = convert_func(value["Default"])
+
+    def adjust_ddls(self):
+        pass
+
+    def adjust_bools(self):
+        for parameter, value in self.arguments.items():
+            value_type = value.get("Type")
+            if value_type is not None:
+                value_type = value_type.lower()
+            if value_type in ["boolean"]:
+                # Ensure the Value can be converted to an int
+                if isinstance(value["Value"], (int, float)):
+                    value[
+                        "Value"
+                    ] += 0  # No change, just ensures it's treated as a number
+                elif isinstance(value["Value"], str) and value["Value"].isdigit():
+                    value["Value"] = int(value["Value"])  # Convert string to int
+                else:
+                    # Handle case where value cannot be converted to a number
+                    if value["Value"] not in ["TRUE", "FALSE"]:
+                        print(f"Warning: Cannot convert {value['Value']} to a number.")
+
+            # Convert boolean to "TRUE" or "FALSE"
+            if value_type == "boolean":
+                value["Value"] = "TRUE" if value["Value"] else "FALSE"
+
+    def adjust_integers(self):
+        for parameter, value in self.arguments.items():
+            value_type = value.get("Type")
+            if value_type is not None:
+                value_type = value_type.lower()
+            if value_type in ["integer"]:
+                value["Value"] = floor(int(value["Value"]))
+
+    def adjust_nulls(self):
+        """Removes quotation marks from NULL-values"""
+        for _, value in self.arguments.items():
+            if value["Value"] == "NULL":
+                value["Value"] = value["Value"].replace('"', "")
 
     def parse_key_value(self, kv):
         """Parse a key-value pair from the string."""
