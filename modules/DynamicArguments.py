@@ -109,7 +109,33 @@ class OT:
             print(f"An error occurred: {e}")
 
     def assume_defaults(self):
-        print("TODO: implement AssumeDefaults")
+        for parameter, value in self.arguments.items():
+            if value["Control"] == "meta" or value["Control"] == "Meta":
+                setattr(self, parameter, value["Value"])
+                continue
+            # Remove quotation marks from paths and strings
+            if "SearchPath" in value:
+                value["SearchPath"] = value["SearchPath"].replace('"', "")
+            if not (value.get("String", "") == ""):
+                value["String"] = value["String"].replace('"', "")
+
+            # Remove quotation marks from default values if type is string
+            if value.get("Type") == "String":
+                value["Default"] = value["Default"].replace('"', "")
+
+            # Set Value to Default if Value is empty
+            if value.get("Value", "") == "":
+                if value.get("Control") == "File":
+                    # Check if the file exists in the SearchPath with Default as filename
+                    file_path = os.path.join(value["SearchPath"], value["Default"])
+                    if not os.path.exists(file_path):
+                        print(
+                            f"output_type: {self.type}\nThe default File\n'{file_path}'\ndoes not exist. No default set."
+                        )
+                    else:
+                        value["Value"] = file_path
+                else:
+                    value["Value"] = value["Default"]
 
     def adjust(self):
         print("TODO: implement adjust")
