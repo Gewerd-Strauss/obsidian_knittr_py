@@ -1,10 +1,28 @@
 import re
+import os
+from math import floor
 
 
 class OT:
-    def __init__(self, config_file, format):
+    # __New(Format:="",ConfigFile:="",DDL_ParamDelimiter:="-<>-",SkipGUI:=FALSE,StepsizedGuiShow:=FALSE) {
+    def __init__(
+        self,
+        config_file="",
+        format="",
+        DDL_ParamDelimiter="-<>-",
+        skip_gui=False,
+        stepsized_gui_show=False,
+    ):
         self.config_file = config_file
         self.type = format
+        self.DDL_ParamDelimiter = DDL_ParamDelimiter
+        self.skip_gui = skip_gui
+        self.stepsized_gui_show = stepsized_gui_show
+
+        self.classname = "ot (" + format + ")"
+        # this.GUITitle="Define output format - "
+        self.version = "0.1.a"
+        # this.bClosedNoSubmit=false
         self.arguments = {}
         self.error = None
         self.errors = (
