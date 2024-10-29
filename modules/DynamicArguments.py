@@ -376,3 +376,25 @@ class OT:
     ):
         """Generates the GUI: static and dynamic parts, and populates it."""
         print("Generates the GUI and populates it")
+
+    def submit_gui():
+        """After the GUI is submitted, this function must be called to modify the arguments in self.arguments if the user changed values in the GUI"""
+        pass
+
+    def destroy_gui():
+        """submits and destroys the GUI, assigns error 0 to the error-state and returns self"""
+        pass
+
+    def ChooseFile():
+        """Callback-function for 'File'-selection entries"""
+        pass
+
+    def EditConfig():
+        """Opens the current configuration file for editing, and asks to reload after it gets saved"""
+        # TODO: instead of always asking to reload, fileread the file before and after opening it, and do a comparison
+        # such that user is only asked if the file has changed.
+        pass
+
+    def open_file_selection_folder():
+        """opens the directory of a file-path on the file-system"""
+        pass
