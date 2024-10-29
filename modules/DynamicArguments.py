@@ -108,6 +108,115 @@ class OT:
         except Exception as e:
             print(f"An error occurred: {e}")
 
+    def assemble_format_string(self):
+        if hasattr(self, "renderingpackage_start"):
+            if not hasattr(self, "renderingpackage_end"):
+                raise ValueError(
+                    f"output_type: {self.type} - faulty meta parameter\n"
+                    "The meta parameter\n'renderingpackage_end'\ndoes not exist. Exiting. "
+                    "Please refer to documentation and fix the file 'DynamicArguments.ini'."
+                )
+            fmt_str = self.renderingpackage_start
+        else:
+            if "::" in self.type:  # Check for start string
+                fmt_str = (
+                    self.type + "(\n"
+                )  # Check if format is from a specific package
+            else:
+                fmt_str = (
+                    "rmarkdown::" + self.type + "(\n"
+                )  # Assume rmarkdown-package if not the case
+        # self.arguments["number-depth"]["Value"] = -2
+        self.adjust()
+
+        for parameter, value in self.arguments.items():
+            if value.get("Control") in ["meta", "Meta"]:
+                continue
+
+            if value.get("Value") == "" and value.get("Default") == "":
+                continue
+
+            if "___" in parameter:
+                parameter = "'" + parameter.replace("___", "-") + "'"
+            elif "-" in parameter:
+                parameter = "'" + parameter + "'"
+
+            if parameter == "toc_depth" and not self.arguments["toc"]["Value"]:
+                continue
+
+            if (
+                value.get("Type") == "String"
+                and value.get("Value") != ""
+                and value.get("Default") != "NULL"
+            ):
+                value["Value"] = self.da_quote(value["Value"])
+
+            if "reference_docx" in parameter or "reference-doc" in parameter:
+                param_backup = value["Value"]
+                if self.ddl_param_delimiter in value["Value"]:
+                    param_string = value["Value"].split(self.ddl_param_delimiter)[1]
+                else:
+                    param_string = value["Value"]
+
+                if "(" in param_string:
+                    param_string = param_string.split("(")[1].strip('"')
+                    if param_string.endswith(")"):
+                        param_string = param_string[:-1]
+
+                param_string = param_string.replace("\\", "/")
+                value["Value"] = self.da_quote(param_string)
+
+                if param_string == "":
+                    value["Value"] = self.da_quote(
+                        param_backup.strip('"').replace("\\", "/")
+                    )
+
+                if self.ddl_param_delimiter in param_backup:
+                    param_backup = param_backup.split(self.ddl_param_delimiter)[
+                        1
+                    ].strip()
+
+                if not os.path.exists(value["Value"]) and not os.path.exists(
+                    param_backup.replace("\\", "/")
+                ):
+                    value["Value"] = self.da_quote(
+                        param_backup.strip('"').replace("\\", "/")
+                    )
+
+                if not os.path.exists(value["Value"].strip('"')) and not os.path.exists(
+                    param_backup.replace("\\", "/")
+                ):
+                    raise ValueError(
+                        f"output_type: {self.type} - faulty reference_docx\n"
+                        f"The given path to the reference docx-file\n'{value['Value']}'\ndoes not exist. Returning."
+                    )
+
+            fmt_str += f"{parameter} = {value['Value']},\n"
+
+        # Handle removal of meta keys
+        meta_keys_are_present = True
+        while meta_keys_are_present:
+            present_meta_keys = 0
+            for parameter, value in list(self.arguments.items()):
+                if value.get("Control") in ["meta", "Meta"]:
+                    del self.arguments[parameter]
+
+            for value in self.arguments.values():
+                if value.get("Control") in ["meta", "Meta"]:
+                    present_meta_keys += 1
+
+            meta_keys_are_present = present_meta_keys > 0
+
+        fmt_str = fmt_str[:-2]  # Remove the last comma and newline
+        fmt_str += "\n)" if "\n" in fmt_str else ""
+
+        if self.renderingpackage_start in fmt_str:
+            if hasattr(self, "renderingpackage_end"):
+                fmt_str = fmt_str.replace("\n)", self.renderingpackage_end)
+
+        self.assembled_format_string = fmt_str
+        return
+
     def assume_defaults(self):
         for parameter, value in self.arguments.items():
             if value["Control"] == "meta" or value["Control"] == "Meta":
@@ -247,6 +356,12 @@ class OT:
                     "Criticality": error[3],
                 }
         return None  # Return None if ID is not found
+
+    def da_quote(self, string):
+        """Returns the input string enclosed in double quotes."""
+        return f'"{string}"'
+
+    # GUI-related stuff
 
     def generate_gui(
         self,
