@@ -7,7 +7,6 @@ from typing import Iterator
 class Log(MutableMapping):
 
     def __init__(self, path, cache, encoding="utf-8"):
-        # instance = super(Log, self).__new__(self)
         self.tpl = """
 ___________________________________________________
 Overview:
@@ -150,12 +149,12 @@ OK - Errorlog:
             self.write_to_file(self.content)
 
     def __delitem__(self, key):
-        # Remove placeholder replacement
-        # key_placeholder = "{" + f"{key}" + "}"
-        # self.content = self.content.replace(key_placeholder, "")
-        # if self.auto_write_to_file:
-        #     self.write_to_file(self.content)
-        return 0
+        """Remove key-value from log by removing it from storage, then rebuilding the log."""
+        self.storage_dict.pop(key)
+        self.tpl = self.original_tpl  # Reset template content
+        self.content = self.tpl  # Refresh content with a blank template
+        for k, v in self.storage_dict.items():
+            self.content = self.content.replace("{" + f"{k}" + "}", v)
 
     def __iter__(self) -> Iterator:
         return iter(vars(self))
