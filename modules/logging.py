@@ -5,12 +5,10 @@ from typing import Iterator
 
 
 class Log(MutableMapping):
-    def __init__(self, path, cache):
-        print("HI")
 
-    def __new__(cls, path, cache, encoding="utf-8"):
-        instance = super(Log, cls).__new__(cls)
-        instance.tpl = """
+    def __init__(self, path, cache, encoding="utf-8"):
+        # instance = super(Log, self).__new__(self)
+        self.tpl = """
 ___________________________________________________
 Overview:
 
@@ -97,34 +95,57 @@ ___________________________________________________
 OK - Errorlog:
 {Errormessage}
 """
-        instance.__path = path
-        instance.__encoding = encoding
-        instance.__cache = False
-        instance.auto_write_to_file = True
+        # Store initial template as a blank copy
+        self.original_tpl = self.tpl
+        self.__path = path
+        self.__encoding = encoding
+        self.__cache = False
+        self.auto_write_to_file = True
+
+        # Initialize storage to track populated keys
+        self.storage_dict = {}
 
         # Write initial template to log file
-        instance.writeFile_Log(path, instance.tpl, encoding, safe_overwrite=True)
+        self.writeFile_Log(path, self.tpl, encoding, safe_overwrite=True)
 
-        # Load content for caching
+        # Load content for caching and initialize with template content
         with open(path, "r", encoding=encoding) as tempfile:
-            instance.content = tempfile.read()
+            self.content = tempfile.read()
 
-        # Keep file pointer open for further operations
-        instance.__h = open(path, "w", encoding=encoding)
-        instance.Cache(cache)
+        self.__h = open(path, "w", encoding=encoding)
+        self.Cache(cache)
 
-        # Ensure file is closed on exit
-        atexit.register(instance.close)
+        atexit.register(self.close)
+        # return self
+
+    def __new__(cls, path, cache, encoding="utf-8"):
+        instance = super(Log, cls).__new__(cls)
         return instance
 
     def __getitem__(self, key):
-        return getattr(self, key)
+        if key not in self.storage_dict:
+            raise ValueError(
+                f"key '{key}' has not been inserted into the log-file."
+                f"The given key has not been populated so far, and thus could not be retrieved."
+            )
+        else:
+            return self.storage_dict[key]
 
     def __setitem__(self, key, value):
         key_placeholder = "{" + f"{key}" + "}"
-        # Update the in-memory content with the new value
-        self.content = self.content.replace(key_placeholder, str(value))
 
+        self.storage_dict[key] = str(value)
+        if key_placeholder in self.content:
+            # If key placeholder is still in the template, replace it in `content`
+            self.content = self.content.replace(key_placeholder, str(value))
+        else:
+            # Key was previously populated: update in storage, then re-populate
+            self.tpl = self.original_tpl  # Reset template content
+            self.content = self.tpl  # Refresh content with a blank template
+            for k, v in self.storage_dict.items():
+                self.content = self.content.replace("{" + f"{k}" + "}", v)
+
+        # Optionally write to file if auto-write is enabled
         if self.auto_write_to_file:
             self.write_to_file(self.content)
 
