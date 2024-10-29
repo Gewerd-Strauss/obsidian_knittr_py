@@ -51,6 +51,10 @@ class OT:
                 text = f.read()
 
             # Split into sections based on format
+            if str(self.type + "\n") not in text:
+                raise ValueError(
+                    f"The string '{self.type}' was not found in the format-definitions."
+                )
             lines = (
                 text.split(self.type + "\n")[1].split("\n\n")[0].strip().splitlines()
             )
@@ -68,7 +72,7 @@ class OT:
                 if not line or line.startswith(";"):  # Skip comments and empty lines
                     continue
 
-                # Check if the line defines a rendering package
+                # Check if the line defines a rendering package - this is metadata
                 if "renderingpackage" in line:
                     key = line.split(":")[0]
                     key_value_pairs = line.split("|")
@@ -92,7 +96,7 @@ class OT:
                     if key and value:
                         if (
                             current_param is None
-                        ):  # Initiate Parameter-Object if current_param is not set
+                        ):  # Initiate parameter-Object if current_param is not set
                             current_param = key
                             self.arguments[key] = {}
                             self.arguments[key]["Control"] = value
