@@ -1,7 +1,7 @@
-from collections.abc import MutableMapping
-from typing import Iterator
 import atexit
 import os
+from collections.abc import MutableMapping
+from typing import Iterator
 
 
 class Log(MutableMapping):
@@ -115,75 +115,52 @@ OK - Errorlog:
 
         # Ensure file is closed on exit
         atexit.register(instance.close)
-
         return instance
 
     def __getitem__(self, key):
         return getattr(self, key)
 
     def __setitem__(self, key, value):
-        old_length = len(self.content)
         key_placeholder = "{" + f"{key}" + "}"
+        # Update the in-memory content with the new value
+        self.content = self.content.replace(key_placeholder, str(value))
 
-        self.content = self.content.replace(key_placeholder, value)
-        new_length = len(self.content)
+        if self.auto_write_to_file:
+            self.write_to_file(self.content)
 
-        if new_length < old_length:
-            diff = abs(new_length - old_length)
-            self.content += " " * diff
-
-        if hasattr(self, "auto_write_to_file") and not self.auto_write_to_file:
-            self.handle()
-            return
-
-        self.write(self.content)
-        self.handle()
-
-    def __len__(self):
-        """not necessary/how to implement"""
+    def __delitem__(self, key):
+        # Remove placeholder replacement
+        # key_placeholder = "{" + f"{key}" + "}"
+        # self.content = self.content.replace(key_placeholder, "")
+        # if self.auto_write_to_file:
+        #     self.write_to_file(self.content)
         return 0
 
-    def __delitem__(self, k):
-        """not implemented: remove items"""
-        self[k] = None
-
     def __iter__(self) -> Iterator:
-        return super().__iter__()
+        return iter(vars(self))
+
+    def __len__(self):
+        return len(vars(self))
 
     def write_to_file(self, content):
-        with open(self.path, "w", encoding=self.encoding) as f:
+        # Overwrite the file from start
+        with open(self.__path, "w", encoding=self.__encoding) as f:
             f.write(content)
 
-    def cache(self, set_value=""):
-        if not set_value:
-            return self.cache_enabled
-        self.cache_enabled = bool(set_value)
-
     def toggle_auto_write(self, enable):
+        # Handle toggle for auto-write functionality
+        if enable and not self.auto_write_to_file:
+            # Write current cache to file upon enabling auto-write
+            self.write_to_file(self.content)
         self.auto_write_to_file = bool(enable)
 
     def close(self):
+        # Ensure the latest content is written upon exit
         if not self.auto_write_to_file:
-            self.write(self.content)
-        self._Log__h.close()
+            self.write_to_file(self.content)
 
-    def handle(self):
-        return self._Log__h
-
-    def write(self, content):
-        self._Log__h.write(content)
-
-    def get_total_duration(self, atc1, atc2, key="TotalExecution_Duration"):
-        diff = atc2 - atc1
-        time_str = self.pretty_tick_count(diff)
-        self.set_value(key, time_str)
-
-    def pretty_tick_count(self, time_in_milliseconds):
-        elapsed_hours = time_in_milliseconds // 3600000
-        elapsed_minutes = (time_in_milliseconds % 3600000) // 60000
-        elapsed_seconds = (time_in_milliseconds % 60000) // 1000
-        elapsed_milliseconds = time_in_milliseconds % 1000
-        return f"{elapsed_hours}h:{elapsed_minutes}m:{elapsed_seconds}s.{elapsed_milliseconds}"
+    def Cache(self, cache_value):
+        self.__cache = cache_value
 
     def writeFile_Log(
         self, path, content, encoding="utf-8", flags="w", safe_overwrite=False
@@ -199,10 +176,3 @@ OK - Errorlog:
             # Write file as usual with specified flags
             with open(path, flags, encoding=encoding) as file:
                 file.write(content)
-
-    def close(self):
-        if hasattr(self, "__h") and not self.__h.closed:
-            self.__h.close()
-
-    def Cache(self, cache_value):
-        self.__cache = cache_value
