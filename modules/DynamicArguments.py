@@ -608,7 +608,7 @@ class MyApp:
                     file_entry.grid(
                         row=row_index + 1,
                         column=0,
-                        columnspan=2,
+                        columnspan=4,
                         # padx=5,
                         pady=5,
                         sticky="ew",
