@@ -419,6 +419,23 @@ class MyApp:
         self.create_gui()
         self.root.mainloop()  # Start the GUI event loop here
 
+    def add_text(self, value, tab_frame, row_index):
+        # Add the text label to the right of the link
+        text_label = tk.Label(tab_frame, text=value["String"])
+        text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+
+    def add_link(self, value, tab_frame, row_index):
+        if "Link" in value:
+            link = value["Link"]
+            link_label = tk.Label(
+                tab_frame,
+                text=f"{value['Linktext']}",
+                fg="blue",
+                cursor="hand2",
+            )
+            link_label.bind("<Button-1>", lambda e, link=link: webbrowser.open(link))
+            link_label.grid(row=row_index, column=0, sticky="w")
+
     def create_gui(self):
         self.tabs.grid(row=0, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
@@ -511,22 +528,8 @@ class MyApp:
                 if Control == "edit":
 
                     # If there is a link, add a hyperlink label
-                    if "Link" in value:
-                        link = value["Link"]
-                        link_label = tk.Label(
-                            tab_frame,
-                            text=f"{value['Linktext']}",
-                            fg="blue",
-                            cursor="hand2",
-                        )
-                        link_label.bind(
-                            "<Button-1>", lambda e, link=link: webbrowser.open(link)
-                        )
-                        link_label.grid(row=row_index, column=0, sticky="w")
-
-                    # Add the text label to the right of the link
-                    text_label = tk.Label(tab_frame, text=value["String"])
-                    text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+                    self.add_text(value, tab_frame, row_index)
+                    self.add_link(value, tab_frame, row_index)
 
                     if control_options == "Number":
                         if "Max" in value and "Min" in value:
@@ -578,22 +581,10 @@ class MyApp:
                     row_index += 1
                     # self.tabs.update()  # Show the tab
                 elif Control == "file":
-                    if "Link" in value:
-                        link = value["Link"]
-                        link_label = tk.Label(
-                            tab_frame,
-                            text=f"{value['Linktext']}",
-                            fg="blue",
-                            cursor="hand2",
-                        )
-                        link_label.bind(
-                            "<Button-1>", lambda e, link=link: webbrowser.open(link)
-                        )
-                        link_label.grid(row=row_index, column=0, sticky="w")
+                    self.add_link(value, tab_frame, row_index)
 
                     # Add the text label to the right of the link
-                    text_label = tk.Label(tab_frame, text=value["String"])
-                    text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+                    self.add_text(value, tab_frame, row_index)
 
                     # Entry for the file path
                     file_entry = ttk.Entry(tab_frame, width=50)
@@ -634,22 +625,10 @@ class MyApp:
                     row_index += 1
                     value["Entry"] = file_entry  # Save reference for retrieving value
                 elif (Control == "ddl") or (Control == "combobox"):
-                    if "Link" in value:
-                        link = value["Link"]
-                        link_label = tk.Label(
-                            tab_frame,
-                            text=f"{value['Linktext']}",
-                            fg="blue",
-                            cursor="hand2",
-                        )
-                        link_label.bind(
-                            "<Button-1>", lambda e, link=link: webbrowser.open(link)
-                        )
-                        link_label.grid(row=row_index, column=0, sticky="w")
+                    self.add_link(value, tab_frame, row_index)
 
                     # Add the text label to the right of the link
-                    text_label = tk.Label(tab_frame, text=value["String"])
-                    text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+                    self.add_text(value, tab_frame, row_index)
 
                     print("dropdownlist or comboboxes")
                     # add DDLs and Comboboxes
