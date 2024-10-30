@@ -476,6 +476,7 @@ class MyApp:
             if HiddenHeaders[Header]:
                 continue
             row_index = 0
+            print(f"Adding to tab {Header}")
             for parameter, value in self.arguments.items():
                 if value["Control"] in ["meta", "Meta"]:
                     continue
@@ -518,7 +519,10 @@ class MyApp:
                             fg="blue",
                             cursor="hand2",
                         )
-                        link_label.bind("<Button-1>", lambda e: webbrowser.open(link))
+                        # print(link)
+                        link_label.bind(
+                            "<Button-1>", lambda e, link=link: webbrowser.open(link)
+                        )
                         link_label.grid(row=row_index, column=0, sticky="w")
 
                         # Add the text label to the right of the link
@@ -578,14 +582,34 @@ class MyApp:
                     self.tabs.update()  # Show the tab
 
                 elif Control == "file":
+                    if "Link" in value:
+                        link = value["Link"]
+                        link_label = tk.Label(
+                            tab_frame,
+                            text=f"{value['Linktext']}",
+                            fg="blue",
+                            cursor="hand2",
+                        )
+                        # link_label.bind("<Button-1>", lambda e: webbrowser.open(link))
+                        link_label.bind(
+                            "<Button-1>", lambda e, link=link: webbrowser.open(link)
+                        )
+                        link_label.grid(row=row_index, column=0, sticky="w")
+
+                        # Add the text label to the right of the link
+                        text_label = tk.Label(tab_frame, text=value["String"])
+                        text_label.grid(
+                            row=row_index, column=0, padx=(10, 0), sticky="w"
+                        )
+
                     # Entry for the file path
                     file_entry = ttk.Entry(tab_frame, width=50)
                     file_entry.insert(0, value.get("Value", ""))
                     file_entry.grid(
-                        row=row_index,
+                        row=row_index + 1,
                         column=0,
                         columnspan=2,
-                        padx=5,
+                        # padx=5,
                         pady=5,
                         sticky="ew",
                     )
