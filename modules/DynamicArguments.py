@@ -2,6 +2,8 @@ import re
 import os
 from math import floor
 import webbrowser
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
 
 
 class OT:
@@ -418,7 +420,6 @@ class MyApp:
         self.root.mainloop()  # Start the GUI event loop here
 
     def create_gui(self):
-        # self.tabs.pack(expand=1, fill="both")
         self.tabs.grid(row=0, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
@@ -433,26 +434,34 @@ class MyApp:
             else:
                 self.arguments[parameter]["Tab3Parent"] = "Other"
                 tab_headers[value["Tab3Parent"]] = {"Height": 0}
-            # tab_name = value["Tab3Parent"]
-            # if tab_name not in tab_headers:
-            #     tab_headers[tab_name] = ttk.Frame(self.tabs)
-            # self.tabs.add(tab_headers[tab_name], text=tab_name)
 
         HiddenHeaders = {}
         added_headers = {}
+        sanitized_header_map = (
+            {}
+        )  # Dictionary to hold original to sanitized header mappings
+
         for Header, _ in tab_headers.items():
             HeaderFound = False
             for Parameter, value in self.arguments.items():
-
                 if value["Tab3Parent"] == Header:
                     if value["Control"] not in ["meta", "Meta"]:
                         if Header not in added_headers:
+                            # Sanitize the header
                             sanitized_header = Header.replace(
                                 "&&", "and"
                             )  # Example of replacing special characters
+                            sanitized_header = "".join(
+                                e if e.isalnum() else "_" for e in sanitized_header
+                            )
+                            sanitized_header = sanitized_header.lower()
+                            # Store the mapping
+                            sanitized_header_map[Header] = sanitized_header
+
+                            # Add the tab with the original name for display
                             self.tabs.add(
                                 ttk.Frame(self.tabs, name=sanitized_header.lower()),
-                                text=sanitized_header,
+                                text=Header,
                             )
                             added_headers[Header] = True
                             HiddenHeaders[Header] = False
@@ -479,21 +488,23 @@ class MyApp:
                     "String" not in value
                 ):  # do not load controls which do not have a descriptor-string
                     continue
+
                 # Check if modified_parameter is not in Value['String']
                 if modified_parameter not in value["String"]:
-
                     value["String"] = f"{modified_parameter}: {value['String']}"
+
                 # Ensure only controls of this tab are added
                 if Header == value["Tab3Parent"]:
                     Control = value["Control"]
                 else:
-                    continue  # this parameter does not belong into this tab. However, in python this might not be necessary if the tab is always specified during control-addition
-                row_index = row_index + 1
+                    continue  # this parameter does not belong into this tab
+
+                row_index += 1
                 if Control == "edit":
                     # Add edit and related controls
-
-                    # Retrieve the current tab frame based on the header name
-                    b = self.tabs.index(".!notebook." + Header.lower())
+                    b = self.tabs.index(
+                        ".!notebook." + sanitized_header_map[Header]
+                    )  # Use the sanitized header
                     c = a[b]
                     tab_frame = self.tabs.nametowidget(c)
                     control_options = value.get("ctrlOptions", "")
@@ -501,33 +512,23 @@ class MyApp:
                     # If there is a link, add a hyperlink label
                     if "Link" in value:
                         link = value["Link"]
-
-                        # Create a label for the link
                         link_label = tk.Label(
                             tab_frame,
-                            text=f"{value['Linktext']}",  # Use single quotes for outer string
+                            text=f"{value['Linktext']}",
                             fg="blue",
                             cursor="hand2",
                         )
-
-                        # Bind the label to open the link
                         link_label.bind("<Button-1>", lambda e: webbrowser.open(link))
-
-                        # Pack the link label on the left
                         link_label.grid(row=row_index, column=0, sticky="w")
 
                         # Add the text label to the right of the link
                         text_label = tk.Label(tab_frame, text=value["String"])
                         text_label.grid(
                             row=row_index, column=0, padx=(10, 0), sticky="w"
-                        )  # Same height as link label
+                        )
 
-                    if parameter == "toc___depth":
-                        print()
                     if control_options == "Number":
                         if "Max" in value and "Min" in value:
-                            # number_entry = tk.Entry(tab_frame)
-
                             # Add Spinbox for number range
                             spinbox = ttk.Spinbox(
                                 tab_frame,
@@ -542,12 +543,9 @@ class MyApp:
                             )
                             spinbox.grid(
                                 row=row_index + 1,
-                                column=0,  # Place to the right of number_entry if needed
+                                column=0,
                                 pady=(5, 0),
-                                padx=(
-                                    5,
-                                    0,
-                                ),  # Add padding between number_entry and spinbox
+                                padx=(5, 0),
                                 sticky="ew",
                             )
                             value["Entry"] = spinbox  # Save a reference
@@ -562,33 +560,62 @@ class MyApp:
                                 ),
                             )
                             number_entry.grid(
-                                row=row_index + 1,
-                                column=0,
-                                # columnspan=3,
-                                pady=(5, 0),
-                                sticky="ew",
-                            )  # Padding below the link controls
+                                row=row_index + 1, column=0, pady=(5, 0), sticky="ew"
+                            )
                             value["Entry"] = number_entry  # Save a reference
                     else:
                         # Add the main Edit control
-                        edit_control = tk.Entry(
-                            tab_frame, width=20
-                        )  # Adjust width as necessary
+                        edit_control = tk.Entry(tab_frame, width=20)
                         edit_control.grid(
                             row=row_index + 1,
                             column=0,
                             columnspan=2,
                             pady=(5, 0),
                             sticky="ew",
-                        )  # Padding below the link controls
+                        )
                         value["Entry"] = edit_control  # Save a reference
-                    row_index = row_index + 1
-                    # Update the tab frame
+                    row_index += 1
                     self.tabs.update()  # Show the tab
 
                 elif Control == "file":
-                    print("next control type")
-                    # add file-select- and related controls
+                    # Entry for the file path
+                    file_entry = ttk.Entry(tab_frame, width=50)
+                    file_entry.insert(0, value.get("Value", ""))
+                    file_entry.grid(
+                        row=row_index,
+                        column=0,
+                        columnspan=2,
+                        padx=5,
+                        pady=5,
+                        sticky="ew",
+                    )
+
+                    # "Select File" button
+                    select_file_btn = ttk.Button(
+                        tab_frame,
+                        text="Select File",
+                        command=lambda param=modified_parameter: self.choose_file(
+                            param, file_entry
+                        ),
+                    )
+                    select_file_btn.grid(
+                        row=row_index, column=2, padx=5, pady=5, sticky="w"
+                    )
+
+                    # "Open Folder" button
+                    open_folder_btn = ttk.Button(
+                        tab_frame,
+                        text="Open Folder",
+                        command=lambda param=modified_parameter: self.open_file_folder(
+                            param, file_entry
+                        ),
+                    )
+                    open_folder_btn.grid(
+                        row=row_index, column=3, padx=5, pady=5, sticky="w"
+                    )
+
+                    row_index += 1
+                    value["Entry"] = file_entry  # Save reference for retrieving value
                 elif (Control == "ddl") or (Control == "combobox"):
                     print("dropdownlist or comboboxes")
                     # add DDLs and Comboboxes
@@ -599,10 +626,31 @@ class MyApp:
                         if Control == "checkbox":
                             print("Add checkbox and related controls")
                         else:
-                            # add various other controls.
                             print(
                                 "Other controls which behave similarly in definition?"
                             )
+
+    def choose_file(self, parameter, file_entry):
+        # Open a file dialog to select a file
+        file_path = filedialog.askopenfilename(
+            title="Select a File",
+            initialdir=self.arguments[parameter].get("SearchPath", ""),
+        )
+        if file_path:
+            self.arguments[parameter]["Value"] = file_path
+            file_entry.delete(0, tk.END)
+            file_entry.insert(0, file_path)
+
+    def open_file_folder(self, parameter, file_entry):
+        # Open the folder containing the selected file
+        file_path = file_entry.get()
+        if os.path.isfile(file_path):
+            folder_path = os.path.dirname(file_path)
+            webbrowser.open(folder_path)
+        else:
+            messagebox.showwarning(
+                "Warning", "No valid file selected or file does not exist."
+            )
 
     def submit(self):
         results = {}
