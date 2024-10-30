@@ -519,17 +519,14 @@ class MyApp:
                             fg="blue",
                             cursor="hand2",
                         )
-                        # print(link)
                         link_label.bind(
                             "<Button-1>", lambda e, link=link: webbrowser.open(link)
                         )
                         link_label.grid(row=row_index, column=0, sticky="w")
 
-                        # Add the text label to the right of the link
-                        text_label = tk.Label(tab_frame, text=value["String"])
-                        text_label.grid(
-                            row=row_index, column=0, padx=(10, 0), sticky="w"
-                        )
+                    # Add the text label to the right of the link
+                    text_label = tk.Label(tab_frame, text=value["String"])
+                    text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
 
                     if control_options == "Number":
                         if "Max" in value and "Min" in value:
@@ -579,8 +576,7 @@ class MyApp:
                         )
                         value["Entry"] = edit_control  # Save a reference
                     row_index += 1
-                    self.tabs.update()  # Show the tab
-
+                    # self.tabs.update()  # Show the tab
                 elif Control == "file":
                     if "Link" in value:
                         link = value["Link"]
@@ -590,17 +586,14 @@ class MyApp:
                             fg="blue",
                             cursor="hand2",
                         )
-                        # link_label.bind("<Button-1>", lambda e: webbrowser.open(link))
                         link_label.bind(
                             "<Button-1>", lambda e, link=link: webbrowser.open(link)
                         )
                         link_label.grid(row=row_index, column=0, sticky="w")
 
-                        # Add the text label to the right of the link
-                        text_label = tk.Label(tab_frame, text=value["String"])
-                        text_label.grid(
-                            row=row_index, column=0, padx=(10, 0), sticky="w"
-                        )
+                    # Add the text label to the right of the link
+                    text_label = tk.Label(tab_frame, text=value["String"])
+                    text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
 
                     # Entry for the file path
                     file_entry = ttk.Entry(tab_frame, width=50)
@@ -641,8 +634,66 @@ class MyApp:
                     row_index += 1
                     value["Entry"] = file_entry  # Save reference for retrieving value
                 elif (Control == "ddl") or (Control == "combobox"):
+                    if "Link" in value:
+                        link = value["Link"]
+                        link_label = tk.Label(
+                            tab_frame,
+                            text=f"{value['Linktext']}",
+                            fg="blue",
+                            cursor="hand2",
+                        )
+                        link_label.bind(
+                            "<Button-1>", lambda e, link=link: webbrowser.open(link)
+                        )
+                        link_label.grid(row=row_index, column=0, sticky="w")
+
+                    # Add the text label to the right of the link
+                    text_label = tk.Label(tab_frame, text=value["String"])
+                    text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+
                     print("dropdownlist or comboboxes")
                     # add DDLs and Comboboxes
+                    # Check for control options
+                    control_options = value.get("ctrlOptions", "")
+
+                    # If options are comma-separated, convert to a pipe-separated format
+                    if "," in control_options and "|" not in control_options:
+                        control_options = control_options.replace(",", "|")
+
+                    # Add the default value if not already present
+                    if value["Default"] not in control_options:
+                        if control_options.endswith("|"):
+                            control_options += value["Default"]
+                        else:
+                            control_options += "|" + value["Default"]
+
+                    # Ensure no duplicate options and handle default formatting
+                    control_options = control_options.replace(
+                        value["Default"], value["Default"] + "|"
+                    )
+                    control_options = control_options.replace("||", "|")
+                    control_options = control_options.rstrip(
+                        "|"
+                    )  # Remove trailing pipe
+
+                    # Split options into a list
+                    options_list = control_options.split("|")
+
+                    # Create the combobox
+                    combobox = ttk.Combobox(
+                        tab_frame,
+                        values=options_list,
+                        state="readonly",  # Set to readonly to prevent manual entry
+                    )
+
+                    # Set the default value in the combobox
+                    combobox.set(value["Default"])
+                    combobox.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
+
+                    # Store the reference for later use
+                    value["Entry"] = combobox  # Save a reference
+
+                    row_index += 1  # Increment the row index for the next control
                 elif Control == "Datetime":
                     print("datetime selection control and related controls")
                 else:
