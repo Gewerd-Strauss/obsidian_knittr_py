@@ -157,8 +157,8 @@ class OT:
 
             if "reference_docx" in parameter or "reference-doc" in parameter:
                 param_backup = value["Value"]
-                if self.ddl_param_delimiter in value["Value"]:
-                    param_string = value["Value"].split(self.ddl_param_delimiter)[1]
+                if self.DDL_ParamDelimiter in value["Value"]:
+                    param_string = value["Value"].split(self.DDL_ParamDelimiter)[1]
                 else:
                     param_string = value["Value"]
 
@@ -175,8 +175,8 @@ class OT:
                         param_backup.strip('"').replace("\\", "/")
                     )
 
-                if self.ddl_param_delimiter in param_backup:
-                    param_backup = param_backup.split(self.ddl_param_delimiter)[
+                if self.DDL_ParamDelimiter in param_backup:
+                    param_backup = param_backup.split(self.DDL_ParamDelimiter)[
                         1
                     ].strip()
 
