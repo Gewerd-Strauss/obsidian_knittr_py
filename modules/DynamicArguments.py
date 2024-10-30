@@ -1,6 +1,7 @@
 import re
 import os
 from math import floor
+import webbrowser
 
 
 class OT:
@@ -22,6 +23,7 @@ class OT:
         self.classname = "ot (" + format + ")"
         # this.GUITitle="Define output format - "
         self.version = "0.1.a"
+        self.gui_instance = None
         # this.bClosedNoSubmit=false
         self.arguments = {}
         self.error = None
@@ -234,7 +236,7 @@ class OT:
 
             # Set Value to Default if Value is empty
             if value.get("Value", "") == "":
-                if value.get("Control") == "File":
+                if value.get("Control") == "file":
                     # Check if the file exists in the SearchPath with Default as filename
                     file_path = os.path.join(value["SearchPath"], value["Default"])
                     if not os.path.exists(file_path):
@@ -244,7 +246,7 @@ class OT:
                     else:
                         value["Value"] = file_path
                 else:
-                    value["Value"] = value["Default"]
+                    value["Value"] = value.get("Default", "")
 
     def adjust(self):
         self.adjust_min_max()
@@ -376,6 +378,7 @@ class OT:
     ):
         """Generates the GUI: static and dynamic parts, and populates it."""
         print("Generates the GUI and populates it")
+        self.gui_instance = MyApp(self.arguments)
 
     def submit_gui():
         """After the GUI is submitted, this function must be called to modify the arguments in self.arguments if the user changed values in the GUI"""
@@ -398,3 +401,244 @@ class OT:
     def open_file_selection_folder():
         """opens the directory of a file-path on the file-system"""
         pass
+
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+
+class MyApp:
+    def __init__(self, arguments):
+        self.root = tk.Tk()  # Initialize the Tkinter root window here
+        self.root.title("Params GUI")
+        self.arguments = arguments  # Pass arguments for GUI elements
+        self.tabs = ttk.Notebook(self.root)
+
+        self.create_gui()
+        self.root.mainloop()  # Start the GUI event loop here
+
+    def create_gui(self):
+        # self.tabs.pack(expand=1, fill="both")
+        self.tabs.grid(row=0, column=0, sticky="nsew")
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+
+        # Create tabs and controls based on provided arguments
+        tab_headers = {}
+        for parameter, value in self.arguments.items():
+            if value["Control"] in ["meta", "Meta"]:
+                continue
+            if "Tab3Parent" in value:
+                tab_headers[value["Tab3Parent"]] = {"Height": 0}
+            else:
+                self.arguments[parameter]["Tab3Parent"] = "Other"
+                tab_headers[value["Tab3Parent"]] = {"Height": 0}
+            # tab_name = value["Tab3Parent"]
+            # if tab_name not in tab_headers:
+            #     tab_headers[tab_name] = ttk.Frame(self.tabs)
+            # self.tabs.add(tab_headers[tab_name], text=tab_name)
+
+        HiddenHeaders = {}
+        added_headers = {}
+        for Header, _ in tab_headers.items():
+            HeaderFound = False
+            for Parameter, value in self.arguments.items():
+
+                if value["Tab3Parent"] == Header:
+                    if value["Control"] not in ["meta", "Meta"]:
+                        if Header not in added_headers:
+                            sanitized_header = Header.replace(
+                                "&&", "and"
+                            )  # Example of replacing special characters
+                            self.tabs.add(
+                                ttk.Frame(self.tabs, name=sanitized_header.lower()),
+                                text=sanitized_header,
+                            )
+                            added_headers[Header] = True
+                            HiddenHeaders[Header] = False
+                            HeaderFound = True
+                        break
+                    else:
+                        added_headers[Header] = False
+                        HiddenHeaders[Header] = True
+
+        a = self.tabs.tabs()
+        for Header, _ in tab_headers.items():
+            if HiddenHeaders[Header]:
+                continue
+            row_index = 0
+            for parameter, value in self.arguments.items():
+                if value["Control"] in ["meta", "Meta"]:
+                    continue
+                if "-" in parameter:
+                    parameter = parameter.replace(
+                        "-", "___"
+                    )  # Replace dashes with three underscores
+                modified_parameter = parameter.replace("___", "-")
+                if (
+                    "String" not in value
+                ):  # do not load controls which do not have a descriptor-string
+                    continue
+                # Check if modified_parameter is not in Value['String']
+                if modified_parameter not in value["String"]:
+
+                    value["String"] = f"{modified_parameter}: {value['String']}"
+                # Ensure only controls of this tab are added
+                if Header == value["Tab3Parent"]:
+                    Control = value["Control"]
+                else:
+                    continue  # this parameter does not belong into this tab. However, in python this might not be necessary if the tab is always specified during control-addition
+                row_index = row_index + 1
+                if Control == "edit":
+                    # Add edit and related controls
+
+                    # Retrieve the current tab frame based on the header name
+                    b = self.tabs.index(".!notebook." + Header.lower())
+                    c = a[b]
+                    tab_frame = self.tabs.nametowidget(c)
+                    control_options = value.get("ctrlOptions", "")
+
+                    # If there is a link, add a hyperlink label
+                    if "Link" in value:
+                        link = value["Link"]
+
+                        # Create a label for the link
+                        link_label = tk.Label(
+                            tab_frame,
+                            text=f"{value['Linktext']}",  # Use single quotes for outer string
+                            fg="blue",
+                            cursor="hand2",
+                        )
+
+                        # Bind the label to open the link
+                        link_label.bind("<Button-1>", lambda e: webbrowser.open(link))
+
+                        # Pack the link label on the left
+                        link_label.grid(row=row_index, column=0, sticky="w")
+
+                        # Add the text label to the right of the link
+                        text_label = tk.Label(tab_frame, text=value["String"])
+                        text_label.grid(
+                            row=row_index, column=0, padx=(10, 0), sticky="w"
+                        )  # Same height as link label
+
+                    if parameter == "toc___depth":
+                        print()
+                    if control_options == "Number":
+                        if "Max" in value and "Min" in value:
+                            # number_entry = tk.Entry(tab_frame)
+
+                            # Add Spinbox for number range
+                            spinbox = ttk.Spinbox(
+                                tab_frame,
+                                from_=value["Min"],
+                                to=value["Max"],
+                                width=8,
+                                validate="key",
+                                validatecommand=(
+                                    self.root.register(validate_spinbox_input),
+                                    "%P",
+                                ),
+                            )
+                            spinbox.grid(
+                                row=row_index + 1,
+                                column=0,  # Place to the right of number_entry if needed
+                                pady=(5, 0),
+                                padx=(
+                                    5,
+                                    0,
+                                ),  # Add padding between number_entry and spinbox
+                                sticky="ew",
+                            )
+                            value["Entry"] = spinbox  # Save a reference
+                        else:
+                            # Add Entry for number input
+                            number_entry = ttk.Entry(
+                                tab_frame,
+                                validate="key",
+                                validatecommand=(
+                                    self.root.register(validate_entry),
+                                    "%S",
+                                ),
+                            )
+                            number_entry.grid(
+                                row=row_index + 1,
+                                column=0,
+                                # columnspan=3,
+                                pady=(5, 0),
+                                sticky="ew",
+                            )  # Padding below the link controls
+                            value["Entry"] = number_entry  # Save a reference
+                    else:
+                        # Add the main Edit control
+                        edit_control = tk.Entry(
+                            tab_frame, width=20
+                        )  # Adjust width as necessary
+                        edit_control.grid(
+                            row=row_index + 1,
+                            column=0,
+                            columnspan=2,
+                            pady=(5, 0),
+                            sticky="ew",
+                        )  # Padding below the link controls
+                        value["Entry"] = edit_control  # Save a reference
+                    row_index = row_index + 1
+                    # Update the tab frame
+                    self.tabs.update()  # Show the tab
+
+                elif Control == "file":
+                    print("next control type")
+                    # add file-select- and related controls
+                elif (Control == "ddl") or (Control == "combobox"):
+                    print("dropdownlist or comboboxes")
+                    # add DDLs and Comboboxes
+                elif Control == "Datetime":
+                    print("datetime selection control and related controls")
+                else:
+                    if "Link" in value:
+                        if Control == "checkbox":
+                            print("Add checkbox and related controls")
+                        else:
+                            # add various other controls.
+                            print(
+                                "Other controls which behave similarly in definition?"
+                            )
+
+    def submit(self):
+        results = {}
+        for parameter, value in self.arguments.items():
+            if "Entry" in value:
+                results[parameter] = value["Entry"].get()
+            elif "Var" in value:
+                results[parameter] = value["Var"].get()
+            elif "Combo" in value:
+                results[parameter] = value["Combo"].get()
+
+        # Display results or process them as needed
+        messagebox.showinfo("Submitted Values", str(results))
+        self.root.destroy()  # Optionally close the GUI after submission
+
+    # class OT:
+    #     def generate_gui(self, x, y, attach_bottom, gui_id, *args):
+    #         # Define arguments for the GUI controls
+    #         arguments = {
+    #             "Param1": {"Value": "", "Tab3Parent": "Tab1", "Control": "entry"},
+    #             "Param2": {"Value": "", "Tab3Parent": "Tab1", "Control": "entry"},
+    #             "Param3": {"Value": "", "Tab3Parent": "Other", "Control": "checkbox"},
+    #             "Param4": {"Value": "", "Tab3Parent": "Other", "Control": "combo"},
+    #         }
+
+    #         app = MyApp(arguments)  # Create an instance of MyApp directly
+
+    # # # Example of using the OT class to generate the GUI
+    # # ot = OT()
+    # # ot.generate_gui(1, 1, True, "ParamsGUI:", 1, 1, 674, 1)
+
+
+def validate_entry(text):
+    return text.isdecimal()
+
+
+def validate_spinbox_input(input_value):
+    # Simple validation to allow only numbers
+    return input_value.isdigit() or input_value == ""
