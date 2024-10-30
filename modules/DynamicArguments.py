@@ -675,6 +675,21 @@ class MyApp:
                     row_index += 1  # Increment the row index for the next control
                 elif Control == "Datetime":
                     print("datetime selection control and related controls")
+                elif Control == "checkbox":
+                    # If there is a link, add a hyperlink label
+                    self.add_link(value, tab_frame, row_index)
+
+                    # Add the text label to the right of the link
+                    # text_label = tk.Label(tab_frame, text="")
+                    # text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+                    # Logic for creating a checkbox
+                    checkbox_var = tk.BooleanVar()
+                    checkbox = tk.Checkbutton(
+                        tab_frame, text=value["String"], variable=checkbox_var
+                    )
+                    checkbox.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+                    value["Entry"] = checkbox_var  # Save reference for retrieving value
+                    row_index += 1
                 else:
                     if "Link" in value:
                         if Control == "checkbox":
