@@ -500,14 +500,14 @@ class MyApp:
                     continue  # this parameter does not belong into this tab
 
                 row_index += 1
+                # Add edit and related controls
+                b = self.tabs.index(
+                    ".!notebook." + sanitized_header_map[Header]
+                )  # Use the sanitized header
+                c = a[b]
+                tab_frame = self.tabs.nametowidget(c)
+                control_options = value.get("ctrlOptions", "")
                 if Control == "edit":
-                    # Add edit and related controls
-                    b = self.tabs.index(
-                        ".!notebook." + sanitized_header_map[Header]
-                    )  # Use the sanitized header
-                    c = a[b]
-                    tab_frame = self.tabs.nametowidget(c)
-                    control_options = value.get("ctrlOptions", "")
 
                     # If there is a link, add a hyperlink label
                     if "Link" in value:
