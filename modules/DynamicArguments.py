@@ -417,7 +417,25 @@ class MyApp:
         self.tabs = ttk.Notebook(self.root)
 
         self.create_gui()
+        self.bind_tab_navigation()
         self.root.mainloop()  # Start the GUI event loop here
+
+    def bind_tab_navigation(self):
+        # Bind PgUp and PgDwn keys to navigate tabs
+        self.root.bind("<Prior>", self.switch_tab_up)  # PgUp key
+        self.root.bind("<Next>", self.switch_tab_down)  # PgDn key
+
+    def switch_tab_down(self, event=None):
+        current_tab = self.tabs.index(self.tabs.select())
+        total_tabs = len(self.tabs.tabs())
+        next_tab = (current_tab + 1) % total_tabs  # Wrap around to the beginning
+        self.tabs.select(next_tab)
+
+    def switch_tab_up(self, event=None):
+        current_tab = self.tabs.index(self.tabs.select())
+        total_tabs = len(self.tabs.tabs())
+        previous_tab = (current_tab - 1) % total_tabs  # Wrap around to the end
+        self.tabs.select(previous_tab)
 
     def add_text(self, value, tab_frame, row_index):
         # Add the text label to the right of the link
