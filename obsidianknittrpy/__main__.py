@@ -1,3 +1,5 @@
-from obsidianknittrpy import main
+# __main__.py
+from obsidianknittrpy.main import main
 
-main()
+if __name__ == "__main__":
+    main()
