@@ -420,13 +420,11 @@ class MyApp:
         self.tabs = ttk.Notebook(self.root)
 
         self.create_gui()
-        self.bind_tab_navigation()
+        self.bind_method_hotkey("<Alt-s>", "submit")
+        self.bind_method_hotkey("<Alt-e>", "open_configuration_file")
+        self.bind_method_hotkey("<Prior>", "switch_tab_up")
+        self.bind_method_hotkey("<Next>", "switch_tab_down")
         self.root.mainloop()  # Start the GUI event loop here
-
-    def bind_tab_navigation(self):
-        # Bind PgUp and PgDwn keys to navigate tabs
-        self.root.bind("<Prior>", self.switch_tab_up)  # PgUp key
-        self.root.bind("<Next>", self.switch_tab_down)  # PgDn key
 
     def switch_tab_down(self, event=None):
         current_tab = self.tabs.index(self.tabs.select())
@@ -746,6 +744,42 @@ class MyApp:
                     )
                 else:
                     print(f"Control-type {Control} which are not implemented yet.")
+        self.add_footer()
+
+    def add_footer(self):
+        # Create a frame for the footer
+        footer_frame = tk.Frame(self.root)
+        footer_frame.grid(row=1, column=0, sticky="ew", pady=10)
+
+        submit_button = tk.Button(
+            footer_frame,
+            text="Submit",
+            command=self.submit,  # Link to the submit method
+            width=15,
+        )
+        submit_button.pack(side=tk.LEFT, padx=5)
+
+        edit_button = tk.Button(
+            footer_frame,
+            text="Edit Configuration",
+            command=self.open_configuration_file,  # Link to the function that opens the config
+            width=20,
+        )
+        edit_button.pack(side=tk.LEFT, padx=5)
+
+        footer_frame.grid_columnconfigure(0, weight=1)
+        footer_frame.grid_columnconfigure(1, weight=1)
+
+    def bind_method_hotkey(self, hotkey, method):
+        self.root.bind(hotkey, lambda event: getattr(self, method)())
+
+    def open_configuration_file(self):
+        # This function opens the configuration file
+        # Replace 'config.ini' with the actual path to your configuration file
+        if os.path.exists(self.config_file):
+            os.startfile(self.config_file)  # For Windows; adjust if using another OS
+        else:
+            messagebox.showerror("Error", "Configuration file not found!")
 
     def choose_file(self, parameter, file_entry):
         # Open a file dialog to select a file
