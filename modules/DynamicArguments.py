@@ -1,6 +1,9 @@
 import re
 import os
 from math import floor
+import webbrowser
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
 
 
 class OT:
@@ -22,6 +25,7 @@ class OT:
         self.classname = "ot (" + format + ")"
         # this.GUITitle="Define output format - "
         self.version = "0.1.a"
+        self.gui_instance = None
         # this.bClosedNoSubmit=false
         self.arguments = {}
         self.error = None
@@ -153,8 +157,8 @@ class OT:
 
             if "reference_docx" in parameter or "reference-doc" in parameter:
                 param_backup = value["Value"]
-                if self.ddl_param_delimiter in value["Value"]:
-                    param_string = value["Value"].split(self.ddl_param_delimiter)[1]
+                if self.DDL_ParamDelimiter in value["Value"]:
+                    param_string = value["Value"].split(self.DDL_ParamDelimiter)[1]
                 else:
                     param_string = value["Value"]
 
@@ -171,8 +175,8 @@ class OT:
                         param_backup.strip('"').replace("\\", "/")
                     )
 
-                if self.ddl_param_delimiter in param_backup:
-                    param_backup = param_backup.split(self.ddl_param_delimiter)[
+                if self.DDL_ParamDelimiter in param_backup:
+                    param_backup = param_backup.split(self.DDL_ParamDelimiter)[
                         1
                     ].strip()
 
@@ -234,7 +238,7 @@ class OT:
 
             # Set Value to Default if Value is empty
             if value.get("Value", "") == "":
-                if value.get("Control") == "File":
+                if value.get("Control") == "file":
                     # Check if the file exists in the SearchPath with Default as filename
                     file_path = os.path.join(value["SearchPath"], value["Default"])
                     if not os.path.exists(file_path):
@@ -244,7 +248,7 @@ class OT:
                     else:
                         value["Value"] = file_path
                 else:
-                    value["Value"] = value["Default"]
+                    value["Value"] = value.get("Default", "")
 
     def adjust(self):
         self.adjust_min_max()
@@ -303,6 +307,15 @@ class OT:
         pass
 
     def adjust_bools(self):
+        def is_boolean(value):
+            # Convert value to string and make it lowercase for case-insensitive matching
+            str_value = str(value).strip().lower()
+
+            # Check if the string representation matches any boolean representation
+            if str_value in {"1", "0", "true", "false"}:
+                return True
+            return False
+
         for parameter, value in self.arguments.items():
             value_type = value.get("Type")
             if value_type is not None:
@@ -317,12 +330,23 @@ class OT:
                     value["Value"] = int(value["Value"])  # Convert string to int
                 else:
                     # Handle case where value cannot be converted to a number
-                    if value["Value"] not in ["TRUE", "FALSE"]:
-                        print(f"Warning: Cannot convert {value['Value']} to a number.")
+                    if value["Value"].upper() not in ["TRUE", "FALSE"]:
+                        print(
+                            f"Warning [Pre-Boolean-check]: cannot convert {value['Value']} to a number."
+                        )
 
             # Convert boolean to "TRUE" or "FALSE"
             if value_type == "boolean":
-                value["Value"] = "TRUE" if value["Value"] else "FALSE"
+                val_ = value["Value"]
+                try:
+                    if is_boolean(value["Value"]):
+                        value["Value"] = "TRUE"
+                    else:
+                        value["Value"] = "FALSE"
+                except:
+                    print(
+                        f"type '{val_}' was digits, but could not be coerced to boolean."
+                    )
 
     def adjust_integers(self):
         for parameter, value in self.arguments.items():
@@ -376,6 +400,7 @@ class OT:
     ):
         """Generates the GUI: static and dynamic parts, and populates it."""
         print("Generates the GUI and populates it")
+        self.gui_instance = OT_GUI(self.arguments, self.config_file)
 
     def submit_gui():
         """After the GUI is submitted, this function must be called to modify the arguments in self.arguments if the user changed values in the GUI"""
@@ -398,3 +423,429 @@ class OT:
     def open_file_selection_folder():
         """opens the directory of a file-path on the file-system"""
         pass
+
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+from tkcalendar import DateEntry
+from datetime import datetime
+
+
+class OT_GUI:
+    def __init__(self, arguments, config_file):
+        self.root = tk.Tk()  # Initialize the Tkinter root window here
+        self.root.title("Params GUI")
+        self.arguments = arguments  # Pass arguments for GUI elements
+        self.config_file = config_file
+        self.tabs = ttk.Notebook(self.root)
+
+        self.create_gui()
+        self.bind_method_hotkey("<Alt-s>", "submit")
+        self.bind_method_hotkey("<Alt-e>", "open_configuration_file")
+        self.bind_method_hotkey("<Prior>", "switch_tab_up")
+        self.bind_method_hotkey("<Next>", "switch_tab_down")
+        self.bind_method_hotkey("<Escape>", "close")
+        self.root.focus_force()  # makes window take keyboard focus immediately.
+        # self.root.grab_set()  # makes window modal
+        self.root.mainloop()  # Start the GUI event loop here
+
+    def switch_tab_down(self, event=None):
+        current_tab = self.tabs.index(self.tabs.select())
+        total_tabs = len(self.tabs.tabs())
+        next_tab = (current_tab + 1) % total_tabs  # Wrap around to the beginning
+        self.tabs.select(next_tab)
+
+    def switch_tab_up(self, event=None):
+        current_tab = self.tabs.index(self.tabs.select())
+        total_tabs = len(self.tabs.tabs())
+        previous_tab = (current_tab - 1) % total_tabs  # Wrap around to the end
+        self.tabs.select(previous_tab)
+
+    def da_dateparse(self, date_string):
+        """Convert date from YYYYMMDDHH24MISS format to datetime.date."""
+        if len(date_string) >= 8:  # Ensure the string is long enough for YYYYMMDD
+            return datetime.strptime(date_string[:8], "%Y%m%d").date()
+        return None  # Return None if date_string is invalid
+
+    def add_text(self, value, tab_frame, row_index):
+        # Add the text label to the right of the link
+        text_label = tk.Label(tab_frame, text=value["String"])
+        text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+
+    def add_link(self, value, tab_frame, row_index):
+        if "Link" in value:
+            link = value["Link"]
+            link_label = tk.Label(
+                tab_frame,
+                text=f"{value['Linktext']}",
+                fg="blue",
+                cursor="hand2",
+            )
+            link_label.bind("<Button-1>", lambda e, link=link: webbrowser.open(link))
+            link_label.grid(row=row_index, column=0, sticky="w")
+
+    def add_edit(self, value, tab_frame, row_index, control_options):
+        if control_options == "Number":
+            if "Max" in value and "Min" in value:
+                # Add Spinbox for number range
+                spinbox = ttk.Spinbox(
+                    tab_frame,
+                    from_=value["Min"],
+                    to=value["Max"],
+                    width=8,
+                    validate="key",
+                    validatecommand=(
+                        self.root.register(self.validate_spinbox_input),
+                        "%P",
+                    ),
+                )
+                spinbox.grid(
+                    row=row_index + 1,
+                    column=0,
+                    pady=(5, 0),
+                    padx=(5, 0),
+                    sticky="ew",
+                )
+                value["Entry"] = spinbox  # Save a reference
+            else:
+                # Add Entry for number input
+                number_entry = ttk.Entry(
+                    tab_frame,
+                    validate="key",
+                    validatecommand=(
+                        self.root.register(self.validate_entry),
+                        "%S",
+                    ),
+                )
+                number_entry.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
+                value["Entry"] = number_entry  # Save a reference
+        else:
+            # Add the main Edit control
+            edit_control = tk.Entry(tab_frame, width=20)
+            edit_control.grid(
+                row=row_index + 1,
+                column=0,
+                columnspan=2,
+                pady=(5, 0),
+                sticky="ew",
+            )
+            value["Entry"] = edit_control  # Save a reference
+        row_index += 1
+        return value, row_index
+
+    def add_ddlcombo(self, value, tab_frame, row_index, control_options):
+        print("dropdownlist or comboboxes")
+        # Check for control options
+
+        # If options are comma-separated, convert to a pipe-separated format
+        if "," in control_options and "|" not in control_options:
+            control_options = control_options.replace(",", "|")
+
+        # Add the default value if not already present
+        if value["Default"] not in control_options:
+            if control_options.endswith("|"):
+                control_options += value["Default"]
+            else:
+                control_options += "|" + value["Default"]
+
+        # Ensure no duplicate options and handle default formatting
+        control_options = control_options.replace(
+            value["Default"], value["Default"] + "|"
+        )
+        control_options = control_options.replace("||", "|")
+        control_options = control_options.rstrip("|")  # Remove trailing pipe
+
+        # Split options into a list
+        options_list = control_options.split("|")
+
+        # Create the combobox
+        combobox = ttk.Combobox(
+            tab_frame,
+            values=options_list,
+            state="readonly",  # Set to readonly to prevent manual entry
+        )
+
+        # Set the default value in the combobox
+        combobox.set(value["Default"])
+        combobox.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
+
+        # Store the reference for later use
+        value["Entry"] = combobox  # Save a reference
+
+        row_index += 1  # Increment the row index for the next control
+        return value, row_index
+
+    def add_checkbox(self, value, tab_frame, row_index, control_options):
+        # Add the text label to the right of the link
+        # text_label = tk.Label(tab_frame, text="")
+        # text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+        # Logic for creating a checkbox
+        checkbox_var = tk.BooleanVar()
+        checkbox = tk.Checkbutton(
+            tab_frame, text=value["String"], variable=checkbox_var
+        )
+        checkbox.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+        value["Entry"] = checkbox_var  # Save reference for retrieving value
+        row_index += 1
+        return value, row_index
+
+    def add_file(self, value, tab_frame, row_index, modified_parameter):
+        # Entry for the file path
+        file_entry = ttk.Entry(tab_frame, width=50)
+        file_entry.insert(0, value.get("Value", ""))
+        file_entry.grid(
+            row=row_index + 1,
+            column=0,
+            columnspan=4,
+            # padx=5,
+            pady=5,
+            sticky="ew",
+        )
+
+        # "Select File" button
+        select_file_btn = ttk.Button(
+            tab_frame,
+            text="Select File",
+            command=lambda param=modified_parameter: self.choose_file(
+                param, file_entry
+            ),
+        )
+        select_file_btn.grid(row=row_index, column=2, padx=5, pady=5, sticky="w")
+
+        # "Open Folder" button
+        open_folder_btn = ttk.Button(
+            tab_frame,
+            text="Open Folder",
+            command=lambda param=modified_parameter: self.open_file_folder(
+                param, file_entry
+            ),
+        )
+        open_folder_btn.grid(row=row_index, column=3, padx=5, pady=5, sticky="w")
+
+        row_index += 1
+        value["Entry"] = file_entry  # Save reference for retrieving value
+        return value, row_index
+
+    def add_datepicker(self, value, tab_frame, row_index):
+        # Initialize DateEntry control with parsed date if available
+        date_entry = DateEntry(
+            tab_frame,
+            width=12,
+            background="darkblue",
+            foreground="white",
+            borderwidth=2,
+            date_pattern="dd.MM.yyyy",
+        )
+        date_entry.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="w")
+
+        if "Value" in value:
+            parsed_date = self.da_dateparse(value["Value"])
+            if parsed_date:
+                date_entry.set_date(parsed_date)
+
+        # Store the reference to retrieve the selected date later
+        value["Entry"] = date_entry
+        row_index += 2  # Move down by two rows for next control
+        return value, row_index
+
+    def create_gui(self):
+        self.tabs.grid(row=0, column=0, sticky="nsew")
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+
+        # Create tabs and controls based on provided arguments
+        tab_headers = {}
+        for parameter, value in self.arguments.items():
+            if value["Control"] in ["meta", "Meta"]:
+                continue
+            if "Tab3Parent" in value:
+                tab_headers[value["Tab3Parent"]] = {"Height": 0}
+            else:
+                self.arguments[parameter]["Tab3Parent"] = "Other"
+                tab_headers[value["Tab3Parent"]] = {"Height": 0}
+
+        HiddenHeaders = {}
+        added_headers = {}
+        sanitized_header_map = (
+            {}
+        )  # Dictionary to hold original to sanitized header mappings
+
+        for Header, _ in tab_headers.items():
+            HeaderFound = False
+            for Parameter, value in self.arguments.items():
+                if value["Tab3Parent"] == Header:
+                    if value["Control"] not in ["meta", "Meta"]:
+                        if Header not in added_headers:
+                            # Sanitize the header
+                            sanitized_header = Header.replace(
+                                "&&", "and"
+                            )  # Example of replacing special characters
+                            sanitized_header = "".join(
+                                e if e.isalnum() else "_" for e in sanitized_header
+                            )
+                            sanitized_header = sanitized_header.lower()
+                            # Store the mapping
+                            sanitized_header_map[Header] = sanitized_header
+
+                            # Add the tab with the original name for display
+                            self.tabs.add(
+                                ttk.Frame(self.tabs, name=sanitized_header.lower()),
+                                text=Header,
+                            )
+                            added_headers[Header] = True
+                            HiddenHeaders[Header] = False
+                            HeaderFound = True
+                        break
+                    else:
+                        added_headers[Header] = False
+                        HiddenHeaders[Header] = True
+
+        a = self.tabs.tabs()
+        for Header, _ in tab_headers.items():
+            if HiddenHeaders[Header]:
+                continue
+            row_index = 0
+            print(f"Adding to tab {Header}")
+            for parameter, value in self.arguments.items():
+                if value["Control"] in ["meta", "Meta"]:
+                    continue
+                if "-" in parameter:
+                    parameter = parameter.replace(
+                        "-", "___"
+                    )  # Replace dashes with three underscores
+                modified_parameter = parameter.replace("___", "-")
+                if (
+                    "String" not in value
+                ):  # do not load controls which do not have a descriptor-string
+                    continue
+
+                # Check if modified_parameter is not in Value['String']
+                if modified_parameter not in value["String"]:
+                    value["String"] = f"{modified_parameter}: {value['String']}"
+
+                # Ensure only controls of this tab are added
+                if Header == value["Tab3Parent"]:
+                    Control = value["Control"]
+                else:
+                    continue  # this parameter does not belong into this tab
+
+                row_index += 1
+                # Add edit and related controls
+                b = self.tabs.index(
+                    ".!notebook." + sanitized_header_map[Header]
+                )  # Use the sanitized header
+                c = a[b]
+                tab_frame = self.tabs.nametowidget(c)
+                control_options = value.get("ctrlOptions", "")
+                if Control == "edit":
+                    self.add_text(value, tab_frame, row_index)
+                    self.add_link(value, tab_frame, row_index)
+                    value, row_index = self.add_edit(
+                        value, tab_frame, row_index, control_options
+                    )
+                elif Control == "file":
+                    self.add_text(value, tab_frame, row_index)
+                    self.add_link(value, tab_frame, row_index)
+                    value, row_index = self.add_file(
+                        value, tab_frame, row_index, modified_parameter
+                    )
+                elif (Control == "ddl") or (Control == "combobox"):
+                    self.add_text(value, tab_frame, row_index)
+                    self.add_link(value, tab_frame, row_index)
+                    value, row_index = self.add_ddlcombo(
+                        value, tab_frame, row_index, control_options
+                    )
+                elif Control == "datetime":
+                    print("datetime selection control and related controls")
+                    self.add_text(value, tab_frame, row_index)
+                    self.add_link(value, tab_frame, row_index)
+                    value, row_index = self.add_datepicker(value, tab_frame, row_index)
+                elif Control == "checkbox":
+                    self.add_link(value, tab_frame, row_index)
+                    value, row_index = self.add_checkbox(
+                        value, tab_frame, row_index, control_options
+                    )
+                else:
+                    print(f"Control-type {Control} which are not implemented yet.")
+        self.add_footer()
+
+    def add_footer(self):
+        # Create a frame for the footer
+        footer_frame = tk.Frame(self.root)
+        footer_frame.grid(row=1, column=0, sticky="ew", pady=10)
+
+        submit_button = tk.Button(
+            footer_frame,
+            text="Submit",
+            command=self.submit,  # Link to the submit method
+            width=15,
+        )
+        submit_button.pack(side=tk.LEFT, padx=5)
+
+        edit_button = tk.Button(
+            footer_frame,
+            text="Edit Configuration",
+            command=self.open_configuration_file,  # Link to the function that opens the config
+            width=20,
+        )
+        edit_button.pack(side=tk.LEFT, padx=5)
+
+        footer_frame.grid_columnconfigure(0, weight=1)
+        footer_frame.grid_columnconfigure(1, weight=1)
+
+    def bind_method_hotkey(self, hotkey, method):
+        self.root.bind(hotkey, lambda event: getattr(self, method)())
+
+    def open_configuration_file(self):
+        # This function opens the configuration file
+        # Replace 'config.ini' with the actual path to your configuration file
+        if os.path.exists(self.config_file):
+            os.startfile(self.config_file)  # For Windows; adjust if using another OS
+        else:
+            messagebox.showerror("Error", "Configuration file not found!")
+
+    def choose_file(self, parameter, file_entry):
+        # Open a file dialog to select a file
+        file_path = filedialog.askopenfilename(
+            title="Select a File",
+            initialdir=self.arguments[parameter].get("SearchPath", ""),
+        )
+        if file_path:
+            self.arguments[parameter]["Value"] = file_path
+            file_entry.delete(0, tk.END)
+            file_entry.insert(0, file_path)
+
+    def open_file_folder(self, parameter, file_entry):
+        # Open the folder containing the selected file
+        file_path = file_entry.get()
+        if os.path.isfile(file_path):
+            folder_path = os.path.dirname(file_path)
+            webbrowser.open(folder_path)
+        else:
+            messagebox.showwarning(
+                "Warning", "No valid file selected or file does not exist."
+            )
+
+    def submit(self):
+        results = {}
+        for parameter, value in self.arguments.items():
+            if "Entry" in value:
+                results[parameter] = value["Entry"].get()
+            elif "Var" in value:
+                results[parameter] = value["Var"].get()
+            elif "Combo" in value:
+                results[parameter] = value["Combo"].get()
+
+        # Display results or process them as needed
+        messagebox.showinfo("Submitted Values", str(results))
+        self.root.destroy()
+
+    def close(self):
+        self.root.destroy()
+
+    def validate_entry(self, text):
+        return text.isdecimal()
+
+    def validate_spinbox_input(self, input_value):
+        # Simple validation to allow only numbers
+        return input_value.isdigit() or input_value == ""
