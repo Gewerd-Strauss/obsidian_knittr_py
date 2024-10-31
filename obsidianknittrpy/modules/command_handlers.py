@@ -1,6 +1,7 @@
 # command_handlers.py
 
 from obsidianknittrpy.modules.DynamicArguments import OT
+from obsidianknittrpy.modules.utility import convert_format_args
 
 config_file = "D:/Dokumente neu/Repositories/python/obsidian_knittr_py/assets/DynamicArguments.ini"
 
@@ -13,9 +14,10 @@ def handle_convert(args):
 
 def handle_gui(args):
     """Execute the GUI command."""
-    print(f"Launching GUI in {args.theme} theme")
+    args = convert_format_args(args)
+    print(f"Launching GUI in {args["theme"]} theme")
     # Implement GUI launch logic here
-    CLIArgs = {"quarto::pdf.toc": "false"}
+    # args = {"quarto::pdf.toc": "false"}
     sel = ["quarto::pdf", "quarto::docx", "quarto::html"]
     sel = ["quarto::docx", "quarto::pdf", "quarto::html"]
     sel = ["quarto::docx"]
