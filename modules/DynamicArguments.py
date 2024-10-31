@@ -559,6 +559,43 @@ class MyApp:
         row_index += 1
         return value, row_index
 
+    def add_file(self, value, tab_frame, row_index, modified_parameter):
+        # Entry for the file path
+        file_entry = ttk.Entry(tab_frame, width=50)
+        file_entry.insert(0, value.get("Value", ""))
+        file_entry.grid(
+            row=row_index + 1,
+            column=0,
+            columnspan=4,
+            # padx=5,
+            pady=5,
+            sticky="ew",
+        )
+
+        # "Select File" button
+        select_file_btn = ttk.Button(
+            tab_frame,
+            text="Select File",
+            command=lambda param=modified_parameter: self.choose_file(
+                param, file_entry
+            ),
+        )
+        select_file_btn.grid(row=row_index, column=2, padx=5, pady=5, sticky="w")
+
+        # "Open Folder" button
+        open_folder_btn = ttk.Button(
+            tab_frame,
+            text="Open Folder",
+            command=lambda param=modified_parameter: self.open_file_folder(
+                param, file_entry
+            ),
+        )
+        open_folder_btn.grid(row=row_index, column=3, padx=5, pady=5, sticky="w")
+
+        row_index += 1
+        value["Entry"] = file_entry  # Save reference for retrieving value
+        return value, row_index
+
     def create_gui(self):
         self.tabs.grid(row=0, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
@@ -655,62 +692,20 @@ class MyApp:
                         value, tab_frame, row_index, control_options
                     )
                 elif Control == "file":
-                    self.add_link(value, tab_frame, row_index)
-
-                    # Add the text label to the right of the link
                     self.add_text(value, tab_frame, row_index)
-
-                    # Entry for the file path
-                    file_entry = ttk.Entry(tab_frame, width=50)
-                    file_entry.insert(0, value.get("Value", ""))
-                    file_entry.grid(
-                        row=row_index + 1,
-                        column=0,
-                        columnspan=4,
-                        # padx=5,
-                        pady=5,
-                        sticky="ew",
+                    self.add_link(value, tab_frame, row_index)
+                    value, row_index = self.add_file(
+                        value, tab_frame, row_index, modified_parameter
                     )
-
-                    # "Select File" button
-                    select_file_btn = ttk.Button(
-                        tab_frame,
-                        text="Select File",
-                        command=lambda param=modified_parameter: self.choose_file(
-                            param, file_entry
-                        ),
-                    )
-                    select_file_btn.grid(
-                        row=row_index, column=2, padx=5, pady=5, sticky="w"
-                    )
-
-                    # "Open Folder" button
-                    open_folder_btn = ttk.Button(
-                        tab_frame,
-                        text="Open Folder",
-                        command=lambda param=modified_parameter: self.open_file_folder(
-                            param, file_entry
-                        ),
-                    )
-                    open_folder_btn.grid(
-                        row=row_index, column=3, padx=5, pady=5, sticky="w"
-                    )
-
-                    row_index += 1
-                    value["Entry"] = file_entry  # Save reference for retrieving value
                 elif (Control == "ddl") or (Control == "combobox"):
                     self.add_text(value, tab_frame, row_index)
                     self.add_link(value, tab_frame, row_index)
-
-                    # add DDLs and Comboboxes
                     value, row_index = self.add_ddlcombo(
                         value, tab_frame, row_index, control_options
                     )
-
                 elif Control == "Datetime":
                     print("datetime selection control and related controls")
                 elif Control == "checkbox":
-                    # If there is a link, add a hyperlink label
                     self.add_link(value, tab_frame, row_index)
                     value, row_index = self.add_checkbox(
                         value, tab_frame, row_index, control_options
