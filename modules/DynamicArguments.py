@@ -307,6 +307,15 @@ class OT:
         pass
 
     def adjust_bools(self):
+        def is_boolean(value):
+            # Convert value to string and make it lowercase for case-insensitive matching
+            str_value = str(value).strip().lower()
+
+            # Check if the string representation matches any boolean representation
+            if str_value in {"1", "0", "true", "false"}:
+                return True
+            return False
+
         for parameter, value in self.arguments.items():
             value_type = value.get("Type")
             if value_type is not None:
@@ -321,12 +330,23 @@ class OT:
                     value["Value"] = int(value["Value"])  # Convert string to int
                 else:
                     # Handle case where value cannot be converted to a number
-                    if value["Value"] not in ["TRUE", "FALSE"]:
-                        print(f"Warning: Cannot convert {value['Value']} to a number.")
+                    if value["Value"].upper() not in ["TRUE", "FALSE"]:
+                        print(
+                            f"Warning [Pre-Boolean-check]: cannot convert {value['Value']} to a number."
+                        )
 
             # Convert boolean to "TRUE" or "FALSE"
             if value_type == "boolean":
-                value["Value"] = "TRUE" if value["Value"] else "FALSE"
+                val_ = value["Value"]
+                try:
+                    if is_boolean(value["Value"]):
+                        value["Value"] = "TRUE"
+                    else:
+                        value["Value"] = "FALSE"
+                except:
+                    print(
+                        f"type '{val_}' was digits, but could not be coerced to boolean."
+                    )
 
     def adjust_integers(self):
         for parameter, value in self.arguments.items():
