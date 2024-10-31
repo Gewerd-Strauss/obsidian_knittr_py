@@ -25,6 +25,26 @@ def common_arguments(parser):
         "--OHTML.ForkPath",
         help="Path to custom ObsidianHTML fork, if using `--OHTML.UseCustomFork`.",
     )
+    # Add pass-through argument
+    parser.add_argument(
+        "pass_through",
+        nargs="*",
+        # help="""
+        # Pass-through arguments in format 'namespace::key=value'`nValid Examples:\n- "
+        # + "quarto::pdf.author=Ballos"
+        # + "\n- "
+        # + "quarto::html.author=Professor E GADD"
+        # + "\n- "
+        # + "quarto::docx.author=Zote the mighty, a knight of great renown
+        # """,
+        help="""
+Pass-through arguments in format 'namespace::key=value'
+Valid Examples:
+\t- "quarto::pdf.author=Ballos"
+\t- "quarto::html.author=Professor E GADD"
+\t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+""",
+    )
     # Add more common arguments as needed
 
 
