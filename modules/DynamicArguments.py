@@ -380,7 +380,7 @@ class OT:
     ):
         """Generates the GUI: static and dynamic parts, and populates it."""
         print("Generates the GUI and populates it")
-        self.gui_instance = MyApp(self.arguments, self.config_file)
+        self.gui_instance = OT_GUI(self.arguments, self.config_file)
 
     def submit_gui():
         """After the GUI is submitted, this function must be called to modify the arguments in self.arguments if the user changed values in the GUI"""
@@ -411,7 +411,7 @@ from tkcalendar import DateEntry
 from datetime import datetime
 
 
-class MyApp:
+class OT_GUI:
     def __init__(self, arguments, config_file):
         self.root = tk.Tk()  # Initialize the Tkinter root window here
         self.root.title("Params GUI")
