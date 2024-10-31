@@ -407,6 +407,8 @@ class OT:
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkcalendar import DateEntry
+from datetime import datetime
 
 
 class MyApp:
@@ -437,6 +439,12 @@ class MyApp:
         previous_tab = (current_tab - 1) % total_tabs  # Wrap around to the end
         self.tabs.select(previous_tab)
 
+    def da_dateparse(self, date_string):
+        """Convert date from YYYYMMDDHH24MISS format to datetime.date."""
+        if len(date_string) >= 8:  # Ensure the string is long enough for YYYYMMDD
+            return datetime.strptime(date_string[:8], "%Y%m%d").date()
+        return None  # Return None if date_string is invalid
+
     def add_text(self, value, tab_frame, row_index):
         # Add the text label to the right of the link
         text_label = tk.Label(tab_frame, text=value["String"])
@@ -465,7 +473,7 @@ class MyApp:
                     width=8,
                     validate="key",
                     validatecommand=(
-                        self.root.register(validate_spinbox_input),
+                        self.root.register(self.validate_spinbox_input),
                         "%P",
                     ),
                 )
@@ -483,7 +491,7 @@ class MyApp:
                     tab_frame,
                     validate="key",
                     validatecommand=(
-                        self.root.register(validate_entry),
+                        self.root.register(self.validate_entry),
                         "%S",
                     ),
                 )
@@ -596,6 +604,28 @@ class MyApp:
         value["Entry"] = file_entry  # Save reference for retrieving value
         return value, row_index
 
+    def add_datepicker(self, value, tab_frame, row_index):
+        # Initialize DateEntry control with parsed date if available
+        date_entry = DateEntry(
+            tab_frame,
+            width=12,
+            background="darkblue",
+            foreground="white",
+            borderwidth=2,
+            date_pattern="dd.MM.yyyy",
+        )
+        date_entry.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="w")
+
+        if "Value" in value:
+            parsed_date = self.da_dateparse(value["Value"])
+            if parsed_date:
+                date_entry.set_date(parsed_date)
+
+        # Store the reference to retrieve the selected date later
+        value["Entry"] = date_entry
+        row_index += 2  # Move down by two rows for next control
+        return value, row_index
+
     def create_gui(self):
         self.tabs.grid(row=0, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
@@ -703,22 +733,18 @@ class MyApp:
                     value, row_index = self.add_ddlcombo(
                         value, tab_frame, row_index, control_options
                     )
-                elif Control == "Datetime":
+                elif Control == "datetime":
                     print("datetime selection control and related controls")
+                    self.add_text(value, tab_frame, row_index)
+                    self.add_link(value, tab_frame, row_index)
+                    value, row_index = self.add_datepicker(value, tab_frame, row_index)
                 elif Control == "checkbox":
                     self.add_link(value, tab_frame, row_index)
                     value, row_index = self.add_checkbox(
                         value, tab_frame, row_index, control_options
                     )
-
                 else:
-                    if "Link" in value:
-                        if Control == "checkbox":
-                            print("Add checkbox and related controls")
-                        else:
-                            print(
-                                "Other controls which behave similarly in definition?"
-                            )
+                    print(f"Control-type {Control} which are not implemented yet.")
 
     def choose_file(self, parameter, file_entry):
         # Open a file dialog to select a file
@@ -756,27 +782,9 @@ class MyApp:
         messagebox.showinfo("Submitted Values", str(results))
         self.root.destroy()  # Optionally close the GUI after submission
 
-    # class OT:
-    #     def generate_gui(self, x, y, attach_bottom, gui_id, *args):
-    #         # Define arguments for the GUI controls
-    #         arguments = {
-    #             "Param1": {"Value": "", "Tab3Parent": "Tab1", "Control": "entry"},
-    #             "Param2": {"Value": "", "Tab3Parent": "Tab1", "Control": "entry"},
-    #             "Param3": {"Value": "", "Tab3Parent": "Other", "Control": "checkbox"},
-    #             "Param4": {"Value": "", "Tab3Parent": "Other", "Control": "combo"},
-    #         }
+    def validate_entry(self, text):
+        return text.isdecimal()
 
-    #         app = MyApp(arguments)  # Create an instance of MyApp directly
-
-    # # # Example of using the OT class to generate the GUI
-    # # ot = OT()
-    # # ot.generate_gui(1, 1, True, "ParamsGUI:", 1, 1, 674, 1)
-
-
-def validate_entry(text):
-    return text.isdecimal()
-
-
-def validate_spinbox_input(input_value):
-    # Simple validation to allow only numbers
-    return input_value.isdigit() or input_value == ""
+    def validate_spinbox_input(self, input_value):
+        # Simple validation to allow only numbers
+        return input_value.isdigit() or input_value == ""
