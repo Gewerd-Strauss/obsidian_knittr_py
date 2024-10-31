@@ -425,6 +425,8 @@ class OT_GUI:
         self.bind_method_hotkey("<Prior>", "switch_tab_up")
         self.bind_method_hotkey("<Next>", "switch_tab_down")
         self.bind_method_hotkey("<Escape>", "close")
+        self.root.focus_force()  # makes window take keyboard focus immediately.
+        # self.root.grab_set()  # makes window modal
         self.root.mainloop()  # Start the GUI event loop here
 
     def switch_tab_down(self, event=None):
