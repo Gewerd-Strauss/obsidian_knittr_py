@@ -436,6 +436,111 @@ class MyApp:
             link_label.bind("<Button-1>", lambda e, link=link: webbrowser.open(link))
             link_label.grid(row=row_index, column=0, sticky="w")
 
+    def add_edit(self, value, tab_frame, row_index, control_options):
+        if control_options == "Number":
+            if "Max" in value and "Min" in value:
+                # Add Spinbox for number range
+                spinbox = ttk.Spinbox(
+                    tab_frame,
+                    from_=value["Min"],
+                    to=value["Max"],
+                    width=8,
+                    validate="key",
+                    validatecommand=(
+                        self.root.register(validate_spinbox_input),
+                        "%P",
+                    ),
+                )
+                spinbox.grid(
+                    row=row_index + 1,
+                    column=0,
+                    pady=(5, 0),
+                    padx=(5, 0),
+                    sticky="ew",
+                )
+                value["Entry"] = spinbox  # Save a reference
+            else:
+                # Add Entry for number input
+                number_entry = ttk.Entry(
+                    tab_frame,
+                    validate="key",
+                    validatecommand=(
+                        self.root.register(validate_entry),
+                        "%S",
+                    ),
+                )
+                number_entry.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
+                value["Entry"] = number_entry  # Save a reference
+        else:
+            # Add the main Edit control
+            edit_control = tk.Entry(tab_frame, width=20)
+            edit_control.grid(
+                row=row_index + 1,
+                column=0,
+                columnspan=2,
+                pady=(5, 0),
+                sticky="ew",
+            )
+            value["Entry"] = edit_control  # Save a reference
+        row_index += 1
+        return value, row_index
+
+    def add_ddlcombo(self, value, tab_frame, row_index, control_options):
+        print("dropdownlist or comboboxes")
+        # Check for control options
+
+        # If options are comma-separated, convert to a pipe-separated format
+        if "," in control_options and "|" not in control_options:
+            control_options = control_options.replace(",", "|")
+
+        # Add the default value if not already present
+        if value["Default"] not in control_options:
+            if control_options.endswith("|"):
+                control_options += value["Default"]
+            else:
+                control_options += "|" + value["Default"]
+
+        # Ensure no duplicate options and handle default formatting
+        control_options = control_options.replace(
+            value["Default"], value["Default"] + "|"
+        )
+        control_options = control_options.replace("||", "|")
+        control_options = control_options.rstrip("|")  # Remove trailing pipe
+
+        # Split options into a list
+        options_list = control_options.split("|")
+
+        # Create the combobox
+        combobox = ttk.Combobox(
+            tab_frame,
+            values=options_list,
+            state="readonly",  # Set to readonly to prevent manual entry
+        )
+
+        # Set the default value in the combobox
+        combobox.set(value["Default"])
+        combobox.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
+
+        # Store the reference for later use
+        value["Entry"] = combobox  # Save a reference
+
+        row_index += 1  # Increment the row index for the next control
+        return value, row_index
+
+    def add_checkbox(self, value, tab_frame, row_index, control_options):
+        # Add the text label to the right of the link
+        # text_label = tk.Label(tab_frame, text="")
+        # text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+        # Logic for creating a checkbox
+        checkbox_var = tk.BooleanVar()
+        checkbox = tk.Checkbutton(
+            tab_frame, text=value["String"], variable=checkbox_var
+        )
+        checkbox.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
+        value["Entry"] = checkbox_var  # Save reference for retrieving value
+        row_index += 1
+        return value, row_index
+
     def create_gui(self):
         self.tabs.grid(row=0, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
@@ -526,60 +631,11 @@ class MyApp:
                 tab_frame = self.tabs.nametowidget(c)
                 control_options = value.get("ctrlOptions", "")
                 if Control == "edit":
-
-                    # If there is a link, add a hyperlink label
                     self.add_text(value, tab_frame, row_index)
                     self.add_link(value, tab_frame, row_index)
-
-                    if control_options == "Number":
-                        if "Max" in value and "Min" in value:
-                            # Add Spinbox for number range
-                            spinbox = ttk.Spinbox(
-                                tab_frame,
-                                from_=value["Min"],
-                                to=value["Max"],
-                                width=8,
-                                validate="key",
-                                validatecommand=(
-                                    self.root.register(validate_spinbox_input),
-                                    "%P",
-                                ),
-                            )
-                            spinbox.grid(
-                                row=row_index + 1,
-                                column=0,
-                                pady=(5, 0),
-                                padx=(5, 0),
-                                sticky="ew",
-                            )
-                            value["Entry"] = spinbox  # Save a reference
-                        else:
-                            # Add Entry for number input
-                            number_entry = ttk.Entry(
-                                tab_frame,
-                                validate="key",
-                                validatecommand=(
-                                    self.root.register(validate_entry),
-                                    "%S",
-                                ),
-                            )
-                            number_entry.grid(
-                                row=row_index + 1, column=0, pady=(5, 0), sticky="ew"
-                            )
-                            value["Entry"] = number_entry  # Save a reference
-                    else:
-                        # Add the main Edit control
-                        edit_control = tk.Entry(tab_frame, width=20)
-                        edit_control.grid(
-                            row=row_index + 1,
-                            column=0,
-                            columnspan=2,
-                            pady=(5, 0),
-                            sticky="ew",
-                        )
-                        value["Entry"] = edit_control  # Save a reference
-                    row_index += 1
-                    # self.tabs.update()  # Show the tab
+                    value, row_index = self.add_edit(
+                        value, tab_frame, row_index, control_options
+                    )
                 elif Control == "file":
                     self.add_link(value, tab_frame, row_index)
 
@@ -625,71 +681,23 @@ class MyApp:
                     row_index += 1
                     value["Entry"] = file_entry  # Save reference for retrieving value
                 elif (Control == "ddl") or (Control == "combobox"):
+                    self.add_text(value, tab_frame, row_index)
                     self.add_link(value, tab_frame, row_index)
 
-                    # Add the text label to the right of the link
-                    self.add_text(value, tab_frame, row_index)
-
-                    print("dropdownlist or comboboxes")
                     # add DDLs and Comboboxes
-                    # Check for control options
-                    control_options = value.get("ctrlOptions", "")
-
-                    # If options are comma-separated, convert to a pipe-separated format
-                    if "," in control_options and "|" not in control_options:
-                        control_options = control_options.replace(",", "|")
-
-                    # Add the default value if not already present
-                    if value["Default"] not in control_options:
-                        if control_options.endswith("|"):
-                            control_options += value["Default"]
-                        else:
-                            control_options += "|" + value["Default"]
-
-                    # Ensure no duplicate options and handle default formatting
-                    control_options = control_options.replace(
-                        value["Default"], value["Default"] + "|"
-                    )
-                    control_options = control_options.replace("||", "|")
-                    control_options = control_options.rstrip(
-                        "|"
-                    )  # Remove trailing pipe
-
-                    # Split options into a list
-                    options_list = control_options.split("|")
-
-                    # Create the combobox
-                    combobox = ttk.Combobox(
-                        tab_frame,
-                        values=options_list,
-                        state="readonly",  # Set to readonly to prevent manual entry
+                    value, row_index = self.add_ddlcombo(
+                        value, tab_frame, row_index, control_options
                     )
 
-                    # Set the default value in the combobox
-                    combobox.set(value["Default"])
-                    combobox.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
-
-                    # Store the reference for later use
-                    value["Entry"] = combobox  # Save a reference
-
-                    row_index += 1  # Increment the row index for the next control
                 elif Control == "Datetime":
                     print("datetime selection control and related controls")
                 elif Control == "checkbox":
                     # If there is a link, add a hyperlink label
                     self.add_link(value, tab_frame, row_index)
-
-                    # Add the text label to the right of the link
-                    # text_label = tk.Label(tab_frame, text="")
-                    # text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
-                    # Logic for creating a checkbox
-                    checkbox_var = tk.BooleanVar()
-                    checkbox = tk.Checkbutton(
-                        tab_frame, text=value["String"], variable=checkbox_var
+                    value, row_index = self.add_checkbox(
+                        value, tab_frame, row_index, control_options
                     )
-                    checkbox.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
-                    value["Entry"] = checkbox_var  # Save reference for retrieving value
-                    row_index += 1
+
                 else:
                     if "Link" in value:
                         if Control == "checkbox":
