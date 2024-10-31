@@ -424,6 +424,7 @@ class OT_GUI:
         self.bind_method_hotkey("<Alt-e>", "open_configuration_file")
         self.bind_method_hotkey("<Prior>", "switch_tab_up")
         self.bind_method_hotkey("<Next>", "switch_tab_down")
+        self.bind_method_hotkey("<Escape>", "close")
         self.root.mainloop()  # Start the GUI event loop here
 
     def switch_tab_down(self, event=None):
@@ -815,7 +816,10 @@ class OT_GUI:
 
         # Display results or process them as needed
         messagebox.showinfo("Submitted Values", str(results))
-        self.root.destroy()  # Optionally close the GUI after submission
+        self.root.destroy()
+
+    def close(self):
+        self.root.destroy()
 
     def validate_entry(self, text):
         return text.isdecimal()
