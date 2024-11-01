@@ -879,14 +879,18 @@ class OT_GUI:
         results = {}
         for parameter, value in self.arguments.items():
             if "Entry" in value:
-                results[parameter] = value["Entry"].get()
+                results[parameter] = self.arguments[parameter].Value = value[
+                    "Entry"
+                ].get()
             elif "Var" in value:
-                results[parameter] = value["Var"].get()
+                results[parameter] = self.arguments[parameter].Value = value[
+                    "Var"
+                ].get()
             elif "Combo" in value:
-                results[parameter] = value["Combo"].get()
-
-        # Display results or process them as needed
-        messagebox.showinfo("Submitted Values", str(results))
+                results[parameter] = self.arguments[parameter].Value = value[
+                    "Combo"
+                ].get()
+        # self.results = results
         self.root.destroy()
 
     def close(self):
