@@ -3,6 +3,7 @@ import os
 from math import floor
 import webbrowser
 import tkinter as tk
+from warnings import warn
 from tkinter import ttk, filedialog, messagebox
 
 
@@ -428,7 +429,7 @@ class OT:
     ):
         """Generates the GUI: static and dynamic parts, and populates it."""
         print("Generates the GUI and populates it")
-        self.gui_instance = OT_GUI(self.arguments, self.config_file)
+        self.gui_instance = OT_GUI(self.arguments, self.config_file, self.type)
 
     def submit_gui():
         """After the GUI is submitted, this function must be called to modify the arguments in self.arguments if the user changed values in the GUI"""
@@ -460,11 +461,13 @@ from datetime import datetime
 
 
 class OT_GUI:
-    def __init__(self, arguments, config_file):
+    def __init__(self, arguments, config_file, type):
         self.root = tk.Tk()  # Initialize the Tkinter root window here
-        self.root.title("Params GUI")
+        self.classname = f"ot_gui ({type})"
+        self.root.title(f"Params GUI ({type})")
         self.arguments = arguments  # Pass arguments for GUI elements
         self.config_file = config_file
+        self.type = type
         self.tabs = ttk.Notebook(self.root)
 
         self.create_gui()
@@ -591,14 +594,26 @@ class OT_GUI:
 
         # Split options into a list
         options_list = control_options.split("|")
-
         # Create the combobox
-        combobox = ttk.Combobox(
-            tab_frame,
-            values=options_list,
-            state="readonly",  # Set to readonly to prevent manual entry
-        )
-
+        if (
+            value.Control == "combobox"
+        ):  # for combobox, remove readonly to allow editing
+            # combobox: allow editing. Strip readonly if present, then warn the use to use ddl if readonly is desired
+            if "readonly" in options_list:  # except if it is explicitly noted
+                options_list.remove("readonly")
+                warn(
+                    f"{self.name}: Option 'readonly' present in {value.Control}'s parameter got ignored. To use a DDL without write-access, use control-type 'ddl'."
+                )
+            combobox = ttk.Combobox(
+                tab_frame,
+                values=options_list,
+            )
+        elif value.Control == "ddl":  # for ddl, force readonly
+            if "readonly" not in options_list:
+                warn(
+                    f"{self.classname}: Option 'readonly' not present in {value.Control}'s parameter. 'readonly' was forcefully applied. To use a DDL with write-access, use control-type 'combobox'."
+                )
+            combobox = ttk.Combobox(tab_frame, values=options_list, state="readonly")
         # Set the default value in the combobox
         combobox.set(value["Default"])
         combobox.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
