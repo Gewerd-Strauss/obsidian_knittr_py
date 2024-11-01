@@ -485,7 +485,7 @@ class OT_GUI:
             link_label.grid(row=row_index, column=0, sticky="w")
 
     def add_edit(self, value, tab_frame, row_index, control_options):
-        if control_options == "Number":
+        if control_options == "Number" or value["Type"] in ["Integer"]:
             if "Max" in value and "Min" in value:
                 # Add Spinbox for number range
                 spinbox = ttk.Spinbox(
@@ -506,6 +506,8 @@ class OT_GUI:
                     padx=(5, 0),
                     sticky="ew",
                 )
+                spinbox.delete(0, "end")  # Clear any existing text
+                spinbox.insert(0, value["Value"])  # Insert default value
                 value["Entry"] = spinbox  # Save a reference
             else:
                 # Add Entry for number input
@@ -517,11 +519,15 @@ class OT_GUI:
                         "%S",
                     ),
                 )
+                number_entry.delete(0, "end")  # Clear any existing text
+                number_entry.insert(0, value["Value"])  # Insert default value
                 number_entry.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
                 value["Entry"] = number_entry  # Save a reference
         else:
             # Add the main Edit control
             edit_control = tk.Entry(tab_frame, width=20)
+            edit_control.delete(0, "end")  # Clear any existing text
+            edit_control.insert(0, value["Value"])  # Insert default value
             edit_control.grid(
                 row=row_index + 1,
                 column=0,
