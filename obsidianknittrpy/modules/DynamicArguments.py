@@ -6,6 +6,34 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
 
+class OT_Argument:
+    def __init__(
+        self,
+        control=None,
+    ):
+        self.Control = control
+
+    # def __setitem__(self,key):
+
+    def __getitem__(self, key):
+        # Allow dictionary-like access
+        return getattr(self, key, None)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)  # Allow setting attributes using bracket notation
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+
+    def __contains__(self, key):
+        # Check for attribute existence without triggering __getattr__
+        return key in self.__dict__
+
+    def __getattr__(self, key):
+        # Return None if the attribute does not exist
+        return None
+
+
 class OT:
     # __New(Format:="",ConfigFile:="",DDL_ParamDelimiter:="-<>-",SkipGUI:=FALSE,StepsizedGuiShow:=FALSE) {
     def __init__(
@@ -98,14 +126,14 @@ class OT:
                     ind = ind + 1
                     key, value = self.parse_key_value(kv)
                     if key and value:
-                        if (
-                            current_param is None
-                        ):  # Initiate parameter-Object if current_param is not set
+                        if current_param is None:
                             current_param = key
-                            self.arguments[key] = {}
-                            self.arguments[key]["Control"] = value
+                            # Initialize a new Argument instance with Control set
+                            self.arguments[current_param] = OT_Argument(control=value)
                         else:
-                            self.arguments[current_param][key] = value
+                            # Populate the argument properties based on subsequent key-value pairs
+                            setattr(self.arguments[current_param], key, value)
+
             # print(self.get_error(0))
         except FileNotFoundError:
             print(f"Configuration file '{self.config_file}' not found.")
@@ -237,7 +265,7 @@ class OT:
                 value["Default"] = value["Default"].replace('"', "")
 
             # Set Value to Default if Value is empty
-            if value.get("Value", "") == "":
+            if value.Value == None:
                 if value.get("Control") == "file":
                     # Check if the file exists in the SearchPath with Default as filename
                     file_path = os.path.join(value["SearchPath"], value["Default"])
