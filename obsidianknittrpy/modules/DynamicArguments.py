@@ -3,7 +3,36 @@ import os
 from math import floor
 import webbrowser
 import tkinter as tk
+from warnings import warn
 from tkinter import ttk, filedialog, messagebox
+
+
+class OT_Argument:
+    def __init__(
+        self,
+        control=None,
+    ):
+        self.Control = control
+
+    # def __setitem__(self,key):
+
+    def __getitem__(self, key):
+        # Allow dictionary-like access
+        return getattr(self, key, None)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)  # Allow setting attributes using bracket notation
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
+
+    def __contains__(self, key):
+        # Check for attribute existence without triggering __getattr__
+        return key in self.__dict__
+
+    def __getattr__(self, key):
+        # Return None if the attribute does not exist
+        return None
 
 
 class OT:
@@ -98,14 +127,14 @@ class OT:
                     ind = ind + 1
                     key, value = self.parse_key_value(kv)
                     if key and value:
-                        if (
-                            current_param is None
-                        ):  # Initiate parameter-Object if current_param is not set
+                        if current_param is None:
                             current_param = key
-                            self.arguments[key] = {}
-                            self.arguments[key]["Control"] = value
+                            # Initialize a new Argument instance with Control set
+                            self.arguments[current_param] = OT_Argument(control=value)
                         else:
-                            self.arguments[current_param][key] = value
+                            # Populate the argument properties based on subsequent key-value pairs
+                            setattr(self.arguments[current_param], key, value)
+
             # print(self.get_error(0))
         except FileNotFoundError:
             print(f"Configuration file '{self.config_file}' not found.")
@@ -237,7 +266,7 @@ class OT:
                 value["Default"] = value["Default"].replace('"', "")
 
             # Set Value to Default if Value is empty
-            if value.get("Value", "") == "":
+            if value.Value == None:
                 if value.get("Control") == "file":
                     # Check if the file exists in the SearchPath with Default as filename
                     file_path = os.path.join(value["SearchPath"], value["Default"])
@@ -400,7 +429,7 @@ class OT:
     ):
         """Generates the GUI: static and dynamic parts, and populates it."""
         print("Generates the GUI and populates it")
-        self.gui_instance = OT_GUI(self.arguments, self.config_file)
+        self.gui_instance = OT_GUI(self.arguments, self.config_file, self.type)
 
     def submit_gui():
         """After the GUI is submitted, this function must be called to modify the arguments in self.arguments if the user changed values in the GUI"""
@@ -432,11 +461,13 @@ from datetime import datetime
 
 
 class OT_GUI:
-    def __init__(self, arguments, config_file):
+    def __init__(self, arguments, config_file, type):
         self.root = tk.Tk()  # Initialize the Tkinter root window here
-        self.root.title("Params GUI")
+        self.classname = f"ot_gui ({type})"
+        self.root.title(f"Params GUI ({type})")
         self.arguments = arguments  # Pass arguments for GUI elements
         self.config_file = config_file
+        self.type = type
         self.tabs = ttk.Notebook(self.root)
 
         self.create_gui()
@@ -485,7 +516,7 @@ class OT_GUI:
             link_label.grid(row=row_index, column=0, sticky="w")
 
     def add_edit(self, value, tab_frame, row_index, control_options):
-        if control_options == "Number":
+        if control_options == "Number" or value["Type"] in ["Integer"]:
             if "Max" in value and "Min" in value:
                 # Add Spinbox for number range
                 spinbox = ttk.Spinbox(
@@ -506,6 +537,8 @@ class OT_GUI:
                     padx=(5, 0),
                     sticky="ew",
                 )
+                spinbox.delete(0, "end")  # Clear any existing text
+                spinbox.insert(0, value["Value"])  # Insert default value
                 value["Entry"] = spinbox  # Save a reference
             else:
                 # Add Entry for number input
@@ -517,11 +550,15 @@ class OT_GUI:
                         "%S",
                     ),
                 )
+                number_entry.delete(0, "end")  # Clear any existing text
+                number_entry.insert(0, value["Value"])  # Insert default value
                 number_entry.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
                 value["Entry"] = number_entry  # Save a reference
         else:
             # Add the main Edit control
             edit_control = tk.Entry(tab_frame, width=20)
+            edit_control.delete(0, "end")  # Clear any existing text
+            edit_control.insert(0, value["Value"])  # Insert default value
             edit_control.grid(
                 row=row_index + 1,
                 column=0,
@@ -557,14 +594,26 @@ class OT_GUI:
 
         # Split options into a list
         options_list = control_options.split("|")
-
         # Create the combobox
-        combobox = ttk.Combobox(
-            tab_frame,
-            values=options_list,
-            state="readonly",  # Set to readonly to prevent manual entry
-        )
-
+        if (
+            value.Control == "combobox"
+        ):  # for combobox, remove readonly to allow editing
+            # combobox: allow editing. Strip readonly if present, then warn the use to use ddl if readonly is desired
+            if "readonly" in options_list:  # except if it is explicitly noted
+                options_list.remove("readonly")
+                warn(
+                    f"{self.name}: Option 'readonly' present in {value.Control}'s parameter got ignored. To use a DDL without write-access, use control-type 'ddl'."
+                )
+            combobox = ttk.Combobox(
+                tab_frame,
+                values=options_list,
+            )
+        elif value.Control == "ddl":  # for ddl, force readonly
+            if "readonly" not in options_list:
+                warn(
+                    f"{self.classname}: Option 'readonly' not present in {value.Control}'s parameter. 'readonly' was forcefully applied. To use a DDL with write-access, use control-type 'combobox'."
+                )
+            combobox = ttk.Combobox(tab_frame, values=options_list, state="readonly")
         # Set the default value in the combobox
         combobox.set(value["Default"])
         combobox.grid(row=row_index + 1, column=0, pady=(5, 0), sticky="ew")
@@ -830,14 +879,18 @@ class OT_GUI:
         results = {}
         for parameter, value in self.arguments.items():
             if "Entry" in value:
-                results[parameter] = value["Entry"].get()
+                results[parameter] = self.arguments[parameter].Value = value[
+                    "Entry"
+                ].get()
             elif "Var" in value:
-                results[parameter] = value["Var"].get()
+                results[parameter] = self.arguments[parameter].Value = value[
+                    "Var"
+                ].get()
             elif "Combo" in value:
-                results[parameter] = value["Combo"].get()
-
-        # Display results or process them as needed
-        messagebox.showinfo("Submitted Values", str(results))
+                results[parameter] = self.arguments[parameter].Value = value[
+                    "Combo"
+                ].get()
+        # self.results = results
         self.root.destroy()
 
     def close(self):
