@@ -37,21 +37,42 @@ def handle_gui(args):
             skip_gui=False,
             stepsized_gui_show=False,
         )  # Create instance of OT
+
+        # Check if args is not empty and is iterable
+        if not not args:
+            for param, value in args.items():
+                if format not in param:  # Check if format is in param
+                    continue
+                param_ = param.replace(format + ".", "")  # Replace the format prefix
+                if param_ in ot.arguments:  # Check if the parameter exists in Arguments
+                    # Set the default such that the GUI also reflects it
+                    # Note: If we decide to set skip_gui=True when running CLI, we only have
+                    # to set the 'Value'-field to `value`.
+                    # However, this loop then must be taken _after_ the GUI was skipped.
+                    # The disadvantage is that if a GUI _is_ rendered, any argument passed
+                    # through the commandline will not be displayed with its updated value.
+                    # Additionally, that value will not actually be submitted because the
+                    # commandline-ported argument would then be inserted over the user's
+                    # potential choice afterwards.
+                    #
+                    #
+                    # there are 2 options to solve this:
+                    # 1. either make the GUI always overwrite commandline-selections
+                    #   - in this case the GUI should render the changes from the commandline
+                    #     first, such that the user has the educated knowledge of the right state
+                    # 2. disable commandline-fed arguments when running gui-mode, and force the
+                    #    user to do all changes themselves. Essentially disabling the CL-support
+                    #    in GUI-mode; but I am not sure.
+                    # .
+
+                    ot.arguments[param_]["Value"] = value  # Set the Value
+                    ot.arguments[param_]["Default"] = value
+
         if ShowGui:
             setattr(ot, "SkipGUI", bAutoSubmitOTGUI)  # Set the attribute SkipGUI
             ot.generate_gui(
                 x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
             )  # Call GenerateGUI method
-
-        # Check if CLIArgs is not empty and is iterable
-        if not not CLIArgs:
-            for param, value in CLIArgs.items():
-                if format not in param:  # Check if format is in param
-                    continue
-                param_ = param.replace(format + ".", "")  # Replace the format prefix
-                if param_ in ot.arguments:  # Check if the parameter exists in Arguments
-                    ot.arguments[param_]["Value"] = value  # Set the Value
-
         ot.assemble_format_string()  # Call AssembleFormatString method
         output_formats[format] = (
             ot  # Store the instance in output_formats with format as key
