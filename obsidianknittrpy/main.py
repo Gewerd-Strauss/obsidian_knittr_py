@@ -41,7 +41,10 @@ def main():
 
     # Command handling
     if args.command == "convert":
-        handle_convert(args)
+        # Parse pass-through arguments
+        print("implement commandline-pathway")
+        # Print all arguments in the desired format
+        # print_arguments(parsed_args)
     elif args.command == "gui":
         handle_gui(args)
     else:
