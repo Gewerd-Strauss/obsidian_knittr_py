@@ -3,7 +3,7 @@ import os
 from math import floor
 import webbrowser
 import tkinter as tk
-from warnings import warn
+import warnings as wn
 from tkinter import ttk, filedialog, messagebox
 
 
@@ -601,7 +601,7 @@ class OT_GUI:
             # combobox: allow editing. Strip readonly if present, then warn the use to use ddl if readonly is desired
             if "readonly" in options_list:  # except if it is explicitly noted
                 options_list.remove("readonly")
-                warn(
+                wn.warn(
                     f"{self.name}: Option 'readonly' present in {value.Control}'s parameter got ignored. To use a DDL without write-access, use control-type 'ddl'."
                 )
             combobox = ttk.Combobox(
@@ -610,7 +610,7 @@ class OT_GUI:
             )
         elif value.Control == "ddl":  # for ddl, force readonly
             if "readonly" not in options_list:
-                warn(
+                wn.warn(
                     f"{self.classname}: Option 'readonly' not present in {value.Control}'s parameter. 'readonly' was forcefully applied. To use a DDL with write-access, use control-type 'combobox'."
                 )
             combobox = ttk.Combobox(tab_frame, values=options_list, state="readonly")
