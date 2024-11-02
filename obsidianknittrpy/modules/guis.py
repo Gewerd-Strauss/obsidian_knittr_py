@@ -1,5 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
+import pyperclip as pc
+import os as os
+import warnings as wn
 
 
 class ObsidianKnittrGUI:
@@ -30,7 +33,12 @@ class ObsidianKnittrGUI:
         self.root.title(self.title)
         self.root.geometry("800x700")  # set geometry
         self.root.minsize(800, 700)  # set minimum size
+        self.root.geometry("730x700")  # set geometry
+        self.root.minsize(740, 700)  # set minimum size
         self.root.resizable(False, False)  # disable resizing of GUI
+        self.root.wm_attributes("-topmost", 1)
+
+        self.classname = "ObsidianKnittrGUI"
 
         # Disable the close button
         def disable_event():
@@ -63,8 +71,8 @@ class ObsidianKnittrGUI:
         right_frame = tk.Frame(self.root)
         # bottom_frame = tk.Frame(self.root)
 
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=5, pady=5)
-        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=5, pady=5)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=0, pady=0)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=0, pady=0)
         # bottom_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=5, pady=5)
 
         # Left top section: "Choose Output Type" with static height and scrollable checkboxes
@@ -100,25 +108,30 @@ class ObsidianKnittrGUI:
         # Right top section: "Choose manuscript" and file history dropdown
         right_top_frame = tk.Frame(right_frame)
         right_top_frame.pack(fill=tk.X, padx=5, pady=5)
-
+        manuscript_button_and_history_frame = tk.Frame(right_top_frame)
+        manuscript_button_and_history_frame.pack(fill=tk.X)
         manuscript_button = tk.Button(
-            right_top_frame, text="Choose Manuscript", command=self.choose_file
+            manuscript_button_and_history_frame,
+            text="Choose Manuscript",
+            command=self.choose_file,
         )
-        manuscript_button.pack(side=tk.LEFT, padx=5)
+        manuscript_button.pack(side=tk.LEFT, anchor=tk.W, padx=5)
 
-        file_history_label = tk.Label(right_top_frame, text="File History:")
-        file_history_label.pack(side=tk.LEFT, padx=5)
+        file_history_label = tk.Label(
+            manuscript_button_and_history_frame, text="File History:"
+        )
+        file_history_label.pack(side=tk.LEFT, anchor=tk.W, padx=5)
 
-        file_history_dropdown = ttk.Combobox(right_top_frame)
-        file_history_dropdown.pack(side=tk.LEFT, fill=tk.X, expand=False, padx=5)
-
+        self.file_history_dropdown = ttk.Combobox(right_top_frame, state="readonly")
+        # file_history_dropdown.pack(side=tk.LEFT, fill=tk.X, expand=False, padx=5)
+        self.file_history_dropdown.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5)
+        self.update_filehistory()
         # Right middle section: Obsidian HTML options with checkboxes
         obsidian_frame = tk.LabelFrame(
             right_frame, text="Obsidian HTML", padx=5, pady=5
         )
         obsidian_frame.pack(fill=tk.BOTH, expand=False)
 
-        # for _ in range(5):
         tk.Checkbutton(obsidian_frame, text="!!Use verb 'Convert' for OHTML").pack(
             anchor=tk.W, padx=5, pady=2
         )
@@ -137,7 +150,7 @@ class ObsidianKnittrGUI:
 
         # Left middle section: Execution Directories (as a text label)
         exec_dir_frame = tk.LabelFrame(
-            left_frame, text="Execution Directories", padx=5, pady=5
+            left_frame, text="Execution Directories", padx=5, pady=3.5
         )
         exec_dir_frame.pack(fill=tk.BOTH, expand=False)
 
@@ -149,8 +162,8 @@ class ObsidianKnittrGUI:
         self.v.set(1)
 
         exec_dir_options = [
-            ("&1. OHTML-Output-Dir", 1),
-            ("&2. subfolder of note-location in vault", 2),
+            ("1. OHTML-Output-Dir", 1),
+            ("2. subfolder of note-location in vault", 2),
         ]
 
         def select_radio(event):
@@ -179,23 +192,16 @@ class ObsidianKnittrGUI:
         self.root.bind("1", select_radio)
         self.root.bind("2", select_radio)
 
-        # tk.Radiobutton(
-        #     exec_dir_frame, text="OHTML-Output-Dir", variable=v, value=1
-        # ).pack(anchor="w")
-        # tk.Radiobutton(
-        #     exec_dir_frame, text="OHTML-Output-Dir", variable=v, value=2
-        # ).pack(anchor="w")
-
         # Bottom-aligned Last Execution and Engine-Specific Stuff frames
         last_exec_frame = tk.LabelFrame(
             left_frame, text="Last Execution", padx=5, pady=5
         )
+        # Create labels for Last Execution section
         last_exec_frame.pack(fill=tk.BOTH, expand=False)
-
-        last_exec_label1 = tk.Label(last_exec_frame, text="Last execution info 1")
-        last_exec_label2 = tk.Label(last_exec_frame, text="Last execution info 2")
-        last_exec_label1.pack(fill=tk.X, padx=5, pady=2)
-        last_exec_label2.pack(fill=tk.X, padx=5, pady=2)
+        self.last_exec_label1 = tk.Label(last_exec_frame, text="Last execution info 1")
+        self.last_exec_label2 = tk.Label(last_exec_frame, text="Last execution info 2")
+        self.last_exec_label1.pack(anchor=tk.W, padx=5, pady=2)
+        self.last_exec_label2.pack(anchor=tk.W, padx=5, pady=2)
 
         # Button frame with named buttons for actions, placed below the height of the group boxes
         version_frame = tk.LabelFrame(left_frame, text="Versions", padx=5, pady=5)
@@ -214,7 +220,7 @@ class ObsidianKnittrGUI:
         general_config_frame = tk.LabelFrame(
             right_frame, text="General Configuration", padx=5, pady=5
         )
-        general_config_frame.pack(fill=tk.BOTH, expand=False)
+        general_config_frame.pack(fill=tk.BOTH, expand=False, padx=0, pady=1)
 
         tk.Checkbutton(general_config_frame, text="Remove '#' from tags").pack(
             anchor=tk.W, padx=5, pady=2
@@ -233,11 +239,10 @@ class ObsidianKnittrGUI:
         ).pack(anchor=tk.W, padx=5, pady=2)
 
         # Right bottom section: Engine-specific settings
-        engine_frame = tk.LabelFrame(
-            right_frame, text="Engine-specific Stuff", padx=5, pady=5
-        )
-        engine_frame.pack(fill=tk.BOTH, expand=True)
+        engine_frame = tk.LabelFrame(right_frame, text="Engine-specific stuff")
+        engine_frame.pack(fill=tk.BOTH, expand=False, pady=0, padx=0)
 
+        # Create labels for Last Execution section
         tk.Checkbutton(
             engine_frame,
             text="Remove 'figure'/'table'/'equation' from inline\nreferences in quarto-documents",
@@ -263,7 +268,78 @@ class ObsidianKnittrGUI:
 
     def choose_file(self):
         # Functionality for "Choose Manuscript" - placeholder
+        # --
+        filetypes = [("Markdown files", "*.md")]
+        title = "Choose manuscript file"
+        # --
         print("Choose Manuscript clicked")
+
+        clipboard = pc.paste()
+        path = clipboard.replace("/", "\\")
+
+        if os.path.exists(path) and not os.path.isdir(path):
+            ext = os.path.splitext(path)[1].lower()
+            print(f"Path {path} from clipboard exists.")
+            if ext == ".md":
+                # self.root.withdraw()
+                manuscript_path = path
+        else:
+            print("Clipboard does not hold a valid path, so open a file-dialog instead")
+            # TODO: do we even port the setsearchroototolastmrunmanuscriptfolder stuff?
+            # if (self.config.SetSearchRootToLastRunManuscriptFolder):
+            allow_last_run = False
+            if allow_last_run:
+                last_run_dir = os.path.dirname(self.config.Lastrun.manuscriptpath)
+                fp = tk.filedialog.askopenfilename(
+                    initialdir=last_run_dir, title=title, filetypes=filetypes
+                )
+            else:
+                allow_searchroot = False
+                if allow_searchroot:
+                    searchroot = self.config.config.searchroot
+                else:
+                    searchroot = os.path.expanduser("~")
+                fp = tk.filedialog.askopenfilename(
+                    initialdir=searchroot, title=title, filetypes=filetypes
+                )
+            ext = os.path.splitext(path)[1].lower()
+            if not os.path.exists(fp):
+                wn.warn(
+                    f"{self.classname}: File '{fp}' does not exist. Please select a different file."
+                )
+            if not ext == ".md":
+                wn.warn(
+                    f"{self.classname}: File '{fp}' is not a markdown-file. Please select a markdown-file (file-suffix: '.md')"
+                )
+            if fp == "":
+                return  # no file selected
+        print(fp)
+        self.update_filehistory(fp)
+        # self.root.deiconify()
+
+    def update_filehistory(self, added_path=None):
+        if added_path:
+            # Move to beginning if already in the history
+            if added_path in self.file_history:
+                self.file_history.remove(added_path)
+            # Add to the beginning
+            self.file_history.insert(0, added_path)
+
+        # Populate the Combobox with current file history
+        self.file_history_dropdown["values"] = self.file_history
+
+        # Select the most recent entry if the list is not empty
+        if self.file_history:
+            self.file_history_dropdown.current(0)
+
+    def update_last_execution_labels(self, last_manuscript_path, last_level):
+        """Update the text for last execution labels."""
+        DL = -300
+        wn.warn(
+            f"pass through default config and implement  default level 'DL' {DL} here"
+        )
+        self.last_exec_label1.config(text=f"LM: {last_manuscript_path}")
+        self.last_exec_label2.config(text=f"LL: {last_level} DL:{DL}")
 
     def submit(self):
         # Placeholder for Submit logic
