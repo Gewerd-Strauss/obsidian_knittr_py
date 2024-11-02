@@ -61,110 +61,222 @@ class ObsidianKnittrGUI:
         pass
 
     def setup_gui(self):
-        # Title Label (Top full-width)
-        # title_label = tk.Label(self.root, text=self.title, font=("Helvetica", 16))
-        # title_label.pack(fill=tk.X, padx=5, pady=5)
         bg_col = "lightgrey"
-
+        bg_col = None
+        frame_margin_x = 5
+        frame_margin_y = 5
+        show_top_frame = False
+        render_debug = False
         # Main frames for layout sections
-        left_frame = tk.Frame(self.root)
-        right_frame = tk.Frame(self.root)
-        # bottom_frame = tk.Frame(self.root)
+        left_frame = tk.Frame(self.root, bg="green" if render_debug else None)
+        right_frame = tk.Frame(self.root, bg="red" if render_debug else None)
+        top_frame = tk.Frame(self.root, bg="purple" if render_debug else None)
+        title_bar_factor = 0.04 if show_top_frame else 0.00
 
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=0, pady=0)
-        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=False, padx=0, pady=0)
-        # bottom_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=5, pady=5)
-
-        # Left top section: "Choose Output Type" with static height and scrollable checkboxes
-        output_frame = tk.LabelFrame(
-            left_frame, text="Choose Output Type", padx=5, pady=5, height=8, bg=bg_col
+        top_frame.place(
+            x=0, y=0, width=self.width, height=self.height * title_bar_factor
         )
-        output_frame.pack(fill=tk.X)
+        left_frame.place(
+            x=0,
+            y=self.height * title_bar_factor,
+            width=self.width / 2,
+            height=(self.height * (1 - title_bar_factor)),
+        )
+        right_frame.place(
+            x=self.width / 2,
+            y=self.height * title_bar_factor,
+            width=self.width / 2,
+            height=(self.height * (1 - title_bar_factor)),
+        )
+        output_frame_height = 275
+        output_frame_width = self.width / 2 - 10
+        output_frame_y = (
+            frame_margin_y / 2 + 0
+        )  # TODO: add title-string ObsidianKnittr to the top
+        output_frame_x = frame_margin_x / 2
+        # Left Top Section - "Choose Output Type"
+        output_frame = tk.LabelFrame(left_frame, text="Choose Output Type", bg=bg_col)
+        output_frame.place(
+            x=output_frame_x,
+            y=output_frame_y,
+            width=output_frame_width,
+            height=output_frame_height,
+        )
 
-        # Set a static height for the output frame
-        output_frame.configure(height=2)
+        # # Left Middle Section - "Execution Directories"
+        exec_dir_frame = tk.LabelFrame(
+            left_frame, text="Execution Directories", bg=bg_col
+        )
+        exec_dir_frame_x = frame_margin_x / 2
+        exec_dir_frame_y = output_frame_y + output_frame_height + frame_margin_y
+        exec_dir_frame_height = 150
+        exec_dir_frame_width = self.width / 2 - 10
 
-        # Create a scrollable frame for checkboxes
+        exec_dir_frame.place(
+            x=exec_dir_frame_x,
+            y=exec_dir_frame_y,
+            width=exec_dir_frame_width,
+            height=exec_dir_frame_height,
+        )
+
+        # # Left Bottom Section - "Last Execution"
+        last_exec_frame = tk.LabelFrame(left_frame, text="Last Execution", bg=bg_col)
+
+        last_exec_frame_x = frame_margin_x / 2
+        last_exec_frame_y = exec_dir_frame_y + exec_dir_frame_height + frame_margin_y
+        last_exec_frame_height = 70
+        last_exec_frame_width = self.width / 2 - 10
+        last_exec_frame.place(
+            x=last_exec_frame_x,
+            y=last_exec_frame_y,
+            width=last_exec_frame_width,
+            height=last_exec_frame_height,
+        )
+        version_frame_x = frame_margin_x / 2
+        version_frame_y = last_exec_frame_y + last_exec_frame_height + frame_margin_y
+        version_frame_height = 40
+        version_frame_width = self.width / 2 - 10
+        version_frame = tk.Frame(left_frame, bg=bg_col)
+        version_frame.place(
+            x=version_frame_x,
+            y=version_frame_y,
+            width=version_frame_width,
+            height=version_frame_height,
+        )
+
+        manuscript_button_and_history_frame = tk.LabelFrame(
+            right_frame, text="Manuscript", bg=bg_col
+        )
+        manuscript_button_and_history_frame_x = frame_margin_x / 2
+        manuscript_button_and_history_frame_y = output_frame_y
+        manuscript_button_and_history_frame_height = 120
+        manuscript_button_and_history_frame_width = self.width / 2 - 10
+
+        manuscript_button_and_history_frame.place(
+            x=manuscript_button_and_history_frame_x,
+            y=manuscript_button_and_history_frame_y,
+            width=manuscript_button_and_history_frame_width,
+            height=manuscript_button_and_history_frame_height,
+        )
+        obsidian_frame = tk.LabelFrame(right_frame, text="Obsidian HTML", bg=bg_col)
+        obsidian_frame_x = frame_margin_x / 2
+        obsidian_frame_y = (
+            manuscript_button_and_history_frame_y
+            + manuscript_button_and_history_frame_height
+        ) + frame_margin_y
+        obsidian_frame_height = 150
+        obsidian_frame_width = self.width / 2 - 10
+
+        obsidian_frame.place(
+            x=obsidian_frame_x,
+            y=obsidian_frame_y,
+            width=obsidian_frame_width,
+            height=obsidian_frame_height,
+        )
+        general_config_frame = tk.LabelFrame(
+            right_frame, text="General Configuration", bg=bg_col
+        )
+        general_config_frame_x = frame_margin_x / 2
+        general_config_frame_y = (
+            obsidian_frame_y + obsidian_frame_height + frame_margin_y
+        )
+        general_config_frame_width = self.width / 2 - 10
+        general_config_frame_height = 150
+        general_config_frame.place(
+            x=general_config_frame_x,
+            y=general_config_frame_y,
+            width=general_config_frame_width,
+            height=general_config_frame_height,
+        )
+
+        engine_frame = tk.LabelFrame(
+            right_frame, text="Engine-specific stuff", bg=bg_col
+        )
+        engine_frame_x = frame_margin_x / 2
+        engine_frame_y = (
+            general_config_frame_y + general_config_frame_height + frame_margin_y
+        )
+        engine_frame_width = self.width / 2 - 10
+        engine_frame_height = last_exec_frame_height
+        engine_frame.place(
+            x=engine_frame_x,
+            y=engine_frame_y,
+            width=engine_frame_width,
+            height=engine_frame_height,
+        )
+        button_frame = tk.Frame(right_frame, bg=bg_col)
+        buttom_frame_x = frame_margin_x / 2
+        buttom_frame_y = engine_frame_y + engine_frame_height + frame_margin_y
+        buttom_frame_width = self.width / 2 - 10
+        buttom_frame_height = version_frame_height
+        button_frame.place(
+            x=buttom_frame_x,
+            y=buttom_frame_y,
+            width=buttom_frame_width,
+            height=buttom_frame_height,
+        )
+        ########## OUTPUT TYPES ##########
         canvas = tk.Canvas(output_frame)
         scrollbar = tk.Scrollbar(output_frame, orient="vertical", command=canvas.yview)
         checkbox_frame = tk.Frame(canvas)
-
         checkbox_frame.bind(
             "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
         canvas.create_window((0, 0), window=checkbox_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.place(relwidth=0.9, relheight=1)
+        scrollbar.place(relx=0.9, rely=0, relheight=1)
 
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=False)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        # Add checkboxes for each output type in the scrollable frame
         for output_type in self.output_types:
             var = tk.IntVar()
             checkbox = tk.Checkbutton(checkbox_frame, text=output_type, variable=var)
             checkbox.pack(anchor=tk.W, padx=5, pady=2)
             self.output_selections[output_type] = var
 
-        # Right top section: "Choose manuscript" and file history dropdown
-        right_top_frame = tk.Frame(right_frame)
-        right_top_frame.pack(fill=tk.X, padx=5, pady=5)
-        manuscript_button_and_history_frame = tk.Frame(right_top_frame)
-        manuscript_button_and_history_frame.pack(fill=tk.X)
+        ########## CHOOSE MANUSCRIPT ##########
+        # Right Top Section - "Choose Manuscript"
         manuscript_button = tk.Button(
             manuscript_button_and_history_frame,
             text="Choose Manuscript",
             command=self.choose_file,
         )
-        manuscript_button.pack(side=tk.LEFT, anchor=tk.W, padx=5)
-
+        manuscript_button.pack(side=tk.TOP, anchor=tk.W, padx=5)
         file_history_label = tk.Label(
             manuscript_button_and_history_frame, text="File History:"
         )
-        file_history_label.pack(side=tk.LEFT, anchor=tk.W, padx=5)
-
-        self.file_history_dropdown = ttk.Combobox(right_top_frame, state="readonly")
-        # file_history_dropdown.pack(side=tk.LEFT, fill=tk.X, expand=False, padx=5)
-        self.file_history_dropdown.pack(side=tk.TOP, fill=tk.X, expand=True, padx=5)
-        self.update_filehistory()
-        # Right middle section: Obsidian HTML options with checkboxes
-        obsidian_frame = tk.LabelFrame(
-            right_frame, text="Obsidian HTML", padx=5, pady=5
+        file_history_label.pack(side=tk.TOP, anchor=tk.W)  # , padx=5)
+        self.file_history_dropdown = ttk.Combobox(
+            manuscript_button_and_history_frame, state="readonly"
         )
-        obsidian_frame.pack(fill=tk.BOTH, expand=False)
-
-        tk.Checkbutton(obsidian_frame, text="!!Use verb 'Convert' for OHTML").pack(
-            anchor=tk.W, padx=5, pady=2
-        )
-        tk.Checkbutton(obsidian_frame, text="!!Use the personal fork").pack(
-            anchor=tk.W, padx=5, pady=2
-        )
-        tk.Checkbutton(obsidian_frame, text="Purge OHTML-Error-strings").pack(
-            anchor=tk.W, padx=5, pady=2
-        )
-        tk.Checkbutton(obsidian_frame, text="Set OHTML's Verbose-Flag?").pack(
-            anchor=tk.W, padx=5, pady=2
-        )
-        tk.Checkbutton(obsidian_frame, text="Limit scope of OHTML?").pack(
-            anchor=tk.W, padx=5, pady=2
+        self.file_history_dropdown.pack(
+            fill=tk.X,
         )
 
-        # Left middle section: Execution Directories (as a text label)
-        exec_dir_frame = tk.LabelFrame(
-            left_frame, text="Execution Directories", padx=5, pady=3.5
+        ########## OBSIDIAN HTML ##########
+        # Right Top Section - "Obsidian HTML"
+        # obsidian_frame.place(x=10, y=80, width=350, height=200)
+        options = [
+            "!!Use verb 'Convert' for OHTML",
+            "!!Use the personal fork",
+            "Purge OHTML-Error-strings",
+            "Set OHTML's Verbose-Flag?",
+            "Limit scope of OHTML?",
+        ]
+        for opt in options:
+            tk.Checkbutton(obsidian_frame, text=opt).pack(anchor=tk.W)
+        ########## EXECUTION DIRECTORIES ##########
+        tk.Label(exec_dir_frame, text="Choose execution directory for Quarto/R").pack(
+            anchor=tk.W, padx=5, pady=5
         )
-        exec_dir_frame.pack(fill=tk.BOTH, expand=False)
-
-        exec_dir_label = tk.Label(
-            exec_dir_frame, text="Choose execution directory for Quarto/R"
-        )
-        exec_dir_label.pack(anchor=tk.W, padx=5, pady=5)
-        self.v = tk.IntVar()
-        self.v.set(1)
-
+        self.v = tk.IntVar(value=1)
         exec_dir_options = [
             ("1. OHTML-Output-Dir", 1),
-            ("2. subfolder of note-location in vault", 2),
+            ("2. Subfolder of note-location in vault", 2),
         ]
+        for txt, val in exec_dir_options:
+            tk.Radiobutton(
+                exec_dir_frame, text=txt, padx=20, variable=self.v, value=val
+            ).pack(anchor=tk.W)
 
         def select_radio(event):
             if event.state & 0x0008:
@@ -179,91 +291,54 @@ class ObsidianKnittrGUI:
             pass
             print(self.v.get())
 
-        for txt, val in exec_dir_options:
-            tk.Radiobutton(
-                exec_dir_frame,
-                text=txt,
-                padx=20,
-                variable=self.v,
-                command=show_radio,
-                value=val,
-            ).pack(anchor="w")
-
         self.root.bind("1", select_radio)
         self.root.bind("2", select_radio)
+        ########## GENERAL CONFIGURATION ##########
 
-        # Bottom-aligned Last Execution and Engine-Specific Stuff frames
-        last_exec_frame = tk.LabelFrame(
-            left_frame, text="Last Execution", padx=5, pady=5
-        )
-        # Create labels for Last Execution section
-        last_exec_frame.pack(fill=tk.BOTH, expand=False)
+        gen_config_opts = [
+            "Remove '#' from tags",
+            "Strip local markdown links",
+            "Keep filename",
+            "Render manuscripts to chosen outputs",
+            "Backup Output files before rendering",
+        ]
+        for opt in gen_config_opts:
+            tk.Checkbutton(general_config_frame, text=opt).pack(anchor=tk.W)
+        ########## LAST EXECUTION ##########
+        # # Left Bottom Section - "Last Execution"
         self.last_exec_label1 = tk.Label(last_exec_frame, text="Last execution info 1")
         self.last_exec_label2 = tk.Label(last_exec_frame, text="Last execution info 2")
         self.last_exec_label1.pack(anchor=tk.W, padx=5, pady=2)
         self.last_exec_label2.pack(anchor=tk.W, padx=5, pady=2)
-
-        # Button frame with named buttons for actions, placed below the height of the group boxes
-        version_frame = tk.LabelFrame(left_frame, text="Versions", padx=5, pady=5)
-        version_frame.pack(fill=tk.BOTH, expand=False)
-
+        ########## ENGINE-SPECIFIC STUFF ##########
+        # # Right Bottom Section - "Engine-specific stuff"
+        tk.Checkbutton(
+            engine_frame,
+            text="Remove 'figure'/'table'/'equation' from inline references\nin quarto-documents",
+        ).pack(anchor=tk.W)
+        ########## VERSIONS ##########
+        # Bottom - Versions and Buttons
         version_label_1 = tk.Label(
             version_frame, text="ObsidianKnittr_py vX.Y.Z | Obsidian-HTML vX.Y.Z.hash"
         )
         version_label_2 = tk.Label(
             version_frame, text="Quarto-cli vX.Y.Z | Using quarto-cli"
         )
-        version_label_1.pack(fill=tk.X, padx=5, pady=2)
-        version_label_2.pack(fill=tk.X, padx=5, pady=2)
+        version_label_1.pack(anchor=tk.W)  # place(relx=0.5, rely=0.9, anchor="center")
+        version_label_2.pack(anchor=tk.W)  # place(relx=0.5, rely=0.92, anchor="center")
 
-        # Right top section: General Configuration
-        general_config_frame = tk.LabelFrame(
-            right_frame, text="General Configuration", padx=5, pady=5
-        )
-        general_config_frame.pack(fill=tk.BOTH, expand=False, padx=0, pady=1)
-
-        tk.Checkbutton(general_config_frame, text="Remove '#' from tags").pack(
-            anchor=tk.W, padx=5, pady=2
-        )
-        tk.Checkbutton(general_config_frame, text="Strip local markdown links").pack(
-            anchor=tk.W, padx=5, pady=2
-        )
-        tk.Checkbutton(general_config_frame, text="Keep filename").pack(
-            anchor=tk.W, padx=5, pady=2
-        )
-        tk.Checkbutton(
-            general_config_frame, text="Render manuscripts to chosen outputs"
-        ).pack(anchor=tk.W, padx=5, pady=2)
-        tk.Checkbutton(
-            general_config_frame, text="Backup Output files before rendering"
-        ).pack(anchor=tk.W, padx=5, pady=2)
-
-        # Right bottom section: Engine-specific settings
-        engine_frame = tk.LabelFrame(right_frame, text="Engine-specific stuff")
-        engine_frame.pack(fill=tk.BOTH, expand=False, pady=0, padx=0)
-
-        # Create labels for Last Execution section
-        tk.Checkbutton(
-            engine_frame,
-            text="Remove 'figure'/'table'/'equation' from inline\nreferences in quarto-documents",
-        ).pack(anchor=tk.W, padx=5, pady=2)
-
-        exec_dir_label.pack(anchor=tk.W, padx=5, pady=5)
-
-        button_frame = tk.Frame(right_frame, padx=5, pady=5)
-        button_frame.pack(pady=5)
-
+        ########## BOTTOM BUTTONS ##########
         tk.Button(button_frame, text="Submit", command=self.submit).pack(
-            side=tk.LEFT, padx=5
+            side=tk.LEFT, padx=1
         )
         tk.Button(button_frame, text="Full Submit", command=self.full_submit).pack(
-            side=tk.LEFT, padx=5
+            side=tk.LEFT, padx=1
         )
         tk.Button(
             button_frame, text="Edit General Config", command=self.edit_general_config
-        ).pack(side=tk.LEFT, padx=5)
+        ).pack(side=tk.LEFT, padx=1)
         tk.Button(button_frame, text="About", command=self.show_about).pack(
-            side=tk.LEFT, padx=5
+            side=tk.LEFT, padx=1
         )
 
     def choose_file(self):
@@ -356,6 +431,7 @@ class ObsidianKnittrGUI:
     def show_about(self):
         # Placeholder for About dialog
         print("About clicked")
+        self.update_last_execution_labels("A", "B")
 
     def close(self):
         self.root.destroy()
