@@ -630,7 +630,12 @@ class OT_GUI:
         # text_label = tk.Label(tab_frame, text="")
         # text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
         # Logic for creating a checkbox
-        checkbox_var = tk.BooleanVar()
+        if value["Value"].lower() == "true":
+            checkbox_var = tk.BooleanVar(value=True)
+        elif value["Value"].lower() == "false":
+            checkbox_var = tk.BooleanVar(value=False)
+        else:
+            raise ValueError(f"Invalid value for boolean conversion: {value["Value"]}")
         checkbox = tk.Checkbutton(
             tab_frame, text=value["String"], variable=checkbox_var
         )
