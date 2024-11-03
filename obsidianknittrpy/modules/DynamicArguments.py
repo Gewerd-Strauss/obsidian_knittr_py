@@ -258,7 +258,7 @@ class OT:
             # Remove quotation marks from paths and strings
             if "SearchPath" in value:
                 value["SearchPath"] = value["SearchPath"].replace('"', "")
-            if not (value.get("String", "") == ""):
+            if "String" in value:
                 value["String"] = value["String"].replace('"', "")
 
             # Remove quotation marks from default values if type is string
