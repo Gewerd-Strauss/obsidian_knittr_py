@@ -11,21 +11,6 @@ class ObsidianKnittrGUI:
             "quarto::pdf",
             "quarto::html",
             "quarto::docx",
-            "quarto::pdf",
-            "quarto::html",
-            "quarto::docx",
-            "quarto::pdf",
-            "quarto::html",
-            "quarto::docx",
-            "quarto::pdf",
-            "quarto::html",
-            "quarto::docx",
-            "quarto::pdf",
-            "quarto::html",
-            "quarto::docx",
-            "quarto::pdf",
-            "quarto::html",
-            "quarto::docx",
         ]  # Example types
         self.file_history = [
             "A1",
@@ -60,6 +45,23 @@ class ObsidianKnittrGUI:
         self.root.minsize(self.width, self.height)  # set minimum size
         self.root.resizable(False, False)  # disable resizing of GUI
         self.root.wm_attributes("-topmost", 1)
+        self.obsidian_options_selections = {
+            "verb": tk.IntVar(),
+            "use_custom_fork": tk.IntVar(),
+            "purge_errors": tk.IntVar(),
+            "verbose_flag": tk.IntVar(),
+            "limit_scope": tk.IntVar(),
+        }
+        self.gen_config_selections = {
+            "remove_hashtags": tk.IntVar(),
+            "strip_local_md_links": tk.IntVar(),
+            "keep_filename": tk.IntVar(),
+            "render_to_outputs": tk.IntVar(),
+            "backup_output_before_rendering": tk.IntVar(),
+        }
+        self.engine_config_selections = {
+            "quarto_strip_reference_prefixes": tk.IntVar(),
+        }
 
         self.classname = "ObsidianKnittrGUI"
 
@@ -280,55 +282,69 @@ class ObsidianKnittrGUI:
         ########## OBSIDIAN HTML ##########
         # Right Top Section - "Obsidian HTML"
         # obsidian_frame.place(x=10, y=80, width=350, height=200)
-        options = [
-            "!!Use verb 'Convert' for OHTML",
-            "!!Use the personal fork",
-            "Purge OHTML-Error-strings",
-            "Set OHTML's Verbose-Flag?",
-            "Limit scope of OHTML?",
-        ]
-        for opt in options:
-            tk.Checkbutton(obsidian_frame, text=opt).pack(anchor=tk.W)
+        options = {
+            "verb": "!!Use verb 'Convert' for OHTML",
+            "use_custom_fork": "!!Use the personal fork",
+            "purge_errors": "Purge OHTML-Error-strings",
+            "verbose_flag": "Set OHTML's Verbose-Flag?",
+            "limit_scope": "Limit scope of OHTML?",
+        }
+
+        for key, text in options.items():
+            tk.Checkbutton(
+                obsidian_frame,
+                text=text,
+                variable=self.obsidian_options_selections[key],
+            ).pack(anchor=tk.W)
+
         ########## EXECUTION DIRECTORIES ##########
         tk.Label(exec_dir_frame, text="Choose execution directory for Quarto/R").pack(
             anchor=tk.W, padx=5, pady=5
         )
-        self.v = tk.IntVar(value=1)
+        self.exec_dir_selection = tk.IntVar(value=1)
         exec_dir_options = [
             ("1. OHTML-Output-Dir", 1),
             ("2. Subfolder of note-location in vault", 2),
         ]
         for txt, val in exec_dir_options:
             tk.Radiobutton(
-                exec_dir_frame, text=txt, padx=20, variable=self.v, value=val
+                exec_dir_frame,
+                text=txt,
+                padx=20,
+                variable=self.exec_dir_selection,
+                value=val,
             ).pack(anchor=tk.W)
 
         def select_radio(event):
             if event.state & 0x0008:
                 if event.keysym == "1":
-                    self.v.set(1)
+                    self.exec_dir_selection.set(1)
                     show_radio()
                 elif event.keysym == "2":
-                    self.v.set(2)
+                    self.exec_dir_selection.set(2)
                     show_radio()
 
         def show_radio():
             pass
-            print(self.v.get())
+            print(self.exec_dir_selection.get())
 
         self.root.bind("1", select_radio)
         self.root.bind("2", select_radio)
         ########## GENERAL CONFIGURATION ##########
 
-        gen_config_opts = [
-            "Remove '#' from tags",
-            "Strip local markdown links",
-            "Keep filename",
-            "Render manuscripts to chosen outputs",
-            "Backup Output files before rendering",
-        ]
-        for opt in gen_config_opts:
-            tk.Checkbutton(general_config_frame, text=opt).pack(anchor=tk.W)
+        gen_config_opts = {
+            "remove_hashtags": "Remove '#' from tags",
+            "strip_local_md_links": "Strip local markdown links",
+            "keep_filename": "Keep filename",
+            "render_to_outputs": "Render manuscripts to chosen outputs",
+            "backup_output_before_rendering": "Backup Output files before rendering",
+        }
+        for key, text in gen_config_opts.items():
+            tk.Checkbutton(
+                general_config_frame,
+                text=text,
+                variable=self.gen_config_selections[key],
+            ).pack(anchor=tk.W)
         ########## LAST EXECUTION ##########
         # # Left Bottom Section - "Last Execution"
         self.last_exec_label1 = tk.Label(last_exec_frame, text="Last execution info 1")
@@ -337,10 +353,15 @@ class ObsidianKnittrGUI:
         self.last_exec_label2.pack(anchor=tk.W, padx=5, pady=2)
         ########## ENGINE-SPECIFIC STUFF ##########
         # # Right Bottom Section - "Engine-specific stuff"
-        tk.Checkbutton(
-            engine_frame,
-            text="Remove 'figure'/'table'/'equation' from inline references\nin quarto-documents",
-        ).pack(anchor=tk.W)
+        engine_opts = {
+            "quarto_strip_reference_prefixes": "Remove 'figure'/'table'/'equation' from inline references\nin quarto-documents"
+        }
+        for key, text in engine_opts.items():
+            tk.Checkbutton(
+                engine_frame,
+                text=text,
+                variable=self.engine_config_selections[key],
+            ).pack(anchor=tk.W)
         ########## VERSIONS ##########
         # Bottom - Versions and Buttons
         version_label_1 = tk.Label(
@@ -448,8 +469,47 @@ class ObsidianKnittrGUI:
         self.last_exec_label2.config(text=f"LL: {last_level} DL:{DL}")
 
     def submit(self):
-        # Placeholder for Submit logic
+        # output_type, execution_directories
+        results = {}
+        results["output_type"] = []
+        for output_type, var in self.output_selections.items():
+            if var.get():
+                results["output_type"].append(output_type)
+        results["execution_directory"] = (
+            self.exec_dir_selection.get()
+        )  # Assuming v holds the selected radio button value
+
+        # obsidian_html, general_configuration, engine_configurations
+        results["obsidian_html"] = {}
+        results["general_configuration"] = {}
+        results["engine_configurations"] = {}
+        for key, var in self.obsidian_options_selections.items():
+            results["obsidian_html"][key] = bool(var.get())
+        for key, var in self.gen_config_selections.items():
+            results["general_configuration"][key] = bool(var.get())
+        for key, var in self.engine_config_selections.items():
+            results["engine_configurations"][key] = bool(var.get())
+        # manuscript
+        results["manuscript"] = {}
+        results["manuscript"]["manuscript_path"] = self.file_history_dropdown.get()
+        results["manuscript"]["manuscript_name"] = os.path.basename(
+            results["manuscript"]["manuscript_path"]
+        )
+        results["manuscript"]["manuscript_dir"] = os.path.dirname(
+            results["manuscript"]["manuscript_path"]
+        )
+        results["general_configuration"]["full_submit"] = False
+
+        if results["obsidian_html"]["verb"]:
+            results["obsidian_html"]["verb"] = "convert"
+        else:
+            results["obsidian_html"]["verb"] = "run"
+
         print("Submit clicked")
+        print("Results:", results)  # Print the gathered results for verification
+        self.results = results
+        self.close()
+        pass
 
     def full_submit(self):
         # Placeholder for Full Submit logic
