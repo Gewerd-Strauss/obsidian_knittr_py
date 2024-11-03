@@ -134,7 +134,9 @@ class OT:
                         else:
                             # Populate the argument properties based on subsequent key-value pairs
                             setattr(self.arguments[current_param], key, value)
-
+            self.arguments = {
+                key: self.arguments[key] for key in sorted(self.arguments)
+            }
             # print(self.get_error(0))
         except FileNotFoundError:
             print(f"Configuration file '{self.config_file}' not found.")
