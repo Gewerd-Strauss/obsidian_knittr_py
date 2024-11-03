@@ -582,23 +582,15 @@ def handle_ot_guis(args, pb):
     print(f"Launching GUI in {args["theme"]} theme")
     # Implement GUI launch logic here
     # args = {"quarto::pdf.toc": "false"}
-    sel = ["quarto::pdf", "quarto::docx", "quarto::html"]
-    sel = ["quarto::docx", "quarto::pdf", "quarto::html"]
-    sel = ["quarto::docx"]
-    sel = ["quarto::html"]
-    sel = ["quarto::html", "quarto::pdf", "quarto::docx"]
-    sel = ["quarto::pdf"]
-    bAutoSubmitOTGUI = False
     x = 1645
     y = 475
-    output_formats = {}
     ShowGui = 1
-    for format in sel:
+    for format in pb["objects"]["sel"]:
         ot = OT(
             config_file=__config__,
             format=format,
             DDL_ParamDelimiter="-<>-",
-            skip_gui=False,
+            skip_gui=pb["settings"]["general_configuration"]["full_submit"],
             stepsized_gui_show=False,
         )  # Create instance of OT
 
@@ -633,7 +625,9 @@ def handle_ot_guis(args, pb):
                     ot.arguments[param_]["Default"] = value
 
         if ShowGui:
-            setattr(ot, "SkipGUI", bAutoSubmitOTGUI)  # Set the attribute SkipGUI
+            setattr(
+                ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
+            )  # Set the attribute SkipGUI
             ot.generate_gui(
                 x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
             )  # Call GenerateGUI method
