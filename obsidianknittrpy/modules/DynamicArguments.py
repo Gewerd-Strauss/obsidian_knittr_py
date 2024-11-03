@@ -713,7 +713,7 @@ class OT_GUI:
             else:
                 self.arguments[parameter]["Tab3Parent"] = "Other"
                 tab_headers[value["Tab3Parent"]] = {"Height": 0}
-
+        tab_headers = {key: tab_headers[key] for key in sorted(tab_headers)}
         HiddenHeaders = {}
         added_headers = {}
         sanitized_header_map = (
