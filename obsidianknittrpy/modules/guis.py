@@ -75,6 +75,8 @@ class ObsidianKnittrGUI:
         self.bind_method_hotkey("<Alt-c>", "choose_file")
         self.bind_method_hotkey("<Escape>", "close")
         self.setup_gui()
+        self.update_filehistory()
+        self.load_configuration()
         self.root.mainloop()
 
     def bind_method_hotkey(self, hotkey, method):
@@ -274,7 +276,6 @@ class ObsidianKnittrGUI:
         self.file_history_dropdown.pack(
             fill=tk.X,
         )
-        self.update_filehistory()
 
         ########## OBSIDIAN HTML ##########
         # Right Top Section - "Obsidian HTML"
@@ -401,11 +402,11 @@ class ObsidianKnittrGUI:
                 fp = tk.filedialog.askopenfilename(
                     initialdir=searchroot, title=title, filetypes=filetypes
                 )
-            ext = os.path.splitext(path)[1].lower()
             if not os.path.exists(fp):
                 wn.warn(
                     f"{self.classname}: File '{fp}' does not exist. Please select a different file."
                 )
+            ext = os.path.splitext(fp)[1].lower()
             if not ext == ".md":
                 wn.warn(
                     f"{self.classname}: File '{fp}' is not a markdown-file. Please select a markdown-file (file-suffix: '.md')"
@@ -430,6 +431,12 @@ class ObsidianKnittrGUI:
         # Select the most recent entry if the list is not empty
         if self.file_history:
             self.file_history_dropdown.current(0)
+
+    def load_configuration(self):
+        print(
+            "load configuration to populate checkbxoes, output-types, execution-directories/last-execution/..."
+        )
+        pass
 
     def update_last_execution_labels(self, last_manuscript_path, last_level):
         """Update the text for last execution labels."""
