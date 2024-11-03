@@ -512,8 +512,46 @@ class ObsidianKnittrGUI:
         pass
 
     def full_submit(self):
-        # Placeholder for Full Submit logic
+        # output_type, execution_directories
+        results = {}
+        results["output_type"] = []
+        for output_type, var in self.output_selections.items():
+            if var.get():
+                results["output_type"].append(output_type)
+        results["execution_directory"] = (
+            self.exec_dir_selection.get()
+        )  # Assuming v holds the selected radio button value
+
+        # obsidian_html, general_configuration, engine_configurations
+        results["obsidian_html"] = {}
+        results["general_configuration"] = {}
+        results["engine_configurations"] = {}
+        for key, var in self.obsidian_options_selections.items():
+            results["obsidian_html"][key] = bool(var.get())
+        for key, var in self.gen_config_selections.items():
+            results["general_configuration"][key] = bool(var.get())
+        for key, var in self.engine_config_selections.items():
+            results["engine_configurations"][key] = bool(var.get())
+        # manuscript
+        results["manuscript"] = {}
+        results["manuscript"]["manuscript_path"] = self.file_history_dropdown.get()
+        results["manuscript"]["manuscript_name"] = os.path.basename(
+            results["manuscript"]["manuscript_path"]
+        )
+        results["manuscript"]["manuscript_dir"] = os.path.dirname(
+            results["manuscript"]["manuscript_path"]
+        )
+        results["general_configuration"]["full_submit"] = True
+        if results["obsidian_html"]["verb"]:
+            results["obsidian_html"]["verb"] = "convert"
+        else:
+            results["obsidian_html"]["verb"] = "run"
+
         print("Full Submit clicked")
+        print("Results:", results)  # Print the gathered results for verification
+        self.results = results
+        self.close()
+        pass
 
     def edit_general_config(self):
         # Placeholder for Edit General Config logic
