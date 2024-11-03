@@ -274,6 +274,7 @@ class ObsidianKnittrGUI:
         self.file_history_dropdown.pack(
             fill=tk.X,
         )
+        self.update_filehistory()
 
         ########## OBSIDIAN HTML ##########
         # Right Top Section - "Obsidian HTML"
