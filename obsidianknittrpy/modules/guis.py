@@ -526,3 +526,78 @@ class ObsidianKnittrGUI:
 
     def close(self):
         self.root.destroy()
+
+
+#########
+
+from obsidianknittrpy.modules.DynamicArguments import OT
+from obsidianknittrpy import __config__
+
+
+def handle_ot_guis(args, pb):
+    print(f"Launching GUI in {args["theme"]} theme")
+    # Implement GUI launch logic here
+    # args = {"quarto::pdf.toc": "false"}
+    sel = ["quarto::pdf", "quarto::docx", "quarto::html"]
+    sel = ["quarto::docx", "quarto::pdf", "quarto::html"]
+    sel = ["quarto::docx"]
+    sel = ["quarto::html"]
+    sel = ["quarto::html", "quarto::pdf", "quarto::docx"]
+    sel = ["quarto::pdf"]
+    bAutoSubmitOTGUI = False
+    x = 1645
+    y = 475
+    output_formats = {}
+    ShowGui = 1
+    for format in sel:
+        ot = OT(
+            config_file=__config__,
+            format=format,
+            DDL_ParamDelimiter="-<>-",
+            skip_gui=False,
+            stepsized_gui_show=False,
+        )  # Create instance of OT
+
+        # Check if args is not empty and is iterable
+        if not not args:
+            for param, value in args.items():
+                if format not in param:  # Check if format is in param
+                    continue
+                param_ = param.replace(format + ".", "")  # Replace the format prefix
+                if param_ in ot.arguments:  # Check if the parameter exists in Arguments
+                    # Set the default such that the GUI also reflects it
+                    # Note: If we decide to set skip_gui=True when running CLI, we only have
+                    # to set the 'Value'-field to `value`.
+                    # However, this loop then must be taken _after_ the GUI was skipped.
+                    # The disadvantage is that if a GUI _is_ rendered, any argument passed
+                    # through the commandline will not be displayed with its updated value.
+                    # Additionally, that value will not actually be submitted because the
+                    # commandline-ported argument would then be inserted over the user's
+                    # potential choice afterwards.
+                    #
+                    #
+                    # there are 2 options to solve this:
+                    # 1. either make the GUI always overwrite commandline-selections
+                    #   - in this case the GUI should render the changes from the commandline
+                    #     first, such that the user has the educated knowledge of the right state
+                    # 2. disable commandline-fed arguments when running gui-mode, and force the
+                    #    user to do all changes themselves. Essentially disabling the CL-support
+                    #    in GUI-mode; but I am not sure.
+                    # .
+
+                    ot.arguments[param_]["Value"] = value  # Set the Value
+                    ot.arguments[param_]["Default"] = value
+
+        if ShowGui:
+            setattr(ot, "SkipGUI", bAutoSubmitOTGUI)  # Set the attribute SkipGUI
+            ot.generate_gui(
+                x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
+            )  # Call GenerateGUI method
+        ot.assemble_format_string()  # Call AssembleFormatString method
+        pb["objects"]["output_formats"][format] = ot
+    for format, ot in pb["objects"]["output_formats"].items():
+        # Here, format is the key (e.g., "quarto::docx")
+        # and ot is the instance of the OT class
+        print(f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}")
+
+    return pb
