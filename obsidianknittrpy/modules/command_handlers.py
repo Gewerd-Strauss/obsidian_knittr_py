@@ -1,18 +1,23 @@
 # command_handlers.py
 
-from obsidianknittrpy.modules.DynamicArguments import OT
 from obsidianknittrpy.modules.utility import convert_format_args
+from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
+import warnings as wn
 
-config_file = "D:/Dokumente neu/Repositories/python/obsidian_knittr_py/assets/DynamicArguments.ini"
 
 def main(pb):
     wn.warn("main processing function is not implemented yet.")
     pass
 
-def handle_convert(args):
+
+def handle_convert(args, pb):
     """Execute the convert command."""
     print(f"Converting {args.input} to formats: {args.format}")
     # Implement conversion logic here based on arguments
+    args = convert_format_args(args)
+    # TOOD: implement processing from GUI-classes that _is_ required, see 'handle_ot_gui_passthrough()'
+    pb = handle_ot_guis(args, pb)
+    main(pb)
 
 
 def handle_gui(args, pb):

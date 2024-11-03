@@ -29,3 +29,36 @@ def convert_format_args(args):
         print(f'["{k}"] = "{v}"')
 
     return arguments
+
+
+def init_picknick_basket():
+    # Define the settings dictionary
+    settings = {
+        "bVerboseCheckbox": bool,  # boolean
+        "bKeepFilename": bool,  # boolean
+        "bBackupOutput": bool,  # boolean
+        "bRendertoOutputs": bool,  # boolean
+        "bRemoveHashTagFromTags": bool,  # boolean
+        "bRemoveQuartoReferenceTypesFromCrossrefs": bool,  # boolean
+        "bConvertInsteadofRun": bool,  # boolean
+        "bRemoveObsidianHTMLErrors": bool,  # boolean
+        "bRestrictOHTMLScope": bool,  # boolean
+        "bStripLocalMarkdownLinks": bool,  # boolean
+        "ExecutionDirectory": str,  # path/directory
+        "bAutoSubmitOTGUI": bool,  # boolean
+        "bUseOwnOHTMLFork": bool,  # boolean
+    }
+    manuscript = {
+        "manuscript_path": str,  # path
+        "manuscript_dir": str,  # directory
+        "manuscript_name": str,  # filename
+    }
+    # Define the other dictionary
+    other = {
+        "sel": list,  # placeholder for selection
+        "output_formats": {},  # list of output formats
+        "input_suffixes": [],  # list of input suffixes
+        "file_suffixes": [],  # list of file suffixes
+    }
+
+    return {"settings": settings, "objects": other, "manuscript": manuscript}
