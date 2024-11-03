@@ -54,10 +54,10 @@ class ObsidianKnittrGUI:
         self.root = tk.Tk()
         self.title = "Obsidian Knittr - automate Obsidian.md conversion"
         self.root.title(self.title)
-        self.root.geometry("800x700")  # set geometry
-        self.root.minsize(800, 700)  # set minimum size
-        self.root.geometry("730x700")  # set geometry
-        self.root.minsize(740, 700)  # set minimum size
+        self.width = 750
+        self.height = 550
+        self.root.geometry(f"{self.width}x{self.height}")  # set geometry
+        self.root.minsize(self.width, self.height)  # set minimum size
         self.root.resizable(False, False)  # disable resizing of GUI
         self.root.wm_attributes("-topmost", 1)
 
