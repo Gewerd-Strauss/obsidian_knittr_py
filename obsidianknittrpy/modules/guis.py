@@ -579,9 +579,7 @@ from obsidianknittrpy import __config__
 
 
 def handle_ot_guis(args, pb):
-    print(f"Launching GUI in {args["theme"]} theme")
     # Implement GUI launch logic here
-    # args = {"quarto::pdf.toc": "false"}
     x = 1645
     y = 475
     ShowGui = 1

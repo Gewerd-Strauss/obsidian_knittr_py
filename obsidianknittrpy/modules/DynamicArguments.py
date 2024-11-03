@@ -271,8 +271,8 @@ class OT:
                     # Check if the file exists in the SearchPath with Default as filename
                     file_path = os.path.join(value["SearchPath"], value["Default"])
                     if not os.path.exists(file_path):
-                        print(
-                            f"output_type: {self.type}\nThe default File\n'{file_path}'\ndoes not exist. No default set."
+                        raise FileExistsError(
+                            f"output_type: {self.type}\nThe default file\n'{file_path}'\ndoes not exist. No default set."
                         )
                     else:
                         value["Value"] = file_path
@@ -360,8 +360,8 @@ class OT:
                 else:
                     # Handle case where value cannot be converted to a number
                     if value["Value"].upper() not in ["TRUE", "FALSE"]:
-                        print(
-                            f"Warning [Pre-Boolean-check]: cannot convert {value['Value']} to a number."
+                        raise TypeError(
+                            f"[Pre-Boolean-check]: failed to cast parameter {parameter} with value [{value['Value']}] of type [{type(value['Value'])}] into boolean."
                         )
 
             # Convert boolean to "TRUE" or "FALSE"
@@ -373,8 +373,8 @@ class OT:
                     else:
                         value["Value"] = "FALSE"
                 except:
-                    print(
-                        f"type '{val_}' was digits, but could not be coerced to boolean."
+                    raise TypeError(
+                        f"[Pre-Boolean-check]: Parameter {parameter}: Value {value['Value']} with type [{type(value['Value'])}] is not a member of valid boolean-castable inputs ('1', '0', 'true', 'false')"
                     )
 
     def adjust_integers(self):
@@ -571,7 +571,6 @@ class OT_GUI:
         return value, row_index
 
     def add_ddlcombo(self, value, tab_frame, row_index, control_options):
-        print("dropdownlist or comboboxes")
         # Check for control options
 
         # If options are comma-separated, convert to a pipe-separated format
@@ -815,7 +814,9 @@ class OT_GUI:
                         value, tab_frame, row_index, control_options
                     )
                 else:
-                    print(f"Control-type {Control} which are not implemented yet.")
+                    raise NotImplementedError(
+                        f"Control-type {Control} is not implemented. Control-type found for parameter '{parameter}' of format {self.type} in configuration-file '{self.config_file}'"
+                    )
         self.add_footer()
 
     def add_footer(self):
