@@ -112,7 +112,10 @@ class ObsidianHTML_Limiter:
             self.default_level = level
             self.cli_args = cli_args if cli_args else {}
             self.directory_structure = self.find_obsidian_vault_root()
-            self.adjustdefaultLevel()
+            self.adjust_default_Level()
+            if auto_submit:
+                self.auto_select_directory()
+                return  # we submit, so we can just use the level passed through.
             self.root = tk.Tk()
             self.root.focus_force()
             self.root.wm_attributes("-topmost", 1)
@@ -121,7 +124,37 @@ class ObsidianHTML_Limiter:
             self.setup_key_bindings()
             self.root.mainloop()
 
-    def adjustdefaultLevel(self):
+    def auto_select_directory(self):
+        """Simulates the selection of a directory as if done via GUI, based on the level."""
+        # Simulate the logic that happens when a directory is selected in the GUI
+
+        # Choose the directory based on the calculated level
+        if 0 <= self.level < len(self.directory_structure[1]):
+            selected_directory = self.directory_structure[1][self.level]
+        else:
+            selected_directory = self.directory_structure[1][
+                -1
+            ]  # Select the last directory as a fallback
+        idx = 0
+        selected_directory = ""
+        while idx < self.level:
+            selected_directory = os.path.join(
+                selected_directory, self.directory_structure[1][idx]
+            )
+            idx = idx + 1
+        # Replace dots and construct the limiter directory
+        limiter_directory = selected_directory.replace("/.", "\\")
+        limiter_directory = os.path.join(limiter_directory, ".obsidian\\")
+        limiter_directory = os.path.normpath(limiter_directory)
+
+        # Assign the selected directory to the class instance attribute
+        self.selected_limiter_directory = limiter_directory
+
+        # Check if the selected directory is the vault root
+        vault_root = self.directory_structure[0]
+        self.selected_limiter_is_vaultroot = limiter_directory == vault_root
+
+    def adjust_default_Level(self):
         """translate default level into correct integer for treeview-handling"""
 
         """
@@ -383,12 +416,9 @@ def check_new(instance, iid):
     # as I can determine if I can clean out the dots properly. If that is the case, I could just self-assign
     # `self.tv_selection_string = iid``
     # and then parse out the dots to get my selected path during submission.
-    vr = instance.directory_structure[0]
-    # if os.path.exists(limiter_directory):
-    if limiter_directory == vr:
-        instance.selected_limiter_is_vaultroot = True
-    else:
-        instance.selected_limiter_is_vaultroot = False
+    instance.selected_limiter_is_vaultroot = (
+        limiter_directory == instance.directory_structure[0]
+    )
     print(
         f"Set limiter-directory to '{limiter_directory}', is vault-root:{instance.selected_limiter_is_vaultroot}"
     )
