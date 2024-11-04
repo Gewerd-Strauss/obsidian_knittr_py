@@ -37,6 +37,7 @@ class ObsidianKnittrGUI:
         ]
         self.output_selections = {}
         self.root = tk.Tk()
+        self.root.focus_force()
         self.title = "Obsidian Knittr - automate Obsidian.md conversion"
         self.root.title(self.title)
         self.width = 750
