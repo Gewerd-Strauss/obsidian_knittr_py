@@ -111,10 +111,33 @@ class ObsidianHTML_Limiter:
         self.default_level = level
         self.cli_args = cli_args if cli_args else {}
         self.directory_structure = self.find_obsidian_vault_root()
+        self.adjustdefaultLevel()
         self.root = tk.Tk()
         self.setup_gui()
         self.root.mainloop()
         pass
+
+    def adjustdefaultLevel(self):
+        """translate default level into correct integer for treeview-handling"""
+
+        """
+        Level = 0 > manuscript_dir
+        Level = -1 > true vault-root
+        Level > 0 = manuscript_dir - level
+        """
+
+        if self.default_level == -1:  # vault-root
+            lvl = 1
+        elif self.default_level == 0:  # manuscript-dir
+            lvl = len(self.directory_structure[1])
+        else:
+            lvl = len(self.directory_structure[1]) - self.default_level
+        if lvl < 0:
+            self.level = 1
+        elif lvl == 0:
+            self.level = 1
+        else:
+            self.level = lvl
 
     def adjust_directory_structure(self):
         idx = 0
