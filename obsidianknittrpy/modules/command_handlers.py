@@ -2,7 +2,9 @@
 
 from obsidianknittrpy.modules.utility import convert_format_args
 from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
+from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
 import warnings as wn
+import os as os
 
 
 def main(pb):
@@ -45,6 +47,13 @@ def handle_gui(args, pb):
             print(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
+    if pb["settings"]["obsidian_html"]["limit_scope"]:
+        obsidian_limiter = ObsidianHTML_Limiter(
+            manuscript_path=os.path.normpath(pb["manuscript"]["manuscript_path"]),
+            auto_submit=pb["settings"]["general_configuration"]["full_submit"],
+        )
+        # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
+        # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
     main(pb)
 
 
