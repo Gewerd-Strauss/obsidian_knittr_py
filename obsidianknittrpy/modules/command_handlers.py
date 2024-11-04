@@ -52,6 +52,10 @@ def handle_gui(args, pb):
             manuscript_path=os.path.normpath(pb["manuscript"]["manuscript_path"]),
             auto_submit=pb["settings"]["general_configuration"]["full_submit"],
         )
+        pb["objects"]["obsidian_limiter"] = obsidian_limiter
+        # Level = 0 > manuscript_dir > chek
+        # Level = -1 > true vault-root > check
+        # Level > 0 = manuscript_dir - level
         # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
         # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
     main(pb)
