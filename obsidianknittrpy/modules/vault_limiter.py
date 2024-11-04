@@ -113,7 +113,11 @@ class ObsidianHTML_Limiter:
         self.directory_structure = self.find_obsidian_vault_root()
         self.adjustdefaultLevel()
         self.root = tk.Tk()
+        self.root.focus_force()
+        self.root.wm_attributes("-topmost", 1)
         self.setup_gui()
+        self.select_kth_level(self.level, None)
+        self.setup_key_bindings()
         self.root.mainloop()
         pass
 
@@ -199,9 +203,61 @@ class ObsidianHTML_Limiter:
     def close(self):
         self.root.destroy()
 
-    def submit(self):
+    def submit(self, event=None):
         self.close()
         pass
+
+    def setup_key_bindings(self):
+        self.root.bind("<Alt-q>", self.select_first_level)
+        self.root.bind("<Alt-e>", self.select_last_level)
+        lD = len(self.directory_structure[1]) + 1
+        for i in range(1, lD):  # Bind Alt+1 to Alt+9
+            self.root.bind(
+                f"{i}", lambda event, idx=i: self.select_kth_level(idx, event)
+            )
+            print(f"binding '<Alt-{i}>'")
+
+        self.root.bind("<Alt-s>", self.submit)
+
+    def select_first_level(self, event):
+        if event is not None:
+            if not (event.state & 0x0008):
+                return
+        children = self.tree.get_children()
+        if children:  # Check if there are any items
+            iid = children[0]  # Get the iid of the first item
+            check_new(self, iid)
+
+    def select_last_level(self, event):
+        if event is not None:
+            if not (event.state & 0x0008):
+                return
+        children = self.tree.get_children()
+        if children:  # Check if there are any items
+            not_last = True
+            while not len(children) == 0:
+                iid = children[-1]  # Get the iid of the last item
+                children = self.tree.get_children(iid)
+                print(iid)
+                print("DD")
+
+            check_new(self, iid)
+
+    def select_kth_level(self, k, event):
+        if event is not None:
+            if not (event.state & 0x0008):
+                return
+        index = 0
+        children = self.tree.get_children()
+        if children:
+            while True:
+                index = index + 1
+                iid = children[-1]
+                if index == k:
+                    break
+                else:
+                    children = self.tree.get_children(iid)
+            check_new(self, iid)
 
     def add_limiter(self):
         if self.selected_limiter_is_vaultroot:
