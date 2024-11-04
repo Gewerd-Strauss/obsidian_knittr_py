@@ -128,13 +128,6 @@ class ObsidianHTML_Limiter:
         """Simulates the selection of a directory as if done via GUI, based on the level."""
         # Simulate the logic that happens when a directory is selected in the GUI
 
-        # Choose the directory based on the calculated level
-        if 0 <= self.level < len(self.directory_structure[1]):
-            selected_directory = self.directory_structure[1][self.level]
-        else:
-            selected_directory = self.directory_structure[1][
-                -1
-            ]  # Select the last directory as a fallback
         idx = 0
         selected_directory = ""
         while idx < self.level:
