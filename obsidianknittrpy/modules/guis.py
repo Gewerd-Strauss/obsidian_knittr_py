@@ -499,6 +499,10 @@ class ObsidianKnittrGUI:
         # manuscript
         results["manuscript"] = {}
         results["manuscript"]["manuscript_path"] = self.file_history_dropdown.get()
+        if not os.path.exists(results["manuscript"]["manuscript_path"]):
+            raise FileExistsError(
+                f"The selected manuscript '{results["manuscript"]["manuscript_path"]}' does not exist. Please select a different file."
+            )
         results["manuscript"]["manuscript_name"] = os.path.basename(
             results["manuscript"]["manuscript_path"]
         )
