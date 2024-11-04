@@ -106,20 +106,20 @@ class ObsidianHTML_Limiter:
     def __init__(self, manuscript_path, auto_submit=False, level=-1, cli_args=None):
         self.width = 750
         self.height = 550
-        self.manuscript_path = manuscript_path
-        self.auto_submit = auto_submit
-        self.default_level = level
-        self.cli_args = cli_args if cli_args else {}
-        self.directory_structure = self.find_obsidian_vault_root()
-        self.adjustdefaultLevel()
-        self.root = tk.Tk()
-        self.root.focus_force()
-        self.root.wm_attributes("-topmost", 1)
-        self.setup_gui()
-        self.select_kth_level(self.level, None)
-        self.setup_key_bindings()
-        self.root.mainloop()
-        pass
+        if os.path.exists(manuscript_path):
+            self.manuscript_path = manuscript_path
+            self.auto_submit = auto_submit
+            self.default_level = level
+            self.cli_args = cli_args if cli_args else {}
+            self.directory_structure = self.find_obsidian_vault_root()
+            self.adjustdefaultLevel()
+            self.root = tk.Tk()
+            self.root.focus_force()
+            self.root.wm_attributes("-topmost", 1)
+            self.setup_gui()
+            self.select_kth_level(self.level, None)
+            self.setup_key_bindings()
+            self.root.mainloop()
 
     def adjustdefaultLevel(self):
         """translate default level into correct integer for treeview-handling"""
