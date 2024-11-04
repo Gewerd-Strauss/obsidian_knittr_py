@@ -124,6 +124,7 @@ class ObsidianHTML_Limiter:
         Level = 0 > manuscript_dir
         Level = -1 > true vault-root
         Level > 0 = manuscript_dir - level
+
         """
 
         if self.default_level == -1:  # vault-root
@@ -159,7 +160,7 @@ class ObsidianHTML_Limiter:
             # + "/"
             head = self.adjusted_directory_structure[1][idx - 1]
         rep = self.adjusted_directory_structure[1][idx - 1] + "/"
-        rep.replace("//", "/")
+        rep = rep.replace("//", "/")
         self.adjusted_directory_structure[1][idx - 1] = rep
 
     def setup_gui(self):
