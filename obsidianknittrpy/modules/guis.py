@@ -37,6 +37,7 @@ class ObsidianKnittrGUI:
         ]
         self.output_selections = {}
         self.root = tk.Tk()
+        self.root.focus_force()
         self.title = "Obsidian Knittr - automate Obsidian.md conversion"
         self.root.title(self.title)
         self.width = 750
@@ -403,7 +404,7 @@ class ObsidianKnittrGUI:
             print(f"Path {path} from clipboard exists.")
             if ext == ".md":
                 # self.root.withdraw()
-                manuscript_path = path
+                fp = path
         else:
             print("Clipboard does not hold a valid path, so open a file-dialog instead")
             # TODO: do we even port the setsearchroototolastmrunmanuscriptfolder stuff?
@@ -434,7 +435,7 @@ class ObsidianKnittrGUI:
                 )
             if fp == "":
                 return  # no file selected
-        print(fp)
+            print(fp)
         self.update_filehistory(fp)
         # self.root.deiconify()
 
@@ -498,6 +499,10 @@ class ObsidianKnittrGUI:
         # manuscript
         results["manuscript"] = {}
         results["manuscript"]["manuscript_path"] = self.file_history_dropdown.get()
+        if not os.path.exists(results["manuscript"]["manuscript_path"]):
+            raise FileExistsError(
+                f"The selected manuscript '{results["manuscript"]["manuscript_path"]}' does not exist. Please select a different file."
+            )
         results["manuscript"]["manuscript_name"] = os.path.basename(
             results["manuscript"]["manuscript_path"]
         )
@@ -622,10 +627,10 @@ def handle_ot_guis(args, pb):
                     ot.arguments[param_]["Value"] = value  # Set the Value
                     ot.arguments[param_]["Default"] = value
 
+        setattr(
+            ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
+        )  # Set the attribute SkipGUI
         if ShowGui:
-            setattr(
-                ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
-            )  # Set the attribute SkipGUI
             ot.generate_gui(
                 x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
             )  # Call GenerateGUI method
