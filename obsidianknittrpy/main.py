@@ -11,6 +11,7 @@ from obsidianknittrpy.modules.command_handlers import (
     handle_convert,
     handle_gui,
 )
+from obsidianknittrpy.modules.utility import init_picknick_basket
 
 
 def main():
@@ -38,15 +39,16 @@ def main():
     gui_parser_setup(gui_parser)
 
     args = parser.parse_args()
-
+    pb = init_picknick_basket()
     # Command handling
     if args.command == "convert":
         # Parse pass-through arguments
         print("implement commandline-pathway")
         # Print all arguments in the desired format
         # print_arguments(parsed_args)
+        handle_convert(args, pb)
     elif args.command == "gui":
-        handle_gui(args)
+        handle_gui(args, pb)
     else:
         parser.print_help()
 
