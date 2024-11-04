@@ -404,7 +404,7 @@ class ObsidianKnittrGUI:
             print(f"Path {path} from clipboard exists.")
             if ext == ".md":
                 # self.root.withdraw()
-                manuscript_path = path
+                fp = path
         else:
             print("Clipboard does not hold a valid path, so open a file-dialog instead")
             # TODO: do we even port the setsearchroototolastmrunmanuscriptfolder stuff?
@@ -435,7 +435,7 @@ class ObsidianKnittrGUI:
                 )
             if fp == "":
                 return  # no file selected
-        print(fp)
+            print(fp)
         self.update_filehistory(fp)
         # self.root.deiconify()
 
@@ -627,10 +627,10 @@ def handle_ot_guis(args, pb):
                     ot.arguments[param_]["Value"] = value  # Set the Value
                     ot.arguments[param_]["Default"] = value
 
+        setattr(
+            ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
+        )  # Set the attribute SkipGUI
         if ShowGui:
-            setattr(
-                ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
-            )  # Set the attribute SkipGUI
             ot.generate_gui(
                 x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
             )  # Call GenerateGUI method
