@@ -3,12 +3,45 @@
 from obsidianknittrpy.modules.utility import convert_format_args
 from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
+from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
 import warnings as wn
 import os as os
 
 
 def main(pb):
     wn.warn("main processing function is not implemented yet.")
+    if pb["settings"]["obsidian_html"]["limit_scope"]:
+        pb["objects"]["obsidian_limiter"].add_limiter()
+
+    # Example usage:
+    obsidian_html = ObsidianHTML(
+        manuscript_path=pb["manuscript"]["manuscript_path"],
+        config_path=r"assets\temp_obsidianhtml_config.yml",
+        use_convert=pb["settings"]["obsidian_html"]["verb"] == "convert",
+        use_own_fork=pb["settings"]["obsidian_html"]["use_custom_fork"],
+        verbose=pb["settings"]["obsidian_html"]["verbose_flag"],
+        own_ohtml_fork_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
+        work_dir=os.path.normpath(
+            os.path.join(
+                os.path.expanduser("~"),
+                "Desktop",
+                "TempTemporal",
+                "obsidian-html-output",
+            )
+        ),
+        # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
+        output_dir=os.path.normpath(
+            os.path.join(
+                os.path.expanduser("~"),
+                "Desktop",
+                "TempTemporal",
+                "obsidian-html-output",
+            )
+        ),
+    )
+    obsidian_html.run()
+    if pb["settings"]["obsidian_html"]["limit_scope"]:
+        pb["objects"]["obsidian_limiter"].remove_limiter()
     pass
 
 

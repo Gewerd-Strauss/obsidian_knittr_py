@@ -16,7 +16,7 @@ class ObsidianHTML:
         verbose=False,
         output_dir="",
         work_dir="",
-        own_fork_work_dir="",
+        own_ohtml_fork_dir="",
         auto_submit_gui=False,
         encoding="utf-16-le",
     ):
@@ -36,9 +36,7 @@ class ObsidianHTML:
         self.work_dir = work_dir or os.path.join(
             os.path.expanduser("~"), "Desktop", "ObsidianHTMLOutput"
         )
-        self.own_fork_work_dir = own_fork_work_dir or os.path.join(
-            os.path.expanduser("~"), "Desktop", "ObsidianHTMLOutput"
-        )
+        self.own_ohtml_fork_dir = own_ohtml_fork_dir
         self.auto_submit_gui = auto_submit_gui
         self.obsidianhtml_path = ""
         self.obsidianhtml_available = self.check_obsidianhtml()
@@ -120,7 +118,7 @@ toggles:
             if self.use_own_fork:
                 # Construct the path to the custom fork's module
                 custom_module_path = os.path.join(
-                    self.own_fork_work_dir, "obsidianhtml", "__init__.py"
+                    self.own_ohtml_fork_dir, "obsidianhtml", "__init__.py"
                 )
                 # Load the custom module
                 spec = importlib.util.spec_from_file_location(
@@ -129,7 +127,7 @@ toggles:
                 obsidianhtml_custom = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(obsidianhtml_custom)
                 self.obsidianhtml_path = os.path.abspath(
-                    os.path.join(self.own_fork_work_dir, "obsidianhtml")
+                    os.path.join(self.own_ohtml_fork_dir, "obsidianhtml")
                 )
 
             else:
@@ -209,11 +207,11 @@ toggles:
 
         return command
 
-    def execute_command(self, command, work_dir):
+    def execute_command(self, command, work_dir, env=None):
         """Executes a command and returns its output."""
         if os.path.exists(work_dir):
             result = subprocess.run(
-                command, cwd=work_dir, capture_output=True, text=True
+                command, cwd=work_dir, capture_output=True, text=True, env=env
             )
             return result
 
@@ -237,11 +235,16 @@ toggles:
         self.create_config()
         if not self.validate_config():
             return False
-        work_dir = self.own_fork_work_dir if self.use_own_fork else self.work_dir
+        work_dir = self.work_dir
 
+        env = os.environ.copy()  # Copy the current environment
+        if self.use_own_fork:
+            env["PYTHONPATH"] = os.path.dirname(
+                self.obsidianhtml_path
+            )  # Add module path to PYTHONPATH
         # get ohtml version
         command_version = self.construct_command(True)
-        output_version = self.execute_command(command_version, work_dir)
+        output_version = self.execute_command(command_version, work_dir, env)
         output_version = output_version.stdout
         if "commit:" in output_version:
             output_version = output_version.replace("\n commit:", "(commit:")
@@ -251,7 +254,7 @@ toggles:
             output_version = "(" + output_version + ")"
 
         command = self.construct_command()
-        output = self.execute_command(command, work_dir)
+        output = self.execute_command(command, work_dir, env)
 
         md_path = self.parse_output(output.stdout)
         if not md_path:
