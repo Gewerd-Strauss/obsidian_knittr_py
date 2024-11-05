@@ -3,7 +3,7 @@ import os
 from math import floor
 import webbrowser
 import tkinter as tk
-from warnings import warn
+import warnings as wn
 from tkinter import ttk, filedialog, messagebox
 
 
@@ -134,7 +134,9 @@ class OT:
                         else:
                             # Populate the argument properties based on subsequent key-value pairs
                             setattr(self.arguments[current_param], key, value)
-
+            self.arguments = {
+                key: self.arguments[key] for key in sorted(self.arguments)
+            }
             # print(self.get_error(0))
         except FileNotFoundError:
             print(f"Configuration file '{self.config_file}' not found.")
@@ -258,7 +260,7 @@ class OT:
             # Remove quotation marks from paths and strings
             if "SearchPath" in value:
                 value["SearchPath"] = value["SearchPath"].replace('"', "")
-            if not (value.get("String", "") == ""):
+            if "String" in value:
                 value["String"] = value["String"].replace('"', "")
 
             # Remove quotation marks from default values if type is string
@@ -271,8 +273,8 @@ class OT:
                     # Check if the file exists in the SearchPath with Default as filename
                     file_path = os.path.join(value["SearchPath"], value["Default"])
                     if not os.path.exists(file_path):
-                        print(
-                            f"output_type: {self.type}\nThe default File\n'{file_path}'\ndoes not exist. No default set."
+                        raise FileExistsError(
+                            f"output_type: {self.type}\nThe default file\n'{file_path}'\ndoes not exist. No default set."
                         )
                     else:
                         value["Value"] = file_path
@@ -360,8 +362,8 @@ class OT:
                 else:
                     # Handle case where value cannot be converted to a number
                     if value["Value"].upper() not in ["TRUE", "FALSE"]:
-                        print(
-                            f"Warning [Pre-Boolean-check]: cannot convert {value['Value']} to a number."
+                        raise TypeError(
+                            f"[Pre-Boolean-check]: failed to cast parameter {parameter} with value [{value['Value']}] of type [{type(value['Value'])}] into boolean."
                         )
 
             # Convert boolean to "TRUE" or "FALSE"
@@ -373,8 +375,8 @@ class OT:
                     else:
                         value["Value"] = "FALSE"
                 except:
-                    print(
-                        f"type '{val_}' was digits, but could not be coerced to boolean."
+                    raise TypeError(
+                        f"[Pre-Boolean-check]: Parameter {parameter}: Value {value['Value']} with type [{type(value['Value'])}] is not a member of valid boolean-castable inputs ('1', '0', 'true', 'false')"
                     )
 
     def adjust_integers(self):
@@ -571,7 +573,6 @@ class OT_GUI:
         return value, row_index
 
     def add_ddlcombo(self, value, tab_frame, row_index, control_options):
-        print("dropdownlist or comboboxes")
         # Check for control options
 
         # If options are comma-separated, convert to a pipe-separated format
@@ -601,7 +602,7 @@ class OT_GUI:
             # combobox: allow editing. Strip readonly if present, then warn the use to use ddl if readonly is desired
             if "readonly" in options_list:  # except if it is explicitly noted
                 options_list.remove("readonly")
-                warn(
+                wn.warn(
                     f"{self.name}: Option 'readonly' present in {value.Control}'s parameter got ignored. To use a DDL without write-access, use control-type 'ddl'."
                 )
             combobox = ttk.Combobox(
@@ -610,7 +611,7 @@ class OT_GUI:
             )
         elif value.Control == "ddl":  # for ddl, force readonly
             if "readonly" not in options_list:
-                warn(
+                wn.warn(
                     f"{self.classname}: Option 'readonly' not present in {value.Control}'s parameter. 'readonly' was forcefully applied. To use a DDL with write-access, use control-type 'combobox'."
                 )
             combobox = ttk.Combobox(tab_frame, values=options_list, state="readonly")
@@ -629,7 +630,12 @@ class OT_GUI:
         # text_label = tk.Label(tab_frame, text="")
         # text_label.grid(row=row_index, column=0, padx=(10, 0), sticky="w")
         # Logic for creating a checkbox
-        checkbox_var = tk.BooleanVar()
+        if value["Value"].lower() == "true":
+            checkbox_var = tk.BooleanVar(value=True)
+        elif value["Value"].lower() == "false":
+            checkbox_var = tk.BooleanVar(value=False)
+        else:
+            raise ValueError(f"Invalid value for boolean conversion: {value["Value"]}")
         checkbox = tk.Checkbutton(
             tab_frame, text=value["String"], variable=checkbox_var
         )
@@ -712,7 +718,7 @@ class OT_GUI:
             else:
                 self.arguments[parameter]["Tab3Parent"] = "Other"
                 tab_headers[value["Tab3Parent"]] = {"Height": 0}
-
+        tab_headers = {key: tab_headers[key] for key in sorted(tab_headers)}
         HiddenHeaders = {}
         added_headers = {}
         sanitized_header_map = (
@@ -815,7 +821,9 @@ class OT_GUI:
                         value, tab_frame, row_index, control_options
                     )
                 else:
-                    print(f"Control-type {Control} which are not implemented yet.")
+                    raise NotImplementedError(
+                        f"Control-type {Control} is not implemented. Control-type found for parameter '{parameter}' of format {self.type} in configuration-file '{self.config_file}'"
+                    )
         self.add_footer()
 
     def add_footer(self):
