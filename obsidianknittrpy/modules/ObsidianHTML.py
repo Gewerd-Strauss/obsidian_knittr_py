@@ -261,19 +261,12 @@ toggles:
         if not md_path:
             print("Failed to parse output. Please check manually.")
             return False
-
-        return {
-            "command": " ".join(command),
-            "work_dir": work_dir,
-            "output": output,
-            "md_path": md_path,
-        }
-
-
-# Example usage:
-# obsidian = ObsidianHTML(manuscript_path="path/to/manuscript", config_path="path/to/config")
-# result = obsidian.run()
-# if result:
-#     print("ObsidianHTML ran successfully:", result)
-# else:
-#     print("Failed to run ObsidianHTML.")
+        self.output = {}
+        self.output["command"] = "".join(command)
+        self.output["obsidian_html_path"] = self.obsidianhtml_path
+        self.output["obsidian_html_version"] = output_version
+        self.output["obsidian_html_copydir"] = ""
+        self.output["output_path"] = md_path
+        self.output["stdOut"] = output.stdout
+        self.output["stdErr"] = output.stderr
+        self.output["working_directory"] = self.work_dir
