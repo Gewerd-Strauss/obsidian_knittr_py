@@ -253,10 +253,11 @@ toggles:
         else:
             output_version = output_version.replace("\n", "")
             output_version = "(" + output_version + ")"
+
         command = self.construct_command()
         output = self.execute_command(command, work_dir)
 
-        md_path = self.parse_output(output)
+        md_path = self.parse_output(output.stdout)
         if not md_path:
             print("Failed to parse output. Please check manually.")
             return False
