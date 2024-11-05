@@ -213,8 +213,11 @@ toggles:
 
     def execute_command(self, command, work_dir):
         """Executes a command and returns its output."""
-        result = subprocess.run(command, cwd=work_dir, capture_output=True, text=True)
-        return result.stdout if result.returncode == 0 else ""
+        if os.path.exists(work_dir):
+            result = subprocess.run(
+                command, cwd=work_dir, capture_output=True, text=True
+            )
+            return result
 
     def parse_output(self, output):
         """Parse specific paths and versions from ObsidianHTML output."""
