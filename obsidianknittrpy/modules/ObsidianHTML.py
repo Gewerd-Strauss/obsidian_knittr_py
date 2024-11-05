@@ -243,6 +243,16 @@ toggles:
             return False
         work_dir = self.own_fork_work_dir if self.use_own_fork else self.work_dir
 
+        # get ohtml version
+        command_version = self.construct_command(True)
+        output_version = self.execute_command(command_version, work_dir)
+        output_version = output_version.stdout
+        if "commit:" in output_version:
+            output_version = output_version.replace("\n commit:", "(commit:")
+            output_version = output_version.replace("\n", ")")  # .join(")")
+        else:
+            output_version = output_version.replace("\n", "")
+            output_version = "(" + output_version + ")"
         command = self.construct_command()
         output = self.execute_command(command, work_dir)
 
