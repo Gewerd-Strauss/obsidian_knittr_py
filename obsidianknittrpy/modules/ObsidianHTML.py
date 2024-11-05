@@ -16,9 +16,11 @@ class ObsidianHTML:
         work_dir="",
         own_fork_work_dir="",
         auto_submit_gui=False,
+        encoding="utf-16-le",
     ):
         # Set initial variables
         self.manuscript_path = manuscript_path
+        self.encoding = encoding
         self.config_path = config_path
         self.config_template = None
         self.initialise_configuration()
@@ -94,11 +96,17 @@ toggles:
       enabled: False
 """
 
-    def create_config(self, config_path):
+    def remove_config(self):
+        if os.path.exists(self.config_path):
+            os.remove(self.config_path)
+
+    def create_config(self):
         # Write the configuration template to a YAML file at the specified path
-        with open(config_path, "w") as file:
-            yaml.safe_dump(yaml.safe_load(self.config_template), file)
-        print(f"Configuration written to {config_path}")
+        with open(self.config_path, "w", encoding=self.encoding) as file:
+            yaml.safe_dump(
+                yaml.safe_load(self.config_template), file, encoding=self.encoding
+            )
+        print(f"Configuration written to {self.config_path}")
 
     def check_obsidianhtml(self):
         """Check if ObsidianHTML is available."""
