@@ -109,19 +109,44 @@ toggles:
         print(f"Configuration written to {self.config_path}")
 
     def check_obsidianhtml(self):
-        """Check if ObsidianHTML is available."""
+        """Attempt to import the obsidianhtml main module based on the selected fork to see if it is installed."""
         try:
-            result = subprocess.run(
-                ["where", "obsidianhtml"], capture_output=True, text=True
-            )
-            if result.returncode == 0:
-                self.obsidianhtml_path = result.stdout.strip()
-                return True
-        except FileNotFoundError:
+            if self.use_own_fork:
+                # Construct the path to the custom fork's module
+                custom_module_path = os.path.join(
+                    self.own_fork_work_dir, "obsidianhtml", "__init__.py"
+                )
+                # Load the custom module
+                spec = importlib.util.spec_from_file_location(
+                    "obsidianhtml", custom_module_path
+                )
+                obsidianhtml_custom = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(obsidianhtml_custom)
+                self.obsidianhtml_path = os.path.abspath(
+                    os.path.join(self.own_fork_work_dir, "obsidianhtml")
+                )
+
+            else:
+                # Load the default obsidianhtml module
+                default_module_path = os.path.join(
+                    r"D:\Dokumente neu\Repositories\python\obsidian_knittr_py\.venv\Lib\site-packages\obsidianhtml",
+                    "__init__.py",
+                )
+                spec = importlib.util.spec_from_file_location(
+                    "obsidianhtml", default_module_path
+                )
+                obsidianhtml_default = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(obsidianhtml_default)
+                # self.obsidianhtml_path = os.path.abspath(
+                #     os.path.join(self.)
+                # )
+
+            return True
+        except ImportError:
             print(
                 "ObsidianHTML could not be found. Please install it before proceeding."
             )
-        return False
+            return False
 
     def check_python(self):
         """Check if Python is available."""
