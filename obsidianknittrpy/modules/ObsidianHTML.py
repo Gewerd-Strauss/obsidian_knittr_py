@@ -24,7 +24,7 @@ class ObsidianHTML:
         self.manuscript_path = manuscript_path
         self.encoding = encoding
         self.encoding = self.encoding if use_own_fork else "utf-8"
-        self.config_path = config_path
+        self.config_path = os.path.normpath(os.path.abspath(config_path))
         self.config_template = None
         self.initialise_configuration()
         self.use_convert = use_convert
