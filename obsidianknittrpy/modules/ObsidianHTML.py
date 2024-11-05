@@ -178,11 +178,21 @@ toggles:
                 return False
         return True
 
-    def construct_command(self):
+    def construct_command(self, version=False):
         """Constructs the command to run ObsidianHTML."""
-        if self.use_convert or not self.manuscript_path:
+        if version:
+            command = [
+                "obsidianhtml",
+                "version",
+            ]
+        elif self.use_convert or not self.manuscript_path:
             self.use_convert = True
-            command = ["obsidianhtml", "convert", "-i", f"{self.config_path}"]
+            command = [
+                "obsidianhtml",
+                "convert",
+                "-i",
+                f"{os.path.abspath(self.config_path)}",
+            ]
         else:
             command = [
                 "obsidianhtml",
@@ -190,10 +200,15 @@ toggles:
                 "-f",
                 self.manuscript_path,
                 "-i",
-                self.config_path,
+                os.path.abspath(self.config_path),
             ]
+
         if self.verbose:
             command.append("-v")
+        if self.use_own_fork:
+            command.insert(0, "-m")
+            command.insert(0, "python")
+
         return command
 
     def execute_command(self, command, work_dir):
