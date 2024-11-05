@@ -3,3 +3,4 @@
 __pycache__
 .vscode/launch.json
 /assets/*config.yml
+/assets/config.yml
