@@ -21,6 +21,7 @@ class ObsidianHTML:
         # Set initial variables
         self.manuscript_path = manuscript_path
         self.encoding = encoding
+        self.encoding = self.encoding if use_own_fork else "utf-8"
         self.config_path = config_path
         self.config_template = None
         self.initialise_configuration()
@@ -40,7 +41,6 @@ class ObsidianHTML:
         self.obsidianhtml_path = ""
         self.obsidianhtml_available = self.check_obsidianhtml()
         self.python_available = self.check_python()
-
         # Initialize if checks passed
         if not self.obsidianhtml_available or not self.python_available:
             self.initialized = False
@@ -102,6 +102,10 @@ toggles:
 
     def create_config(self):
         # Write the configuration template to a YAML file at the specified path
+        if not self.use_own_fork:
+            self.config_template = self.config_template.replace(
+                "strip_inclusion_headers: True", ""
+            )
         with open(self.config_path, "w", encoding=self.encoding) as file:
             yaml.safe_dump(
                 yaml.safe_load(self.config_template), file, encoding=self.encoding
@@ -164,7 +168,7 @@ toggles:
         if not os.path.exists(self.config_path):
             print("Config file does not exist.")
             return False
-        with open(self.config_path, "r") as file:
+        with open(self.config_path, "r", encoding=self.encoding) as file:
             config_contents = file.read()
             if (
                 "obsidian_entrypoint_path_str:" not in config_contents
