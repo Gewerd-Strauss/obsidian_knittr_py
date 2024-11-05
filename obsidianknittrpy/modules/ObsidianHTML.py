@@ -235,6 +235,8 @@ toggles:
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
+        self.remove_config()
+        self.create_config()
         if not self.validate_config():
             return False
 
