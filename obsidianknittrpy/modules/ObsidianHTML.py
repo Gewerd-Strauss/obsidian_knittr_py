@@ -241,9 +241,9 @@ toggles:
         self.create_config()
         if not self.validate_config():
             return False
+        work_dir = self.own_fork_work_dir if self.use_own_fork else self.work_dir
 
         command = self.construct_command()
-        work_dir = self.own_fork_work_dir if self.use_own_fork else self.work_dir
         output = self.execute_command(command, work_dir)
 
         md_path = self.parse_output(output)
