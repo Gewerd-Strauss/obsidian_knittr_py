@@ -2,6 +2,7 @@ import os
 import subprocess
 import re
 import shutil
+import yaml
 
 
 class ObsidianHTML:
