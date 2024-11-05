@@ -133,19 +133,15 @@ toggles:
                 )
 
             else:
-                # Load the default obsidianhtml module
-                default_module_path = os.path.join(
-                    r"D:\Dokumente neu\Repositories\python\obsidian_knittr_py\.venv\Lib\site-packages\obsidianhtml",
-                    "__init__.py",
-                )
-                spec = importlib.util.spec_from_file_location(
-                    "obsidianhtml", default_module_path
-                )
-                obsidianhtml_default = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(obsidianhtml_default)
-                # self.obsidianhtml_path = os.path.abspath(
-                #     os.path.join(self.)
-                # )
+                # Dynamically find the installed obsidianhtml package
+                spec = importlib.util.find_spec("obsidianhtml")
+                if spec is not None:
+                    obsidianhtml_default = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(obsidianhtml_default)
+                    self.obsidianhtml_path = os.path.dirname(spec.origin)
+                else:
+                    print("ObsidianHTML package could not be found.")
+                    return False
 
             return True
         except ImportError:
