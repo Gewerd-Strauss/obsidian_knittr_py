@@ -7,7 +7,7 @@ The intention is to make expansion of the processing-pipeline significantly simp
 ## required conversion-steps
 
 ```
-ConvertSRC_SYNTAX_V4
+ConvertSRC_SYNTAX_V4 DONE
 >
 processTags
 >
