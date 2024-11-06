@@ -81,17 +81,19 @@ class ProcessingPipeline:
                     module_name = f"obsidianknittrpy.modules.processing.{module_info['file_name']}"
                     module = importlib.import_module(module_name)
                     module_class = getattr(module, module_info["module_name"])
-                    # Extract the arguments specified for the module in the YAML file
-                    module_args = {
-                        key: self.arguments.get(key)
-                        for key in module_info.get("arguments", [])
-                    }
-                    # Initialise the module with the config stored in the YAML
+
+                    # Start with the config from module_info
+                    module_config = module_info.get("config", {}).copy()
+
+                    # Override with any arguments from self.arguments
+                    for key in module_config:
+                        if key in self.arguments:
+                            module_config[key] = self.arguments[key]
+
+                    # Initialize the module with the merged config
                     module_instance = module_class(
-                        module_info["module_name"], config=module_info.get("config", {})
+                        module_info["module_name"], config=module_config
                     )
-                    # accept arguments to push into the module configuration
-                    module_instance.accept_args(**module_args)
                     self.modules.append(module_instance)
                 else:
                     print(
