@@ -11,7 +11,7 @@ ConvertSRC_SYNTAX_V4 DONE
 >
 processTags DONE
 >
-processAbstract
+processAbstract DONE
 ```
 
 ## format-specific conversion-steps

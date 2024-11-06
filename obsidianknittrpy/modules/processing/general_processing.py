@@ -84,3 +84,29 @@ class ProcessTags(BaseModule):
 
         return contents
 
+
+class ProcessAbstract(BaseModule):
+    def process(self, input_str):
+        lines = input_str.splitlines()
+        rebuild = []
+        abstract_found = False
+
+        for index, line in enumerate(lines):
+            # If abstract has been encountered, process the line accordingly
+            if abstract_found:
+                if line.startswith(" "):
+                    rebuild.append(
+                        f" {line.lstrip()}"
+                    )  # Preserve indentation for lines starting with a space
+                else:
+                    rebuild.append(
+                        f"\n{line}"
+                    )  # Add newline for lines that don't start with a space
+            else:
+                # If abstract is not found, append the line as is
+                if "abstract" in line.lower():
+                    rebuild.append(line if index == 0 else f"\n{line}")
+                    abstract_found = True
+                else:
+                    rebuild.append(line)
+        return "".join(rebuild)
