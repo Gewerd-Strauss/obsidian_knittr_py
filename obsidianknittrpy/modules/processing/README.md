@@ -18,7 +18,7 @@ processAbstract DONE
 
 QMD:
     convertBookdownToQuartoReferencing
-    convertDiagrams
+    ProcessDiagramCodeblocks                                  DONE
     moveEquationreferencesToEndofBlock
     moveEquationLabelsUpIntoLatexEquation
     fixCitationpathing

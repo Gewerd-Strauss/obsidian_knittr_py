@@ -10,6 +10,10 @@ pipeline:
   - file_name: general_processing
     module_name: ProcessAbstract
     config: {}
+    enabled: False
+  - file_name: convert_diagrams
+    module_name: ProcessDiagramCodeblocks
+    config: {codeblock_langs: ["mermaid","dot"]}
     enabled: True
   - file_name: general_processing
     module_name: ProcessFrontmatterNulls
