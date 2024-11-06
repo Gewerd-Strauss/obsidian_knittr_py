@@ -79,7 +79,7 @@ class ProcessTags(BaseModule):
         return clean_tags
 
     def replace_pattern(self, contents, tag, remove_hashtags):
-        needle = f"``{{_obsidian_pattern_tag_{tag}}}``"
+        needle = f"`{{_obsidian_pattern_tag_{tag}}}`"
         replacement = tag if remove_hashtags else f"#{tag}"
         return contents.replace(needle, replacement)
 
