@@ -16,8 +16,9 @@ pipeline:
     config: {}
     enabled: True
   - file_name: quarto_modules
-    module_name: FixInvalidQuartoFrontmatterFields
+    module_name: ProcessInvalidQuartoFrontmatterFields
     config: {erroneous_keys: {"aliases":[]}}
+    enabled: True
   - file_name: convert_codeblocks_to_qmd
     module_name: ConvertCodeBlocksToQMD
     config: {force: true,enable: false}
