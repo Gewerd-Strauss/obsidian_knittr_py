@@ -7,11 +7,15 @@ class ProcessTags(BaseModule):
         remove_hashtags = self.get_config("remove_hashtags_from_tags")
         contents = input_str
 
+        # Process front matter to handle missing tags
+        contents = self.ensure_tags_field(contents)
+
         if "_obsidian_pattern" in contents:
             tags, orig_tags = self.extract_tags(contents)
             already_replaced = set()
 
             if not tags:
+                # Use the first tag if no tags were extracted
                 tag = self.trim_newline(orig_tags[0])
                 contents = self.replace_pattern(contents, tag, remove_hashtags)
                 already_replaced.add(tag)
@@ -34,6 +38,17 @@ class ProcessTags(BaseModule):
 
         return contents
 
+    def ensure_tags_field(self, contents):
+        # Ensures the 'tags' field exists in the frontmatter
+        if "tags:" in contents:
+            tags_section = contents.split("tags:")[1].splitlines()
+            tags = [line.strip() for line in tags_section if line.startswith("- ")]
+
+            # Initialize 'tags' field if no tags are present
+            if not tags:
+                contents = contents.replace("tags:", "tags: []")
+        return contents
+
     def extract_tags(self, contents):
         tags_section = contents.split("tags:")[1] if "tags:" in contents else ""
         lines = tags_section.splitlines()
@@ -41,7 +56,7 @@ class ProcessTags(BaseModule):
 
         for line in lines:
             if line.startswith("- "):
-                tags.append(line)
+                tags.append(line.strip())
                 orig_tags.append(line)
             if line.startswith("---"):
                 break
