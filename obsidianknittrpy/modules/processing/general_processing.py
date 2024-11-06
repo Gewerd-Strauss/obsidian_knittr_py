@@ -128,7 +128,7 @@ class ProcessAbstract(BaseModule):
 
 
 class ProcessFrontmatterNulls(BaseModule):
-    """Module processes the frontmatter section to ensure that a YAML key with value 'null' (unquoted) gets quoted."""
+    """Module processes the frontmatter section to ensure that a YAML key with value 'null' (unquoted) gets quoted. Should always be run."""
 
     def process(self, input_str):
         lines = input_str.splitlines()

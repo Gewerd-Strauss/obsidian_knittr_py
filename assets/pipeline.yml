@@ -1,0 +1,37 @@
+pipeline:
+  - file_name: convert_obsidianhtml_image_srcs
+    module_name: ConvertImageSRCs
+    config: {}
+    enabled: True
+  - file_name: general_processing
+    module_name: ProcessTags
+    config: {remove_hashtags_from_tags: False,obsidian_tag_end_chars: []}
+    enabled: True
+  - file_name: general_processing
+    module_name: ProcessAbstract
+    config: {}
+    enabled: True
+  - file_name: general_processing
+    module_name: ProcessFrontmatterNulls
+    config: {}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: FixInvalidQuartoFrontmatterFields
+    config: {erroneous_keys: {"aliases":[]}}
+  - file_name: convert_codeblocks_to_qmd
+    module_name: ConvertCodeBlocksToQMD
+    config: {force: true,enable: false}
+    arguments: ["run_test","force_standard"]
+    enabled: True
+  - file_name: convert_headings_to_qmd
+    module_name: ConvertHeadingToQMD
+    config: {}
+    enabled: True
+  - file_name: convert_images_to_qmd
+    module_name: ConvertImagesToQMD
+    config: {}
+    enabled: False
+  - file_name: convert_links_to_qmd
+    module_name: ConvertLinksToQMD
+    config: {}
+    enabled: True
