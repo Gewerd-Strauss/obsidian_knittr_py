@@ -24,6 +24,14 @@ class BaseModule:
         """
         self.config.update(kwargs)
 
+    def log_input(self):
+        """method reserved for logging input-state"""
+        pass
+
+    def log_output(self):
+        """method reserved for logging outnput-state"""
+        pass
+
     def process(self, input_str):
         """
         Process the input markdown string and return the modified string.
