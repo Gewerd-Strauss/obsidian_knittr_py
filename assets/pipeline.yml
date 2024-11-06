@@ -23,20 +23,7 @@ pipeline:
     module_name: ProcessInvalidQuartoFrontmatterFields
     config: {erroneous_keys: {"aliases":[]}}
     enabled: True
-  - file_name: convert_codeblocks_to_qmd
-    module_name: ConvertCodeBlocksToQMD
-    config: {force: true,enable: false}
-    arguments: ["run_test","force_standard"]
-    enabled: True
-  - file_name: convert_headings_to_qmd
-    module_name: ConvertHeadingToQMD
-    config: {}
-    enabled: True
-  - file_name: convert_images_to_qmd
-    module_name: ConvertImagesToQMD
-    config: {}
-    enabled: False
-  - file_name: convert_links_to_qmd
-    module_name: ConvertLinksToQMD
+  - file_name: module_file
+    module_name: ModuleName
     config: {}
     enabled: True
