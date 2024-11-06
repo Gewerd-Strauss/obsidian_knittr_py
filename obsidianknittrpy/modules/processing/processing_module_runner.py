@@ -51,13 +51,15 @@ import yaml
 
 
 class ProcessingPipeline:
-    def __init__(self, config_file, arguments=None):
+    def __init__(self, config_file, arguments=None, debug=False):
         """
         Initialize the processing pipeline.
         :param config_file: Path to YAML configuration file
         """
+        self.debug = debug
         self.modules = []
         self.arguments = arguments if arguments else {}
+        self.arguments["debug"] = debug
         self.load_config(config_file)
 
     def load_config(self, config_file):
@@ -104,8 +106,6 @@ class ProcessingPipeline:
         :return: The final processed string
         """
         for module in self.modules:
-            A = module.get_config("force")
-            B = module.get_config("enable")
             module.log_input()
             input_str = module.process(input_str)
             module.log_output()
