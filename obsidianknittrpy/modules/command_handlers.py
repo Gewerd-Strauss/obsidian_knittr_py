@@ -1,9 +1,12 @@
 # command_handlers.py
 
-from obsidianknittrpy.modules.utility import convert_format_args
+from obsidianknittrpy.modules.utility import convert_format_args, load_text_file
 from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
 from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
+from obsidianknittrpy.modules.processing.processing_module_runner import (
+    ProcessingPipeline,
+)
 import warnings as wn
 import os as os
 
@@ -42,6 +45,16 @@ def main(pb):
     obsidian_html.run()
     if pb["settings"]["obsidian_html"]["limit_scope"]:
         pb["objects"]["obsidian_limiter"].remove_limiter()
+    arguments = pb["settings"]["general_configuration"]
+    pipeline = ProcessingPipeline(
+        config_file="assets/pipeline.yml", arguments=arguments, debug=True
+    )
+    processed_string = pipeline.run(
+        load_text_file(
+            obsidian_html.output["output_path"],
+        )
+    )
+    print(processed_string)
     pass
 
 
