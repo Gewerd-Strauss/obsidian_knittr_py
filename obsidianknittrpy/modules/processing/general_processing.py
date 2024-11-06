@@ -115,16 +115,17 @@ class ProcessAbstract(BaseModule):
                     )  # Preserve indentation for lines starting with a space
                 else:
                     rebuild.append(
-                        f"\n{line}"
+                        f"{line}"
                     )  # Add newline for lines that don't start with a space
             else:
                 # If abstract is not found, append the line as is
                 if "abstract" in line.lower():
-                    rebuild.append(line if index == 0 else f"\n{line}")
+                    rebuild.append(line if index == 0 else f"{line}")
                     abstract_found = True
                 else:
-                    rebuild.append(line)
-        return "".join(rebuild)
+                    rebuild.append(line if index == 0 else f"{line}")
+                    # rebuild.append(line)
+        return "\n".join(rebuild)
 
 
 class ProcessFrontmatterNulls(BaseModule):
