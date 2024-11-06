@@ -9,7 +9,7 @@ The intention is to make expansion of the processing-pipeline significantly simp
 ```
 ConvertSRC_SYNTAX_V4 DONE
 >
-processTags
+processTags DONE
 >
 processAbstract
 ```
