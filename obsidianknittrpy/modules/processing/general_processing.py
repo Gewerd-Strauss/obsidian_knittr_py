@@ -125,3 +125,38 @@ class ProcessAbstract(BaseModule):
                 else:
                     rebuild.append(line)
         return "".join(rebuild)
+
+
+class ProcessFrontmatterNulls(BaseModule):
+    """Module processes the frontmatter section to ensure that a YAML key with value 'null' (unquoted) gets quoted."""
+
+    def process(self, input_str):
+        lines = input_str.splitlines()
+        rebuild = []
+        in_front_matter = False
+
+        for idx, line in enumerate(lines):
+            trimmed_line = line.strip()
+
+            if "---" in trimmed_line and not in_front_matter and idx == 0:
+                # Start of front matter
+                in_front_matter = True
+            elif "---" in trimmed_line and in_front_matter and idx > 0:
+                # End of front matter
+                in_front_matter = False
+                rebuild.append(line)
+            elif in_front_matter:
+                # Within the front matter
+                # Replace 'null' values with quoted '""null""'
+                if re.search(r".+:\s*null\b", line):
+                    line = line.replace("null", '""null""')
+
+                # Check if 'tags:' is empty, add empty list if so
+                if "tags:" in line and not any(
+                    tag_line.startswith("- ") for tag_line in lines[idx + 1 :]
+                ):
+                    line = "tags: []"
+
+            rebuild.append(line)
+
+        return "\n".join(rebuild)
