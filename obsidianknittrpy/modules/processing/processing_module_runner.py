@@ -106,5 +106,7 @@ class ProcessingPipeline:
         for module in self.modules:
             A = module.get_config("force")
             B = module.get_config("enable")
+            module.log_input()
             input_str = module.process(input_str)
+            module.log_output()
         return input_str
