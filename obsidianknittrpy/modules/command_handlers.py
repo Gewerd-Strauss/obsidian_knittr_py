@@ -13,7 +13,17 @@ import os as os
 
 def main(pb):
     wn.warn("main processing function is not implemented yet.")
+    # Level = 0 > manuscript_dir > check
+    # Level = -1 > true vault-root > check
+    # Level > 0 = manuscript_dir - level
+    # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
+    # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
     if pb["settings"]["obsidian_html"]["limit_scope"]:
+        obsidian_limiter = ObsidianHTML_Limiter(
+            manuscript_path=os.path.normpath(pb["manuscript"]["manuscript_path"]),
+            auto_submit=pb["settings"]["general_configuration"]["full_submit"],
+        )
+        pb["objects"]["obsidian_limiter"] = obsidian_limiter
         pb["objects"]["obsidian_limiter"].add_limiter()
 
     # Example usage:
@@ -93,17 +103,6 @@ def handle_gui(args, pb):
             print(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
-    if pb["settings"]["obsidian_html"]["limit_scope"]:
-        obsidian_limiter = ObsidianHTML_Limiter(
-            manuscript_path=os.path.normpath(pb["manuscript"]["manuscript_path"]),
-            auto_submit=pb["settings"]["general_configuration"]["full_submit"],
-        )
-        pb["objects"]["obsidian_limiter"] = obsidian_limiter
-        # Level = 0 > manuscript_dir > chek
-        # Level = -1 > true vault-root > check
-        # Level > 0 = manuscript_dir - level
-        # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
-        # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
     main(pb)
 
 

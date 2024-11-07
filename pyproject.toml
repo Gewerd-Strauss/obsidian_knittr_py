@@ -1,0 +1,10 @@
+[tool.black]
+line-length = 88  # Or whatever line length you prefer
+skip-string-normalization = true  # Optional, if you want to preserve single quotes
+target-version = ['py312']  # Target Python 3.12.x
+exclude = '''
+/(
+    dev/
+    assets/
+)/
+'''
