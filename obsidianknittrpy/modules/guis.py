@@ -54,7 +54,7 @@ class ObsidianKnittrGUI:
             "limit_scope": tk.IntVar(),
         }
         self.gen_config_selections = {
-            "remove_hashtags": tk.IntVar(),
+            "remove_hashtags_from_tags": tk.IntVar(),
             "strip_local_md_links": tk.IntVar(),
             "keep_filename": tk.IntVar(),
             "render_to_outputs": tk.IntVar(),
@@ -334,7 +334,7 @@ class ObsidianKnittrGUI:
         ########## GENERAL CONFIGURATION ##########
 
         gen_config_opts = {
-            "remove_hashtags": "Remove '#' from tags",
+            "remove_hashtags_from_tags": "Remove '#' from tags",
             "strip_local_md_links": "Strip local markdown links",
             "keep_filename": "Keep filename",
             "render_to_outputs": "Render manuscripts to chosen outputs",

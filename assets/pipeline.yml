@@ -1,0 +1,29 @@
+pipeline:
+  - file_name: convert_obsidianhtml_image_srcs
+    module_name: ConvertImageSRCs
+    config: {}
+    enabled: True
+  - file_name: general_processing
+    module_name: ProcessTags
+    config: {remove_hashtags_from_tags: False,obsidian_tag_end_chars: []}
+    enabled: True
+  - file_name: general_processing
+    module_name: ProcessAbstract
+    config: {}
+    enabled: False
+  - file_name: convert_diagrams
+    module_name: ProcessDiagramCodeblocks
+    config: {codeblock_langs: ["mermaid","dot"]}
+    enabled: True
+  - file_name: general_processing
+    module_name: ProcessFrontmatterNulls
+    config: {}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: ProcessInvalidQuartoFrontmatterFields
+    config: {erroneous_keys: {"aliases":[]}}
+    enabled: True
+  - file_name: module_file
+    module_name: ModuleName
+    config: {}
+    enabled: True
