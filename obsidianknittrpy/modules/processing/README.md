@@ -11,7 +11,7 @@ ConvertSRC_SYNTAX_V4 DONE
 >
 processTags DONE
 >
-processAbstract DONE
+processAbstract DONE, and disabled. 
 ```
 
 ## format-specific conversion-steps
@@ -22,15 +22,15 @@ QMD:
     moveEquationreferencesToEndofBlock
     moveEquationLabelsUpIntoLatexEquation
     fixCitationpathing
-    fixNullFields
-    fixInvalidQuartoFrontmatterFields
+    fixNullFields (in frontmatter)                   DONE
+    ProcessInvalidQuartoFrontmatterFields            DONE
 
 RMD:
     cleanLatexEnvironmentsforRMarkdown
-    (fixNullFields)
+    (fixNullFields) - should always be run          DONE
 
 QMD:
-    quartopurgeTags
+    quartopurgeTags - does nothing, can be ignored.
 
 QMD (args.noContent)
     quartopurgeContents
