@@ -92,7 +92,7 @@ def handle_gui(args, pb):
     CH.load_file_history(file_history_path="assets/file_history.yml")
     settings = CH.get_config("settings")
     file_history = CH.get_config("file_history")
-    format_definitions = CH.get_config("format_defintions")
+    format_definitions = CH.get_config("format_definitions")
 
     # 2. launch main GUI
     main_gui = ObsidianKnittrGUI(settings=settings, file_history=file_history)
