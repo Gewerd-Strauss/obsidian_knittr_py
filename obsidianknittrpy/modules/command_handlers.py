@@ -1,14 +1,70 @@
 # command_handlers.py
 
-from obsidianknittrpy.modules.utility import convert_format_args
+from obsidianknittrpy.modules.utility import convert_format_args, load_text_file
 from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
+from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
+from obsidianknittrpy.modules.processing.processing_module_runner import (
+    ProcessingPipeline,
+)
 import warnings as wn
 import os as os
 
 
 def main(pb):
     wn.warn("main processing function is not implemented yet.")
+    # Level = 0 > manuscript_dir > check
+    # Level = -1 > true vault-root > check
+    # Level > 0 = manuscript_dir - level
+    # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
+    # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
+    if pb["settings"]["obsidian_html"]["limit_scope"]:
+        obsidian_limiter = ObsidianHTML_Limiter(
+            manuscript_path=os.path.normpath(pb["manuscript"]["manuscript_path"]),
+            auto_submit=pb["settings"]["general_configuration"]["full_submit"],
+        )
+        pb["objects"]["obsidian_limiter"] = obsidian_limiter
+        pb["objects"]["obsidian_limiter"].add_limiter()
+
+    # Example usage:
+    obsidian_html = ObsidianHTML(
+        manuscript_path=pb["manuscript"]["manuscript_path"],
+        config_path=r"assets\temp_obsidianhtml_config.yml",
+        use_convert=pb["settings"]["obsidian_html"]["verb"] == "convert",
+        use_own_fork=pb["settings"]["obsidian_html"]["use_custom_fork"],
+        verbose=pb["settings"]["obsidian_html"]["verbose_flag"],
+        own_ohtml_fork_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
+        work_dir=os.path.normpath(
+            os.path.join(
+                os.path.expanduser("~"),
+                "Desktop",
+                "TempTemporal",
+                "obsidian-html-output",
+            )
+        ),
+        # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
+        output_dir=os.path.normpath(
+            os.path.join(
+                os.path.expanduser("~"),
+                "Desktop",
+                "TempTemporal",
+                "obsidian-html-output",
+            )
+        ),
+    )
+    obsidian_html.run()
+    if pb["settings"]["obsidian_html"]["limit_scope"]:
+        pb["objects"]["obsidian_limiter"].remove_limiter()
+    arguments = pb["settings"]["general_configuration"]
+    pipeline = ProcessingPipeline(
+        config_file="assets/pipeline.yml", arguments=arguments, debug=True
+    )
+    processed_string = pipeline.run(
+        load_text_file(
+            obsidian_html.output["output_path"],
+        )
+    )
+    print(processed_string)
     pass
 
 
@@ -47,17 +103,6 @@ def handle_gui(args, pb):
             print(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
-    if pb["settings"]["obsidian_html"]["limit_scope"]:
-        obsidian_limiter = ObsidianHTML_Limiter(
-            manuscript_path=os.path.normpath(pb["manuscript"]["manuscript_path"]),
-            auto_submit=pb["settings"]["general_configuration"]["full_submit"],
-        )
-        pb["objects"]["obsidian_limiter"] = obsidian_limiter
-        # Level = 0 > manuscript_dir > chek
-        # Level = -1 > true vault-root > check
-        # Level > 0 = manuscript_dir - level
-        # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
-        # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
     main(pb)
 
 
