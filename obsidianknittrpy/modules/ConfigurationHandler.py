@@ -22,10 +22,6 @@ class ConfigurationHandler:
         self.applied_settings = self.load_default_settings()
         self.applied_pipeline = self.load_default_pipeline()
         self.applied_format_definitons = self.load_default_format_definitions()
-        if self.last_run_path is not None and os.path.exists(self.last_run_path):
-            self.load_last_run(
-                self.last_run_path
-            )  # load lastrun-data when running GUI path.
 
     def init_default_settings(self):
         self.default_settings = {
