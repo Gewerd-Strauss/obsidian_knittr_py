@@ -1,6 +1,7 @@
 import yaml
 import os
 import argparse
+import re as re
 
 
 class ConfigurationHandler:
@@ -338,6 +339,11 @@ quarto::pdf
             return self.applied_format_definitons
         elif type in ["file_history"]:
             return self.file_history
+
+    def get_formats(self, format_definitions_string=str):
+        pattern = r"^(?!\s*;)\S+::\S+"
+        matches = re.findall(pattern, format_definitions_string, re.MULTILINE)
+        return matches
 
     ### Loaders
 
