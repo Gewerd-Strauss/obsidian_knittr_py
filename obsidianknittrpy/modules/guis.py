@@ -523,6 +523,9 @@ class ObsidianKnittrGUI:
         for output_type, var in self.output_selections.items():
             if var.get():
                 results["output_type"].append(output_type)
+        if len(results["output_type"]) == 0:
+            print("no format selected, please select a format")
+            return
         results["execution_directory"] = (
             self.exec_dir_selection.get()
         )  # Assuming v holds the selected radio button value
