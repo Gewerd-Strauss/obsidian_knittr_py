@@ -626,7 +626,7 @@ def handle_ot_guis(args, pb, format_definitions):
         setattr(
             ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
         )  # Set the attribute SkipGUI
-        if ShowGui:
+        if ShowGui and not pb["settings"]["general_configuration"]["full_submit"]:
             ot.generate_gui(
                 x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
             )  # Call GenerateGUI method
