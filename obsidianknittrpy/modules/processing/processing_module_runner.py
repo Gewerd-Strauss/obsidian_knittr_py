@@ -50,6 +50,11 @@ import yaml
 
 
 class ProcessingPipeline:
+    """
+    Main pipeline class responsible for execution processing-modules
+    This class gets executed on the immediate output of obsidian-html
+    """
+
     def __init__(self, config_file, arguments=None, debug=False):
         """
         Initialize the processing pipeline.

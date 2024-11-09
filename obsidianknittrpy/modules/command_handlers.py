@@ -7,6 +7,7 @@ from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
 )
+from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
 import os as os
 
@@ -82,15 +83,26 @@ def handle_gui(args, pb):
     """Execute the GUI command."""
     # 1. translate arguments
     args = convert_format_args(args)
+    # 2. setup config-manager
+    CH = ConfigurationHandler(last_run_path=None)
+    CH.apply_defaults()
+    CH.load_last_run(
+        last_run_path=None
+    )  # must be modified to point to the lastrun-path.
+    CH.load_file_history(file_history_path="assets/file_history.yml")
+    settings = CH.get_config("settings")
+    file_history = CH.get_config("file_history")
+    format_definitions = CH.get_config("format_defintions")
+
     # 2. launch main GUI
-    main_gui = ObsidianKnittrGUI()
+    main_gui = ObsidianKnittrGUI(settings=settings, file_history=file_history)
     # 3. when main GUI submits, parse the selected formats and launch the OT-guis
     # for result in main_gui.results["general_configuration"].items():
     #     pb.
     pb["settings"] = main_gui.results
     pb["objects"]["sel"] = main_gui.results["output_type"]
     pb["manuscript"] = main_gui.results["manuscript"]
-    pb = handle_ot_guis(args, pb)
+    pb = handle_ot_guis(args, pb, format_definitions)
     for format, ot in pb["objects"]["output_formats"].items():
         # Here, format is the key (e.g., "quarto::docx")
         # and ot is the instance of the OT class

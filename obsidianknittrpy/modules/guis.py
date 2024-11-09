@@ -6,7 +6,7 @@ import warnings as wn
 
 
 class ObsidianKnittrGUI:
-    def __init__(self):
+    def __init__(self, settings, file_history=[]):
         self.output_types = [
             "quarto::pdf",
             "quarto::html",
@@ -583,14 +583,14 @@ from obsidianknittrpy.modules.DynamicArguments import OT
 from obsidianknittrpy import __config__
 
 
-def handle_ot_guis(args, pb):
+def handle_ot_guis(args, pb, format_definitions):
     # Implement GUI launch logic here
     x = 1645
     y = 475
     ShowGui = 1
     for format in pb["objects"]["sel"]:
         ot = OT(
-            config_file=__config__,
+            config_file=format_definitions,
             format=format,
             DDL_ParamDelimiter="-<>-",
             skip_gui=pb["settings"]["general_configuration"]["full_submit"],
