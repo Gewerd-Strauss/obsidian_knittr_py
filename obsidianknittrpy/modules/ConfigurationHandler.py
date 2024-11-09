@@ -11,6 +11,7 @@ class ConfigurationHandler:
         self.init_default_settings()  # not exported, not saved
         self.init_default_pipeline()  # not exported, not saved
         self.init_default_format_definitions()  # not exported, not saved
+        self.file_history = []
         self.last_run_path = None
         ## initiate the applied settings instanes by copying over the default settings
         if last_run_path is not None and os.path.exists(last_run_path):
@@ -339,6 +340,8 @@ quarto::pdf
             return self.applied_pipeline
         elif type in ["format_definitions"]:
             return self.applied_format_definitons
+        elif type in ["file_history"]:
+            return self.file_history
 
     ### Loaders
 
@@ -428,6 +431,17 @@ quarto::pdf
                 print(f"Configuration saved to {last_run_path}")
             except FileNotFoundError:
                 print("Last run configuration not found; changes not saved.")
+
+    def load_file_history(self, file_history_path=None):
+        """Load the file-history"""
+        if file_history_path is not None:
+            try:
+                with open(file_history_path, 'r', encoding='utf-8') as f:
+                    file_history_config = yaml.safe_load(f)
+                self.file_history.extend(file_history_config)
+                print("File-history-config loaded for GUI mode.")
+            except FileNotFoundError:
+                print("File-history-configuration not found; using no configuration.")
 
     ### EXPORTERS ###
     def export_config(self, default=False, file_path=None):
