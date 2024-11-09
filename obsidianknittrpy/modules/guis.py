@@ -12,29 +12,7 @@ class ObsidianKnittrGUI:
             "quarto::html",
             "quarto::docx",
         ]  # Example types
-        self.file_history = [
-            "A1",
-            "B1",
-            "C1",
-            "A2",
-            "B2",
-            "C2",
-            "A3",
-            "B3",
-            "C3",
-            "A4",
-            "B4",
-            "C4",
-            "A5",
-            "B5",
-            "C5",
-            "A6",
-            "B6",
-            "C6",
-            "A7",
-            "B7",
-            "C7",
-        ]
+        self.file_history = file_history
         self.output_selections = {}
         self.root = tk.Tk()
         self.root.focus_force()
@@ -47,22 +25,43 @@ class ObsidianKnittrGUI:
         self.root.resizable(False, False)  # disable resizing of GUI
         self.root.wm_attributes("-topmost", 1)
         self.obsidian_options_selections = {
-            "verb": tk.IntVar(),
-            "use_custom_fork": tk.IntVar(),
-            "purge_errors": tk.IntVar(),
-            "verbose_flag": tk.IntVar(),
-            "limit_scope": tk.IntVar(),
+            "verb": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verb"]),
+            "use_custom_fork": tk.IntVar(
+                value=settings["OBSIDIAN_HTML"]["use_custom_fork"]
+            ),
+            "purge_errors": tk.IntVar(value=settings["OBSIDIAN_HTML"]["purge_errors"]),
+            "verbose_flag": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verbose_flag"]),
+            "limit_scope": tk.IntVar(value=settings["OBSIDIAN_HTML"]["limit_scope"]),
         }
         self.gen_config_selections = {
-            "remove_hashtags_from_tags": tk.IntVar(),
-            "strip_local_md_links": tk.IntVar(),
-            "keep_filename": tk.IntVar(),
-            "render_to_outputs": tk.IntVar(),
-            "backup_output_before_rendering": tk.IntVar(),
+            "remove_hashtags_from_tags": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["remove_hashtags_from_tags"]
+            ),
+            "strip_local_md_links": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["strip_local_md_links"]
+            ),
+            "keep_filename": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["keep_filename"]
+            ),
+            "render_to_outputs": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["render_to_outputs"]
+            ),
+            "backup_output_before_rendering": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"][
+                    "backup_output_before_rendering"
+                ]
+            ),
         }
         self.engine_config_selections = {
-            "quarto_strip_reference_prefixes": tk.IntVar(),
+            "quarto_strip_reference_prefixes": tk.IntVar(
+                value=settings["ENGINE_SPECIFIC_STUFF"][
+                    "quarto_strip_reference_prefixes"
+                ]
+            ),
         }
+        self.exec_dir_selection = tk.IntVar(
+            value=settings["EXECUTION_DIRECTORIES"]["exec_dir_selection"]
+        )
 
         self.classname = "ObsidianKnittrGUI"
 
@@ -302,7 +301,6 @@ class ObsidianKnittrGUI:
         tk.Label(exec_dir_frame, text="Choose execution directory for Quarto/R").pack(
             anchor=tk.W, padx=5, pady=5
         )
-        self.exec_dir_selection = tk.IntVar(value=1)
         exec_dir_options = [
             ("1. OHTML-Output-Dir", 1),
             ("2. Subfolder of note-location in vault", 2),
@@ -580,7 +578,6 @@ class ObsidianKnittrGUI:
 #########
 
 from obsidianknittrpy.modules.DynamicArguments import OT
-from obsidianknittrpy import __config__
 
 
 def handle_ot_guis(args, pb, format_definitions):
