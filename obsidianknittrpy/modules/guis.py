@@ -6,12 +6,8 @@ import warnings as wn
 
 
 class ObsidianKnittrGUI:
-    def __init__(self, settings, file_history=[]):
-        self.output_types = [
-            "quarto::pdf",
-            "quarto::html",
-            "quarto::docx",
-        ]  # Example types
+    def __init__(self, settings, file_history=[], formats=[]):
+        self.output_types = formats
         self.file_history = file_history
         self.output_selections = {}
         self.root = tk.Tk()

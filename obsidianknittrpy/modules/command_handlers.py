@@ -93,9 +93,11 @@ def handle_gui(args, pb):
     settings = CH.get_config("settings")
     file_history = CH.get_config("file_history")
     format_definitions = CH.get_config("format_definitions")
-
+    formats = CH.get_formats(format_definitions)
     # 2. launch main GUI
-    main_gui = ObsidianKnittrGUI(settings=settings, file_history=file_history)
+    main_gui = ObsidianKnittrGUI(
+        settings=settings, file_history=file_history, formats=formats
+    )
     # 3. when main GUI submits, parse the selected formats and launch the OT-guis
     # for result in main_gui.results["general_configuration"].items():
     #     pb.
