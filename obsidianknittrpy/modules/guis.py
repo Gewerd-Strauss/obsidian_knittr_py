@@ -21,7 +21,7 @@ class ObsidianKnittrGUI:
         self.root.resizable(False, False)  # disable resizing of GUI
         self.root.wm_attributes("-topmost", 1)
         self.obsidian_options_selections = {
-            "verb": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verb"]),
+            "verb": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verb"] == "convert"),
             "use_custom_fork": tk.IntVar(
                 value=settings["OBSIDIAN_HTML"]["use_custom_fork"]
             ),
@@ -50,7 +50,7 @@ class ObsidianKnittrGUI:
         }
         self.engine_config_selections = {
             "quarto_strip_reference_prefixes": tk.IntVar(
-                value=settings["ENGINE_SPECIFIC_STUFF"][
+                value=settings["ENGINE_CONFIGURATION"][
                     "quarto_strip_reference_prefixes"
                 ]
             ),
@@ -58,6 +58,9 @@ class ObsidianKnittrGUI:
         self.exec_dir_selection = tk.IntVar(
             value=settings["EXECUTION_DIRECTORIES"]["exec_dir_selection"]
         )
+
+        for output_type in settings["OUTPUT_TYPE"]:
+            self.output_selections[output_type] = tk.IntVar(value=True)
 
         self.classname = "ObsidianKnittrGUI"
 
@@ -251,7 +254,10 @@ class ObsidianKnittrGUI:
         scrollbar.place(relx=0.9, rely=0, relheight=1)
 
         for output_type in self.output_types:
-            var = tk.IntVar()
+            if output_type in self.output_selections:
+                var = self.output_selections[output_type]
+            else:
+                var = tk.IntVar()
             checkbox = tk.Checkbutton(checkbox_frame, text=output_type, variable=var)
             checkbox.pack(anchor=tk.W, padx=5, pady=2)
             self.output_selections[output_type] = var
@@ -435,6 +441,7 @@ class ObsidianKnittrGUI:
 
     def update_filehistory(self, added_path=None):
         if added_path:
+            added_path = os.path.normpath(added_path)
             # Move to beginning if already in the history
             if added_path in self.file_history:
                 self.file_history.remove(added_path)
@@ -442,11 +449,14 @@ class ObsidianKnittrGUI:
             self.file_history.insert(0, added_path)
 
         # Populate the Combobox with current file history
-        self.file_history_dropdown["values"] = self.file_history
+        try:
+            self.file_history_dropdown["values"] = self.file_history
 
-        # Select the most recent entry if the list is not empty
-        if self.file_history:
-            self.file_history_dropdown.current(0)
+            # Select the most recent entry if the list is not empty
+            if self.file_history:
+                self.file_history_dropdown.current(0)
+        except Exception:
+            pass
 
     def load_configuration(self):
         print(
