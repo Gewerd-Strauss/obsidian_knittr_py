@@ -483,6 +483,16 @@ quarto::pdf
             except FileNotFoundError:
                 print("File-history-configuration not found; using no configuration.")
 
+    def save_file_history(self, file_history_path=None):
+        """Save the current configuration as the last run configuration."""
+        if file_history_path is not None:
+            try:
+                with open(file_history_path, 'w', encoding='utf-8') as f:
+                    yaml.dump(self.file_history, f, allow_unicode=True)
+                print(f"Configuration saved to {file_history_path}")
+            except FileNotFoundError:
+                print("File-history configuration not found; changes not saved.")
+
     ### EXPORTERS ###
     def export_config(self, default=False, file_path=None):
         """Export the current configuration (modified or default) to a YAML file."""
