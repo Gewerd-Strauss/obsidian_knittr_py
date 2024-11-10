@@ -2,6 +2,8 @@ import yaml
 import os
 import argparse
 import re as re
+from appdirs import site_config_dir
+from pathlib import Path
 
 
 class ConfigurationHandler:
@@ -9,6 +11,15 @@ class ConfigurationHandler:
     def __init__(self, last_run_path=None):
         """Initialises the default settings"""
         # Load default configuration in code
+        self.application_directory = os.path.normpath(
+            os.path.join(
+                Path(
+                    site_config_dir(
+                        appname="obsidian_knittr_py", appauthor="Gewerd-Strauss"
+                    )
+                ),
+            )
+        )
         self.init_default_settings()  # not exported, not saved
         self.init_default_pipeline()  # not exported, not saved
         self.init_default_format_definitions()  # not exported, not saved
