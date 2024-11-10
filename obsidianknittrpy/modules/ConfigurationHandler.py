@@ -20,10 +20,17 @@ class ConfigurationHandler:
                 ),
             )
         )
+        self.default_history_location = os.path.normpath(
+            os.path.join(
+                self.application_directory,
+                "file-history.yml",
+            )
+        )
         self.init_default_settings()  # not exported, not saved
         self.init_default_pipeline()  # not exported, not saved
         self.init_default_format_definitions()  # not exported, not saved
         self.file_history = []
+        self.init_file_history()
         self.last_run_path = None
         ## initiate the applied settings instanes by copying over the default settings
         if last_run_path is not None and os.path.exists(last_run_path):
@@ -338,6 +345,25 @@ quarto::pdf
 	;Link:"https://quarto.org/docs/reference/formats/pdf.html#format-options"|Linktext:?
 
 """
+
+    def init_file_history(self):
+        if self.file_history is not None:
+            try:
+                # Create the directory if it doesn't exist
+                directory = os.path.dirname(self.default_history_location)
+                if directory and not os.path.exists(directory):
+                    os.makedirs(directory, exist_ok=True)
+                if not os.path.exists(self.default_history_location):
+                    # Write the file, except if it exists already
+                    with open(
+                        self.default_history_location, 'w', encoding='utf-8'
+                    ) as f:
+                        yaml.dump(self.file_history, f, allow_unicode=True)
+                    print(f"Configuration saved to {self.default_history_location}")
+            except yaml.YAMLError as e:
+                print(f"Error parsing YAML file: {e}")
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
     ### Getters
 
