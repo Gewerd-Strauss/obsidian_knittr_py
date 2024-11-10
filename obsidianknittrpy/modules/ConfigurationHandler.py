@@ -438,7 +438,7 @@ quarto::pdf
         # Add additional validation as needed
         print("Configuration validated successfully.")
 
-    def merge(self, custom_config_path):
+    def merge_applied_settings(self, custom_config_path):
         """
         Merge options from a custom YAML config file into the runtime configuration.
         This only applies to the configuration itself, NOT to pipeline or format_definitions
@@ -452,12 +452,28 @@ quarto::pdf
                 custom_config = yaml.safe_load(f)
 
             # Update main config with custom settings, ignoring extra fields
-            self.config.update(custom_config)
+            self.merge_config(custom_config)
             print(f"Configuration merged with {custom_config_path}")
         except FileNotFoundError:
             print(
                 f"Custom configuration file not found at {custom_config_path}. No merge performed."
             )
+
+    def merge_config(self, custom_config):
+        try:
+            # Update main config with custom settings, ignoring extra fields
+            self.config.update(custom_config)
+        except yaml.YAMLError as e:
+            print(f"Error parsing YAML file: {e}")
+
+    def merge_config_for_save(self, custom_config, config_section):
+        try:
+            # Update main config with custom settings, ignoring extra fields
+            for key, value in custom_config.items():
+                print(f"Changed setting {config_section}.{key} to '{value}'")
+                self.applied_settings[config_section][key] = value
+            # self.applied_settings[config_section]
+            # self.config.update(custom_config)
         except yaml.YAMLError as e:
             print(f"Error parsing YAML file: {e}")
 
