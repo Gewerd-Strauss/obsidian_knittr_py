@@ -72,8 +72,9 @@ class ConfigurationHandler:
                 "render_to_outputs": False,
                 "backup_output_before_rendering": False,
             },
-            "ENGINE_SPECIFIC_STUFF": {"quarto_strip_reference_prefixes": False},
+            "ENGINE_CONFIGURATION": {"quarto_strip_reference_prefixes": False},
             "EXECUTION_DIRECTORIES": {"exec_dir_selection": 1},
+            "OUTPUT_TYPE": [],
         }
 
     def init_default_pipeline(self):
