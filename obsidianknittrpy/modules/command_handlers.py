@@ -31,7 +31,7 @@ def main(pb):
     obsidian_html = ObsidianHTML(
         manuscript_path=pb["manuscript"]["manuscript_path"],
         config_path=r"assets\temp_obsidianhtml_config.yml",
-        use_convert=pb["settings"]["obsidian_html"]["verb"] == "convert",
+        use_convert=pb["settings"]["obsidian_html"]["verb"] in ["convert", True],
         use_own_fork=pb["settings"]["obsidian_html"]["use_custom_fork"],
         verbose=pb["settings"]["obsidian_html"]["verbose_flag"],
         own_ohtml_fork_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
@@ -85,26 +85,50 @@ def handle_gui(args, pb):
     args = convert_format_args(args)
     # 2. setup config-manager
     CH = ConfigurationHandler(last_run_path=None)
+    # setup defaults, load last-run
     CH.apply_defaults()
     CH.load_last_run(
-        last_run_path=None
+        last_run_path=CH.default_guiconfiguration_location
     )  # must be modified to point to the lastrun-path.
-    CH.load_file_history(file_history_path="assets/file_history.yml")
+    # load file-history
+    CH.load_file_history(file_history_path=CH.default_history_location)
+    # retrieve objects for use in later
     settings = CH.get_config("settings")
-    file_history = CH.get_config("file_history")
-    format_definitions = CH.get_config("format_definitions")
-    formats = CH.get_formats(format_definitions)
     # 2. launch main GUI
     main_gui = ObsidianKnittrGUI(
-        settings=settings, file_history=file_history, formats=formats
+        settings=settings,
+        file_history=CH.get_config("file_history"),
+        formats=CH.get_formats(CH.get_config("format_definitions")),
     )
+    # 3. Save file-history
+    main_gui.update_filehistory(main_gui.results["manuscript"]["manuscript_path"])
+    CH.file_history = main_gui.file_history
+    CH.save_file_history(CH.default_history_location)
+    # 4. Merge applied settings into the storage.
+    CH.merge_config_for_save(
+        {"exec_dir_selection": main_gui.results["execution_directory"]},
+        "EXECUTION_DIRECTORIES",
+    )
+    CH.merge_config_for_save(main_gui.results["obsidian_html"], "OBSIDIAN_HTML")
+    CH.merge_config_for_save(
+        main_gui.results["general_configuration"], "GENERAL_CONFIGURATION"
+    )
+    CH.merge_config_for_save(
+        main_gui.results["engine_configurations"], "ENGINE_CONFIGURATION"
+    )
+    # >> manuscript-section is saved in file-history, not here
+    # CH.merge_config_for_save(main_gui.results["manuscript"], "manuscript")
+    CH.applied_settings["OUTPUT_TYPE"] = main_gui.results["output_type"]
+    CH.save_last_run(CH.default_guiconfiguration_location)
     # 3. when main GUI submits, parse the selected formats and launch the OT-guis
     # for result in main_gui.results["general_configuration"].items():
     #     pb.
     pb["settings"] = main_gui.results
     pb["objects"]["sel"] = main_gui.results["output_type"]
     pb["manuscript"] = main_gui.results["manuscript"]
-    pb = handle_ot_guis(args, pb, format_definitions)
+    pb = handle_ot_guis(
+        args=args, pb=pb, format_definitions=CH.get_config("format_definitions")
+    )
     for format, ot in pb["objects"]["output_formats"].items():
         # Here, format is the key (e.g., "quarto::docx")
         # and ot is the instance of the OT class
