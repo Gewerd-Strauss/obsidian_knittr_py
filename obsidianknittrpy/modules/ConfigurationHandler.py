@@ -40,7 +40,7 @@ class ConfigurationHandler:
         """Apply the default settings to the applied settings"""
         self.applied_settings = self.load_default_settings()
         self.applied_pipeline = self.load_default_pipeline()
-        self.applied_format_definitons = self.load_default_format_definitions()
+        self.applied_format_definitions = self.load_default_format_definitions()
 
     def init_default_settings(self):
         self.default_settings = {
@@ -373,7 +373,7 @@ quarto::pdf
         elif type in ["pipeline"]:
             return self.applied_pipeline
         elif type in ["format_definitions"]:
-            return self.applied_format_definitons
+            return self.applied_format_definitions
         elif type in ["file_history"]:
             return self.file_history
 
