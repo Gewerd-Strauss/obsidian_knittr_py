@@ -477,8 +477,9 @@ quarto::pdf
             try:
                 with open(file_history_path, 'r', encoding='utf-8') as f:
                     file_history_config = yaml.safe_load(f)
-                self.file_history.extend(file_history_config)
-                print("File-history-config loaded for GUI mode.")
+                if file_history_config is not None:
+                    self.file_history.extend(file_history_config)
+                    print("File-history-config loaded for GUI mode.")
             except FileNotFoundError:
                 print("File-history-configuration not found; using no configuration.")
 
