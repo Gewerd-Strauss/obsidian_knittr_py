@@ -589,17 +589,17 @@ class ObsidianKnittrGUI:
 from obsidianknittrpy.modules.DynamicArguments import OT
 
 
-def handle_ot_guis(args, pb, format_definitions):
+def handle_ot_guis(args, pb, CH, format_definitions):
     # Implement GUI launch logic here
     x = 1645
     y = 475
     ShowGui = 1
-    for format in pb["objects"]["sel"]:
+    for format in CH.get_key("OUTPUT_TYPE"):
         ot = OT(
             config_file=format_definitions,
             format=format,
             DDL_ParamDelimiter="-<>-",
-            skip_gui=pb["settings"]["general_configuration"]["full_submit"],
+            skip_gui=CH.get_key("GENERAL_CONFIGURATION", "full_submit"),
             stepsized_gui_show=False,
         )  # Create instance of OT
 
@@ -634,9 +634,9 @@ def handle_ot_guis(args, pb, format_definitions):
                     ot.arguments[param_]["Default"] = value
 
         setattr(
-            ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
+            ot, "SkipGUI", CH.get_key("GENERAL_CONFIGURATION", "full_submit")
         )  # Set the attribute SkipGUI
-        if ShowGui and not pb["settings"]["general_configuration"]["full_submit"]:
+        if ShowGui and not CH.get_key("GENERAL_CONFIGURATION", "full_submit"):
             ot.generate_gui(
                 x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
             )  # Call GenerateGUI method
@@ -647,4 +647,4 @@ def handle_ot_guis(args, pb, format_definitions):
         # and ot is the instance of the OT class
         print(f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}")
 
-    return pb
+    return pb, CH
