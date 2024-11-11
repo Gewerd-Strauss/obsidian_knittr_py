@@ -19,46 +19,42 @@ def main(pb, CH):
     # Level > 0 = manuscript_dir - level
     # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
     # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
-    if pb["settings"]["obsidian_html"]["limit_scope"]:
+    if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         obsidian_limiter = ObsidianHTML_Limiter(
-            manuscript_path=os.path.normpath(pb["manuscript"]["manuscript_path"]),
-            auto_submit=pb["settings"]["general_configuration"]["full_submit"],
+            manuscript_path=os.path.normpath(
+                CH.get_key("MANUSCRIPT", "manuscript_path")
+            ),
+            auto_submit=CH.get_key("GENERAL_CONFIGURATION", "full_submit"),
+            level=CH.get_key("OBSIDIAN_HTML_LIMITER", "level"),
         )
+        obsidian_limiter.add_limiter()
         pb["objects"]["obsidian_limiter"] = obsidian_limiter
-        pb["objects"]["obsidian_limiter"].add_limiter()
-
     # Example usage:
+    CH.applied_settings["OBSIDIAN_HTML_LIMITER"]["level"] = obsidian_limiter.level
+    CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
+        "selected_limiter_preexisted"
+    ] = obsidian_limiter.selected_limiter_preexisted
+    CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
+        "selected_limiter_is_vaultroot"
+    ] = obsidian_limiter.selected_limiter_is_vaultroot
+    CH.save_last_run(CH.default_guiconfiguration_location)
     obsidian_html = ObsidianHTML(
-        manuscript_path=pb["manuscript"]["manuscript_path"],
-        config_path=r"assets\temp_obsidianhtml_config.yml",
-        use_convert=pb["settings"]["obsidian_html"]["verb"] in ["convert", True],
-        use_own_fork=pb["settings"]["obsidian_html"]["use_custom_fork"],
-        verbose=pb["settings"]["obsidian_html"]["verbose_flag"],
-        own_ohtml_fork_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
-        work_dir=os.path.normpath(
-            os.path.join(
-                os.path.expanduser("~"),
-                "Desktop",
-                "TempTemporal",
-                "obsidian-html-output",
-            )
-        ),
+        manuscript_path=CH.get_key("MANUSCRIPT", "manuscript_path"),
+        config_path=CH.default_obsidianhtmlconfiguration_location,
+        use_convert=CH.get_key("OBSIDIAN_HTML", "verb") in ["convert", True],
+        use_own_fork=CH.get_key("OBSIDIAN_HTML", "use_custom_fork"),
+        verbose=CH.get_key("OBSIDIAN_HTML", "verbose_flag"),
+        own_ohtml_fork_dir=CH.get_key("DIRECTORIES_PATHS", "own_ohtml_fork_dir"),
+        work_dir=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
         # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
-        output_dir=os.path.normpath(
-            os.path.join(
-                os.path.expanduser("~"),
-                "Desktop",
-                "TempTemporal",
-                "obsidian-html-output",
-            )
-        ),
+        output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
     )
     obsidian_html.run()
-    if pb["settings"]["obsidian_html"]["limit_scope"]:
+    if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         pb["objects"]["obsidian_limiter"].remove_limiter()
-    arguments = pb["settings"]["general_configuration"]
+    arguments = CH.get_key("GENERAL_CONFIGURATION")
     pipeline = ProcessingPipeline(
-        config_file="assets/pipeline.yml", arguments=arguments, debug=True
+        config_file=CH.applied_pipeline, arguments=arguments, debug=True
     )
     processed_string = pipeline.run(
         load_text_file(
