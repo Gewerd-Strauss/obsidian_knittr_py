@@ -288,6 +288,7 @@ class ObsidianHTML_Limiter:
     def add_limiter(self):
         if self.selected_limiter_is_vaultroot:
             print("Selected limiter is the vault root. No action taken.")
+            self.selected_limiter_preexisted = True
             return
 
         # Check if the directory exists

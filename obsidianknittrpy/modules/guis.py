@@ -6,35 +6,9 @@ import warnings as wn
 
 
 class ObsidianKnittrGUI:
-    def __init__(self):
-        self.output_types = [
-            "quarto::pdf",
-            "quarto::html",
-            "quarto::docx",
-        ]  # Example types
-        self.file_history = [
-            "A1",
-            "B1",
-            "C1",
-            "A2",
-            "B2",
-            "C2",
-            "A3",
-            "B3",
-            "C3",
-            "A4",
-            "B4",
-            "C4",
-            "A5",
-            "B5",
-            "C5",
-            "A6",
-            "B6",
-            "C6",
-            "A7",
-            "B7",
-            "C7",
-        ]
+    def __init__(self, settings, file_history=[], formats=[]):
+        self.output_types = formats
+        self.file_history = file_history
         self.output_selections = {}
         self.root = tk.Tk()
         self.root.focus_force()
@@ -47,22 +21,46 @@ class ObsidianKnittrGUI:
         self.root.resizable(False, False)  # disable resizing of GUI
         self.root.wm_attributes("-topmost", 1)
         self.obsidian_options_selections = {
-            "verb": tk.IntVar(),
-            "use_custom_fork": tk.IntVar(),
-            "purge_errors": tk.IntVar(),
-            "verbose_flag": tk.IntVar(),
-            "limit_scope": tk.IntVar(),
+            "verb": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verb"] == "convert"),
+            "use_custom_fork": tk.IntVar(
+                value=settings["OBSIDIAN_HTML"]["use_custom_fork"]
+            ),
+            "purge_errors": tk.IntVar(value=settings["OBSIDIAN_HTML"]["purge_errors"]),
+            "verbose_flag": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verbose_flag"]),
+            "limit_scope": tk.IntVar(value=settings["OBSIDIAN_HTML"]["limit_scope"]),
         }
         self.gen_config_selections = {
-            "remove_hashtags_from_tags": tk.IntVar(),
-            "strip_local_md_links": tk.IntVar(),
-            "keep_filename": tk.IntVar(),
-            "render_to_outputs": tk.IntVar(),
-            "backup_output_before_rendering": tk.IntVar(),
+            "remove_hashtags_from_tags": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["remove_hashtags_from_tags"]
+            ),
+            "strip_local_md_links": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["strip_local_md_links"]
+            ),
+            "keep_filename": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["keep_filename"]
+            ),
+            "render_to_outputs": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["render_to_outputs"]
+            ),
+            "backup_output_before_rendering": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"][
+                    "backup_output_before_rendering"
+                ]
+            ),
         }
         self.engine_config_selections = {
-            "quarto_strip_reference_prefixes": tk.IntVar(),
+            "quarto_strip_reference_prefixes": tk.IntVar(
+                value=settings["ENGINE_CONFIGURATION"][
+                    "quarto_strip_reference_prefixes"
+                ]
+            ),
         }
+        self.exec_dir_selection = tk.IntVar(
+            value=settings["EXECUTION_DIRECTORIES"]["exec_dir_selection"]
+        )
+
+        for output_type in settings["OUTPUT_TYPE"]:
+            self.output_selections[output_type] = tk.IntVar(value=True)
 
         self.classname = "ObsidianKnittrGUI"
 
@@ -256,7 +254,10 @@ class ObsidianKnittrGUI:
         scrollbar.place(relx=0.9, rely=0, relheight=1)
 
         for output_type in self.output_types:
-            var = tk.IntVar()
+            if output_type in self.output_selections:
+                var = self.output_selections[output_type]
+            else:
+                var = tk.IntVar()
             checkbox = tk.Checkbutton(checkbox_frame, text=output_type, variable=var)
             checkbox.pack(anchor=tk.W, padx=5, pady=2)
             self.output_selections[output_type] = var
@@ -302,7 +303,6 @@ class ObsidianKnittrGUI:
         tk.Label(exec_dir_frame, text="Choose execution directory for Quarto/R").pack(
             anchor=tk.W, padx=5, pady=5
         )
-        self.exec_dir_selection = tk.IntVar(value=1)
         exec_dir_options = [
             ("1. OHTML-Output-Dir", 1),
             ("2. Subfolder of note-location in vault", 2),
@@ -441,6 +441,7 @@ class ObsidianKnittrGUI:
 
     def update_filehistory(self, added_path=None):
         if added_path:
+            added_path = os.path.normpath(added_path)
             # Move to beginning if already in the history
             if added_path in self.file_history:
                 self.file_history.remove(added_path)
@@ -448,11 +449,14 @@ class ObsidianKnittrGUI:
             self.file_history.insert(0, added_path)
 
         # Populate the Combobox with current file history
-        self.file_history_dropdown["values"] = self.file_history
+        try:
+            self.file_history_dropdown["values"] = self.file_history
 
-        # Select the most recent entry if the list is not empty
-        if self.file_history:
-            self.file_history_dropdown.current(0)
+            # Select the most recent entry if the list is not empty
+            if self.file_history:
+                self.file_history_dropdown.current(0)
+        except Exception:
+            pass
 
     def load_configuration(self):
         print(
@@ -529,6 +533,9 @@ class ObsidianKnittrGUI:
         for output_type, var in self.output_selections.items():
             if var.get():
                 results["output_type"].append(output_type)
+        if len(results["output_type"]) == 0:
+            print("no format selected, please select a format")
+            return
         results["execution_directory"] = (
             self.exec_dir_selection.get()
         )  # Assuming v holds the selected radio button value
@@ -580,30 +587,59 @@ class ObsidianKnittrGUI:
 #########
 
 from obsidianknittrpy.modules.DynamicArguments import OT
-from obsidianknittrpy import __config__
 
 
-def handle_ot_guis(args, pb):
+def handle_ot_guis(args, pb, CH, same_manuscript_chosen, format_definitions):
     # Implement GUI launch logic here
     x = 1645
     y = 475
     ShowGui = 1
-    for format in pb["objects"]["sel"]:
+    for format in CH.get_key("OUTPUT_TYPE"):
         ot = OT(
-            config_file=__config__,
+            config_file=format_definitions,
             format=format,
             DDL_ParamDelimiter="-<>-",
-            skip_gui=pb["settings"]["general_configuration"]["full_submit"],
+            skip_gui=CH.get_key("GENERAL_CONFIGURATION", "full_submit"),
             stepsized_gui_show=False,
         )  # Create instance of OT
 
-        # Check if args is not empty and is iterable
+        # Merge commandline-args values into the ot.arguments where available
         if not not args:
             for param, value in args.items():
                 if format not in param:  # Check if format is in param
                     continue
                 param_ = param.replace(format + ".", "")  # Replace the format prefix
                 if param_ in ot.arguments:  # Check if the parameter exists in Arguments
+                    ot.arguments[param_]["Value"] = value  # Set the Value
+                    ot.arguments[param_]["Default"] = value
+
+        # Merge the state of the applied settings into this object; but only if the same manuscript was chosen again.
+        # For CLI-path, this means that we must provide a fully-configured config, and then this section will merge the stored values.
+        if "OUTPUT_FORMAT_VALUES" in CH.applied_settings and (
+            same_manuscript_chosen or not CH.is_gui
+        ):
+            if format in CH.applied_settings["OUTPUT_FORMAT_VALUES"]:
+                # a =
+                for param in CH.applied_settings["OUTPUT_FORMAT_VALUES"][format]:
+                    if param in ot.arguments:
+                        try:
+                            ot.arguments[param]["Value"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][param].strip('"')
+                            ot.arguments[param]["Default"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][param].strip('"')
+                        except:
+                            ot.arguments[param]["Value"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][
+                                param
+                            ]  # Set the Value
+                            ot.arguments[param]["Default"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][param]
+
+                    pass
                     # Set the default such that the GUI also reflects it
                     # Note: If we decide to set skip_gui=True when running CLI, we only have
                     # to set the 'Value'-field to `value`.
@@ -623,14 +659,26 @@ def handle_ot_guis(args, pb):
                     #    user to do all changes themselves. Essentially disabling the CL-support
                     #    in GUI-mode; but I am not sure.
                     # .
-
-                    ot.arguments[param_]["Value"] = value  # Set the Value
-                    ot.arguments[param_]["Default"] = value
+                    # if format in CH.appliedConfig > Overwrite
+                    # if same_manuscript_chosen:
+                    #     if "hover" in param_:
+                    #         print("DD")
+                    #     ot.arguments[param_]["Value"] = CH.applied_settings[
+                    #         "OUTPUT_FORMAT_VALUES"
+                    #     ][format][param_].strip(
+                    #         '"'
+                    #     )  # Set the Value
+                    #     ot.arguments[param_]["Default"] = CH.applied_settings[
+                    #         "OUTPUT_FORMAT_VALUES"
+                    #     ][format][param_].strip(
+                    #         '"'
+                    #     )  # Set the Value
+                    pass  # push provided value into the ot.arg
 
         setattr(
-            ot, "SkipGUI", pb["settings"]["general_configuration"]["full_submit"]
+            ot, "SkipGUI", CH.get_key("GENERAL_CONFIGURATION", "full_submit")
         )  # Set the attribute SkipGUI
-        if ShowGui:
+        if ShowGui and not CH.get_key("GENERAL_CONFIGURATION", "full_submit"):
             ot.generate_gui(
                 x, y, True, "ParamsGUI:", 1, 1, 674, ShowGui
             )  # Call GenerateGUI method
@@ -641,4 +689,4 @@ def handle_ot_guis(args, pb):
         # and ot is the instance of the OT class
         print(f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}")
 
-    return pb
+    return pb, CH

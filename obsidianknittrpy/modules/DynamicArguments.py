@@ -80,8 +80,11 @@ class OT:
 
     def load_config(self):
         try:
-            with open(self.config_file, "r") as f:
-                text = f.read()
+            if os.path.exists(self.config_file):
+                with open(self.config_file, "r") as f:
+                    text = f.read()
+            else:
+                text = self.config_file
 
             # Split into sections based on format
             if str(self.type + "\n") not in text:
