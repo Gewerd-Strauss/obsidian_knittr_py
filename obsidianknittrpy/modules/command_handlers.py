@@ -12,7 +12,7 @@ import warnings as wn
 import os as os
 
 
-def main(pb):
+def main(pb, CH):
     wn.warn("main processing function is not implemented yet.")
     # Level = 0 > manuscript_dir > check
     # Level = -1 > true vault-root > check
@@ -75,7 +75,7 @@ def handle_convert(args, pb):
     # Implement conversion logic here based on arguments
     args = convert_format_args(args)
     # TOOD: implement processing from GUI-classes that _is_ required, see 'handle_ot_gui_passthrough()'
-    pb = handle_ot_guis(args, pb)
+    pb, CH = handle_ot_guis(args, pb, CH="")
     main(pb)
 
 
@@ -141,7 +141,7 @@ def handle_gui(args, pb):
             print(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
-    main(pb)
+    main(pb, CH)
 
 
 # You can also include other handler functions if needed.
