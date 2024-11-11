@@ -8,7 +8,7 @@ from pathlib import Path
 
 class ConfigurationHandler:
 
-    def __init__(self, last_run_path=None):
+    def __init__(self, last_run_path=None, is_gui=None):
         """Initialises the default settings"""
         # Load default configuration in code
         self.application_directory = os.path.normpath(
@@ -56,9 +56,12 @@ class ConfigurationHandler:
         self.default_guiconfiguration = []
         self.init_guiconfiguration_history()
         self.last_run_path = None
+        self.is_gui = None
         ## initiate the applied settings instanes by copying over the default settings
         if last_run_path is not None and os.path.exists(last_run_path):
             self.last_run_path = last_run_path
+        if is_gui is not None:
+            self.is_gui = is_gui
 
     def apply_defaults(self):
         """Apply the default settings to the applied settings"""

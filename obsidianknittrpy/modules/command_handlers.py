@@ -80,7 +80,7 @@ def handle_gui(args, pb):
     # 1. translate arguments
     args = convert_format_args(args)
     # 2. setup config-manager
-    CH = ConfigurationHandler(last_run_path=None)
+    CH = ConfigurationHandler(last_run_path=None, is_gui=True)
     # setup defaults, load last-run
     CH.apply_defaults()
     CH.load_last_run(
