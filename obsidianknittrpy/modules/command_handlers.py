@@ -29,14 +29,13 @@ def main(pb, CH):
         )
         obsidian_limiter.add_limiter()
         pb["objects"]["obsidian_limiter"] = obsidian_limiter
-    # Example usage:
-    CH.applied_settings["OBSIDIAN_HTML_LIMITER"]["level"] = obsidian_limiter.level
-    CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
-        "selected_limiter_preexisted"
-    ] = obsidian_limiter.selected_limiter_preexisted
-    CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
-        "selected_limiter_is_vaultroot"
-    ] = obsidian_limiter.selected_limiter_is_vaultroot
+        CH.applied_settings["OBSIDIAN_HTML_LIMITER"]["level"] = obsidian_limiter.level
+        CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
+            "selected_limiter_preexisted"
+        ] = obsidian_limiter.selected_limiter_preexisted
+        CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
+            "selected_limiter_is_vaultroot"
+        ] = obsidian_limiter.selected_limiter_is_vaultroot
     CH.save_last_run(CH.default_guiconfiguration_location)
     obsidian_html = ObsidianHTML(
         manuscript_path=CH.get_key("MANUSCRIPT", "manuscript_path"),
@@ -118,23 +117,55 @@ def handle_gui(args, pb):
     # 3. when main GUI submits, parse the selected formats and launch the OT-guis
     # for result in main_gui.results["general_configuration"].items():
     #     pb.
+    same_manuscript_chosen = (
+        CH.applied_settings["MANUSCRIPT"] == main_gui.results["manuscript"]
+    )
     CH.applied_settings["MANUSCRIPT"] = main_gui.results["manuscript"]
     # CH.applied_settings[]
     pb, CH = handle_ot_guis(
-        args=args, pb=pb, CH=CH, format_definitions=CH.get_config("format_definitions")
+        args=args,
+        pb=pb,
+        CH=CH,
+        same_manuscript_chosen=same_manuscript_chosen,
+        format_definitions=CH.get_config("format_definitions"),
     )
     for format, ot in pb["objects"]["output_formats"].items():
         # Here, format is the key (e.g., "quarto::docx")
         # and ot is the instance of the OT class
         # print(f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}")
+        # If same manuscript was chosen again, load the config 1:1, but with the modifications made during GUI.
+        # So, the rule here is:
+        # 0. Load the default configuration
+        # 1. Merge commandline-provided selections into it
+        # 2. Determine if this manuscript is the same as the past manuscript
+        # 2.1 If it is, load the lastrun-selections over the commandline-provided and the default selections.
+        # 2.2 If it is not, continue
+        #
+        # Or maybe we should apply the commandline-changes above the lastrun-changes; so that we can
+        # apply huge standards by lastrun, and then when calling the GUI via the commandline selective overpower the lastrun?
+        #
+        #
+        #
+        ## CLI-ONLY ##
+        # In case of the CLI-path, the configuration merged shall require to be fully-declared in the provided config-file.
+        # This means that the CLI always executes default parameters, unless the parameter has been added in a provided config-file.
+        # And then, have console-provided parameters ovewrite the values provided via the provided config-file.
+        #
+        #
+        #
+        # If we select the latter solution, the logic-flow is identical for both CLI and GUI modes; meaning I could simplify this significantly.
+
+        if same_manuscript_chosen:
+            CH.applied_settings["OUTPUT_FORMAT_VALUES"][format] = {}
         for arg, value in ot.arguments.items():
-            a = value["Value"]
-            b = ot.arguments["date"]["Value"]
-            c = ot.arguments[arg].Default
-            D = ot.arguments[arg].DD
+            if same_manuscript_chosen:
+                CH.applied_settings["OUTPUT_FORMAT_VALUES"][format][arg] = ot.arguments[
+                    arg
+                ]["Value"]
             print(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
+
     main(pb, CH)
 
 

@@ -589,7 +589,7 @@ class ObsidianKnittrGUI:
 from obsidianknittrpy.modules.DynamicArguments import OT
 
 
-def handle_ot_guis(args, pb, CH, format_definitions):
+def handle_ot_guis(args, pb, CH, same_manuscript_chosen, format_definitions):
     # Implement GUI launch logic here
     x = 1645
     y = 475
@@ -603,13 +603,43 @@ def handle_ot_guis(args, pb, CH, format_definitions):
             stepsized_gui_show=False,
         )  # Create instance of OT
 
-        # Check if args is not empty and is iterable
+        # Merge commandline-args values into the ot.arguments where available
         if not not args:
             for param, value in args.items():
                 if format not in param:  # Check if format is in param
                     continue
                 param_ = param.replace(format + ".", "")  # Replace the format prefix
                 if param_ in ot.arguments:  # Check if the parameter exists in Arguments
+                    ot.arguments[param_]["Value"] = value  # Set the Value
+                    ot.arguments[param_]["Default"] = value
+
+        # Merge the state of the applied settings into this object; but only if the same manuscript was chosen again.
+        # For CLI-path, this means that we must provide a fully-configured config, and then this section will merge the stored values.
+        if "OUTPUT_FORMAT_VALUES" in CH.applied_settings and (
+            same_manuscript_chosen or not CH.is_gui
+        ):
+            if format in CH.applied_settings["OUTPUT_FORMAT_VALUES"]:
+                # a =
+                for param in CH.applied_settings["OUTPUT_FORMAT_VALUES"][format]:
+                    if param in ot.arguments:
+                        try:
+                            ot.arguments[param]["Value"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][param].strip('"')
+                            ot.arguments[param]["Default"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][param].strip('"')
+                        except:
+                            ot.arguments[param]["Value"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][
+                                param
+                            ]  # Set the Value
+                            ot.arguments[param]["Default"] = CH.applied_settings[
+                                "OUTPUT_FORMAT_VALUES"
+                            ][format][param]
+
+                    pass
                     # Set the default such that the GUI also reflects it
                     # Note: If we decide to set skip_gui=True when running CLI, we only have
                     # to set the 'Value'-field to `value`.
@@ -629,9 +659,21 @@ def handle_ot_guis(args, pb, CH, format_definitions):
                     #    user to do all changes themselves. Essentially disabling the CL-support
                     #    in GUI-mode; but I am not sure.
                     # .
-
-                    ot.arguments[param_]["Value"] = value  # Set the Value
-                    ot.arguments[param_]["Default"] = value
+                    # if format in CH.appliedConfig > Overwrite
+                    # if same_manuscript_chosen:
+                    #     if "hover" in param_:
+                    #         print("DD")
+                    #     ot.arguments[param_]["Value"] = CH.applied_settings[
+                    #         "OUTPUT_FORMAT_VALUES"
+                    #     ][format][param_].strip(
+                    #         '"'
+                    #     )  # Set the Value
+                    #     ot.arguments[param_]["Default"] = CH.applied_settings[
+                    #         "OUTPUT_FORMAT_VALUES"
+                    #     ][format][param_].strip(
+                    #         '"'
+                    #     )  # Set the Value
+                    pass  # push provided value into the ot.arg
 
         setattr(
             ot, "SkipGUI", CH.get_key("GENERAL_CONFIGURATION", "full_submit")
