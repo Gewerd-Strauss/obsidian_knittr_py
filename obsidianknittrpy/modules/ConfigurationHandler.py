@@ -32,11 +32,27 @@ class ConfigurationHandler:
                 "gui-configuration.yml",
             )
         )
+        self.default_obsidianhtmlconfiguration_location = os.path.normpath(
+            os.path.join(
+                self.application_directory,
+                "obsidian_html-configuration.yml",
+            )
+        )
+
         self.init_default_settings()  # not exported, not saved
+        ## initialise directories
+        for directory in [
+            self.default_settings["DIRECTORIES_PATHS"]["work_dir"],
+            self.default_settings["DIRECTORIES_PATHS"]["output_dir"],
+        ]:
+            if not os.path.exists(directory):
+                os.makedirs(directory, exist_ok=True)
         self.init_default_pipeline()  # not exported, not saved
         self.init_default_format_definitions()  # not exported, not saved
         self.file_history = []
         self.init_file_history()
+        self.obsidianhtml_config = []
+        self.init_obsidianhtml_configuration()
         self.default_guiconfiguration = []
         self.init_guiconfiguration_history()
         self.last_run_path = None
@@ -53,9 +69,13 @@ class ConfigurationHandler:
     def init_default_settings(self):
         self.default_settings = {
             "DIRECTORIES_PATHS": {
-                "app_dir": "/path/to/app",
-                "work_dir": "/path/to/work",  # default equals app_dir
-                "output_dir": "/path/to/output",  # default equals app_dir
+                "app_dir": None,
+                "work_dir": os.path.normpath(
+                    os.path.join(self.application_directory, "output")
+                ),  # default equals app_dir
+                "output_dir": os.path.normpath(
+                    os.path.join(self.application_directory, "output")
+                ),  # default equals app_dir
                 "own_ohtml_fork_dir": None,  # Must be set if `use_custom_fork` is true
             },
             "OBSIDIAN_HTML": {
@@ -75,6 +95,12 @@ class ConfigurationHandler:
             "ENGINE_CONFIGURATION": {"quarto_strip_reference_prefixes": False},
             "EXECUTION_DIRECTORIES": {"exec_dir_selection": 1},
             "OUTPUT_TYPE": [],
+            "OBSIDIAN_HTML_LIMITER": {"level": -1},
+            "MANUSCRIPT": {
+                "manuscript_path": str,
+                "manuscript_dir": str,
+                "manuscript_name": str,
+            },
         }
 
     def init_default_pipeline(self):
@@ -389,6 +415,31 @@ quarto::pdf
                         yaml.dump(self.default_guiconfiguration, f, allow_unicode=True)
                     print(
                         f"Configuration saved to {self.default_guiconfiguration_location}"
+                    )
+            except yaml.YAMLError as e:
+                print(f"Error parsing YAML file: {e}")
+            except Exception as e:
+                print(f"An error occurred: {e}")
+
+    def init_obsidianhtml_configuration(self):
+        if self.default_obsidianhtmlconfiguration_location is not None:
+            try:
+                # Create the directory if it doesn't exist
+                directory = os.path.dirname(
+                    self.default_obsidianhtmlconfiguration_location
+                )
+                if directory and not os.path.exists(directory):
+                    os.makedirs(directory, exist_ok=True)
+                if not os.path.exists(self.default_obsidianhtmlconfiguration_location):
+                    # Write the file, except if it exists already
+                    with open(
+                        self.default_obsidianhtmlconfiguration_location,
+                        'w',
+                        encoding='utf-8',
+                    ) as f:
+                        yaml.dump(self.obsidianhtml_config, f, allow_unicode=True)
+                    print(
+                        f"Configuration saved to {self.default_obsidianhtmlconfiguration_location}"
                     )
             except yaml.YAMLError as e:
                 print(f"Error parsing YAML file: {e}")
