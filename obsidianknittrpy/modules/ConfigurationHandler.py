@@ -563,7 +563,8 @@ quarto::pdf
             try:
                 with open(last_run_path, 'r', encoding='utf-8') as f:
                     last_run_config = yaml.safe_load(f)
-                self.applied_settings.update(last_run_config)
+                if last_run_config is not None:
+                    self.applied_settings.update(last_run_config)
                 print("Last run configuration loaded for GUI mode.")
             except FileNotFoundError:
                 print("Last run configuration not found; using default configuration.")
