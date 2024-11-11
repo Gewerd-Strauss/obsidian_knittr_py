@@ -50,6 +50,11 @@ import yaml
 
 
 class ProcessingPipeline:
+    """
+    Main pipeline class responsible for execution processing-modules
+    This class gets executed on the immediate output of obsidian-html
+    """
+
     def __init__(self, config_file, arguments=None, debug=False):
         """
         Initialize the processing pipeline.
@@ -59,15 +64,20 @@ class ProcessingPipeline:
         self.modules = []
         self.arguments = arguments if arguments else {}
         self.arguments["debug"] = debug
-        self.load_config(config_file)
+        try:
+            if os.path.exists(config_file):
+                with open(config_file, "r") as f:
+                    config = yaml.safe_load(f)
+        except:
+            config = config_file
 
-    def load_config(self, config_file):
+        self.load_configuration_yaml(config)
+
+    def load_configuration_yaml(self, config):
         """
         Load the configuration from YAML and initialize modules dynamically.
-        :param config_file: Path to YAML configuration file
+        :param config: YAML-configuration to load
         """
-        with open(config_file, "r") as f:
-            config = yaml.safe_load(f)
 
         module_dir = os.path.normpath(os.path.dirname(__file__))
 
