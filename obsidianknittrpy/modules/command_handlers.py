@@ -10,6 +10,7 @@ from obsidianknittrpy.modules.processing.processing_module_runner import (
 from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
 import os as os
+import sys as sys
 
 
 def main(pb, CH):
@@ -95,6 +96,8 @@ def handle_gui(args, pb):
         file_history=CH.get_config("file_history"),
         formats=CH.get_formats(CH.get_config("format_definitions")),
     )
+    if main_gui.closed:
+        sys.exit(0)
     # 3. Save file-history
     main_gui.update_filehistory(main_gui.results["manuscript"]["manuscript_path"])
     CH.file_history = main_gui.file_history

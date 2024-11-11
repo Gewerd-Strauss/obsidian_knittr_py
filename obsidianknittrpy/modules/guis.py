@@ -20,6 +20,7 @@ class ObsidianKnittrGUI:
         self.root.minsize(self.width, self.height)  # set minimum size
         self.root.resizable(False, False)  # disable resizing of GUI
         self.root.wm_attributes("-topmost", 1)
+        self.closed = False
         self.obsidian_options_selections = {
             "verb": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verb"] == "convert"),
             "use_custom_fork": tk.IntVar(
@@ -523,7 +524,7 @@ class ObsidianKnittrGUI:
         print("Submit clicked")
         print("Results:", results)  # Print the gathered results for verification
         self.results = results
-        self.close()
+        self.close(set_escape=False)
         pass
 
     def full_submit(self):
@@ -568,7 +569,7 @@ class ObsidianKnittrGUI:
         print("Full Submit clicked")
         print("Results:", results)  # Print the gathered results for verification
         self.results = results
-        self.close()
+        self.close(set_escape=False)
         pass
 
     def edit_general_config(self):
@@ -580,7 +581,8 @@ class ObsidianKnittrGUI:
         print("About clicked")
         self.update_last_execution_labels("A", "B")
 
-    def close(self):
+    def close(self, set_escape=True):
+        self.closed = set_escape
         self.root.destroy()
 
 
