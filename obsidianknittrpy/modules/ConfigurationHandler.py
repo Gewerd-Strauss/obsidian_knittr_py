@@ -104,6 +104,7 @@ class ConfigurationHandler:
                 "manuscript_dir": str,
                 "manuscript_name": str,
             },
+            "OUTPUT_FORMAT_VALUES": {},
         }
 
     def init_default_pipeline(self):
