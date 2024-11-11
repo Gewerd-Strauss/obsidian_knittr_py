@@ -458,6 +458,16 @@ quarto::pdf
         elif type in ["file_history"]:
             return self.file_history
 
+    def get_key(self, type=str, key=None):
+        if type != "":
+            if type in self.applied_settings:
+                if key != None:
+                    if key in self.applied_settings[type]:
+                        return self.applied_settings[type][key]
+                elif key == None:
+                    return self.applied_settings[type]
+        pass
+
     def get_formats(self, format_definitions_string=str):
         pattern = r"^(?!\s*;)\S+::\S+"
         matches = re.findall(pattern, format_definitions_string, re.MULTILINE)
