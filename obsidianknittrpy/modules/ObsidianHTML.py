@@ -4,6 +4,7 @@ import re
 import shutil
 import yaml
 import importlib.util
+import logging
 
 
 class ObsidianHTML:
@@ -21,6 +22,9 @@ class ObsidianHTML:
         encoding="utf-16-le",
     ):
         # Set initial variables
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
         self.manuscript_path = manuscript_path
         self.encoding = encoding
         self.encoding = self.encoding if use_own_fork else "utf-8"
@@ -110,7 +114,7 @@ toggles:
             yaml.safe_dump(
                 yaml.safe_load(self.config_template), file, encoding=self.encoding
             )
-        print(f"Configuration written to {self.config_path}")
+        self.logger.info(f"ObsidianHTML-Configuration written to {self.config_path}")
 
     def check_obsidianhtml(self):
         """Attempt to import the obsidianhtml main module based on the selected fork to see if it is installed."""
@@ -138,12 +142,12 @@ toggles:
                     spec.loader.exec_module(obsidianhtml_default)
                     self.obsidianhtml_path = os.path.dirname(spec.origin)
                 else:
-                    print("ObsidianHTML package could not be found.")
+                    self.logger.critical("ObsidianHTML package could not be found.")
                     return False
 
             return True
         except ImportError:
-            print(
+            self.logger.critical(
                 "ObsidianHTML could not be found. Please install it before proceeding."
             )
             return False
@@ -156,13 +160,15 @@ toggles:
             )
             return result.returncode == 0
         except FileNotFoundError:
-            print("Python could not be found. Please install it before proceeding.")
+            self.logger.error(
+                "Python could not be found. Please install it before proceeding."
+            )
         return False
 
     def validate_config(self):
         """Validate configuration file and entry point."""
         if not os.path.exists(self.config_path):
-            print("Config file does not exist.")
+            self.logger.critical("Config file does not exist.")
             return False
         with open(self.config_path, "r", encoding=self.encoding) as file:
             config_contents = file.read()
@@ -170,7 +176,9 @@ toggles:
                 "obsidian_entrypoint_path_str:" not in config_contents
                 and self.use_convert
             ):
-                print("Config file missing 'obsidian_entrypoint_path_str' setting.")
+                self.logger.critical(
+                    "Config file missing 'obsidian_entrypoint_path_str' setting."
+                )
                 return False
         return True
 
@@ -258,7 +266,9 @@ toggles:
 
         md_path = self.parse_output(output.stdout)
         if not md_path:
-            print("Failed to parse output. Please check manually.")
+            self.logger.critical(
+                "Failed to parse output. Please check manually.The utility will exit."
+            )
             return False
         self.output = {}
         self.output["command"] = "".join(command)
