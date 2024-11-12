@@ -7,6 +7,10 @@ from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
 )
+from obsidianknittrpy.modules.rendering.renderer import (
+    RenderingPipeline,
+    prepare_file_strings,
+)
 from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
 import os as os
@@ -62,6 +66,25 @@ def main(pb, CH):
         )
     )
     print(processed_string)
+    file_strings = ""
+    working_directory = ""
+
+    # Call function
+    file_strings = prepare_file_strings(
+        file_string=processed_string,
+        output_types=CH.get_key("OUTPUT_TYPE"),
+        output_format_values=CH.get_key("OUTPUT_FORMAT_VALUES"),
+    )
+    renderer = RenderingPipeline(
+        custom_file_names=None,
+        debug=False,
+        file_strings=file_strings,
+        output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+    )
+    renderer.render(
+        parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
+        working_directory=working_directory,
+    )
     pass
 
 
