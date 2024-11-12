@@ -23,7 +23,6 @@ import sys as sys
 
 
 def main(pb, CH, loglevel=None):
-    wn.warn("main processing function is not implemented yet.")
     # Level = 0 > manuscript_dir > check
     # Level = -1 > true vault-root > check
     # Level > 0 = manuscript_dir - level
@@ -36,6 +35,7 @@ def main(pb, CH, loglevel=None):
             ),
             auto_submit=CH.get_key("GENERAL_CONFIGURATION", "full_submit"),
             level=CH.get_key("OBSIDIAN_HTML_LIMITER", "level"),
+            loglevel=loglevel,
         )
         obsidian_limiter.add_limiter()
         pb["objects"]["obsidian_limiter"] = obsidian_limiter
