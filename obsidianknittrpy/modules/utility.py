@@ -67,10 +67,18 @@ def init_picknick_basket():
     return {"settings": settings, "objects": other, "manuscript": manuscript}
 
 
-def load_text_file(file_directory, file_name="index.md"):
-    """Load the text from a file."""
+def get_text_file_path(file_directory, file_name="index.md"):
     try:
         file_path = os.path.normpath(os.path.join(file_directory, file_name))
+        return file_path
+    except FileNotFoundError:
+        print(f"File '{file_path}' not found.")
+        return None
+
+
+def load_text_file(file_path):
+    """Load the text from a file."""
+    try:
         with open(file_path, "r", encoding="utf-8") as file:
             return file.read()
     except FileNotFoundError:

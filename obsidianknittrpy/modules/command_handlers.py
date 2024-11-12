@@ -1,6 +1,10 @@
 # command_handlers.py
 
-from obsidianknittrpy.modules.utility import convert_format_args, load_text_file
+from obsidianknittrpy.modules.utility import (
+    convert_format_args,
+    load_text_file,
+    get_text_file_path,
+)
 from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
 from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
@@ -60,11 +64,10 @@ def main(pb, CH):
     pipeline = ProcessingPipeline(
         config_file=CH.applied_pipeline, arguments=arguments, debug=True
     )
-    processed_string = pipeline.run(
-        load_text_file(
-            obsidian_html.output["output_path"],
-        )
+    path_ = get_text_file_path(
+        obsidian_html.output["output_path"],
     )
+    processed_string = pipeline.run(load_text_file(path_))
     print(processed_string)
     file_strings = ""
     working_directory = ""
