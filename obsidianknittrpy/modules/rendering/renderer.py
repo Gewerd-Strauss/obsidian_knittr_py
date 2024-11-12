@@ -57,6 +57,7 @@ class RenderingPipeline:
     def __init__(
         self,
         file_strings,
+        file_suffixes,
         output_directory="output",
         input_name=None,
         custom_file_names=None,
@@ -72,6 +73,7 @@ class RenderingPipeline:
         :param debug: Enable or disable debug logging
         """
         self.file_strings = file_strings
+        self.file_suffixes = file_suffixes
         self.output_directory = output_directory
         self.input_name = input_name
         self.custom_file_names = custom_file_names if custom_file_names else {}
@@ -132,7 +134,7 @@ class RenderingPipeline:
         :param format_name: Format name (e.g., 'html', 'pdf').
         :return: Full path for the output file.
         """
-        suffix = format_name
+        suffix = self.file_suffixes[format_name]
         if format_name in self.custom_file_names:
             filename = self.custom_file_names[format_name]
         elif self.input_name:
@@ -152,8 +154,10 @@ class RenderingPipeline:
         :param format_name: Format name used in the filename.
         :return: Path to the temporary file.
         """
-        file_path = os.path.join(self.output_directory, f"temp_{format_name}.qmd")
-        with open(file_path, 'w') as file:
+        file_path = os.path.join(
+            self.working_directory, f"temp_{format_name.replace('::', '_')}.qmd"
+        )
+        with open(file_path, 'w', encoding='utf-8') as file:
             file.write(file_string)
         self.logger.info(f"File string written to: {file_path}")
         return file_path
@@ -170,7 +174,7 @@ class RenderingPipeline:
 
             # Generate YAML configuration for this format
             yaml_file_path = self.yamlialize(parameters[format_name], format_name)
-
+            self.working_directory = working_directory
             # Write the file string to a temporary file
             temp_file_path = self.write_file_string(file_string, format_name)
 
@@ -188,16 +192,16 @@ class RenderingPipeline:
                     "quarto",
                     "render",
                     temp_file_path,
-                    "--output",
-                    output_file_path,
                     "--to",
-                    format_name,
-                    "--config",
+                    self.file_suffixes[format_name],
+                    "--metadata-file=",
                     yaml_file_path,
+                    "--output",
+                    os.path.basename(output_file_path),
                 ]
                 subprocess.run(command, check=True, cwd=quart_working_directory)
                 self.logger.info(
-                    f"Rendered {format_name} output to: {output_file_path}"
+                    f"Rendered {format_name} output to: {os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}"
                 )
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Failed to render {format_name} output. Error: {e}")
@@ -225,3 +229,22 @@ def prepare_file_strings(file_string, output_types, output_format_values):
             print(f"Warning: {format_name} not found in output_format_values.")
 
     return file_strings
+
+
+def prepare_file_suffixes(output_formats):
+    """
+    Extracts file suffixes from the output_formats dictionary.
+
+    :param output_formats: Dictionary where keys are format names and values are dictionaries containing 'filesuffix' key.
+    :return: Dictionary mapping format names to their respective file suffixes.
+    """
+    file_suffixes = {}
+    for format_name, format_data in output_formats.items():
+        # Extract the 'filesuffix' if it exists in the format_data dictionary
+        if hasattr(format_data, "filesuffix"):
+            file_suffixes[format_name] = format_data.filesuffix
+        else:
+            # Optionally, handle the case where 'filesuffix' is missing
+            print(f"Warning: 'filesuffix' not found for format {format_name}")
+
+    return file_suffixes

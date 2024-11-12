@@ -14,6 +14,7 @@ from obsidianknittrpy.modules.processing.processing_module_runner import (
 from obsidianknittrpy.modules.rendering.renderer import (
     RenderingPipeline,
     prepare_file_strings,
+    prepare_file_suffixes,
 )
 from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
@@ -70,7 +71,16 @@ def main(pb, CH):
     processed_string = pipeline.run(load_text_file(path_))
     print(processed_string)
     file_strings = ""
-    working_directory = ""
+    if CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 1:
+        # OHTML-output-directory
+        working_directory = os.path.dirname(os.path.realpath(path_))
+    elif CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 2:
+        # Location of source-note in vault
+        working_directory = os.path.dirname(
+            os.path.realpath(CH.get_key("MANUSCRIPT", "manuscript_path"))
+        )
+    elif False:
+        pass  # figure out how to set the rendering directory dynamically.
 
     # Call function
     file_strings = prepare_file_strings(
@@ -78,10 +88,13 @@ def main(pb, CH):
         output_types=CH.get_key("OUTPUT_TYPE"),
         output_format_values=CH.get_key("OUTPUT_FORMAT_VALUES"),
     )
+    file_suffixes = prepare_file_suffixes(pb["objects"]["output_formats"])
+
     renderer = RenderingPipeline(
         custom_file_names=None,
         debug=False,
         file_strings=file_strings,
+        file_suffixes=file_suffixes,
         output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
     )
     renderer.render(
