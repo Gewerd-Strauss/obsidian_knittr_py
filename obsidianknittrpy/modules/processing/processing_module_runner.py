@@ -2,8 +2,14 @@ import logging
 
 
 class BaseModule:
+
     def __init__(
-        self, name, config=None, log_directory=None, past_module_instance=None
+        self,
+        name,
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
     ):
         """
         Base class for all processing modules.
@@ -13,7 +19,13 @@ class BaseModule:
         self.name = name
         self.config = config if config else {}
         self.log_directory = log_directory if log_directory else ""
-        self.past_module_instance = past_module_instance if past_module_instance else ""
+        self.past_module_instance = (
+            past_module_instance if past_module_instance else "obsidian-html"
+        )
+
+        self.past_module_method_instance = (
+            past_module_method_instance if past_module_method_instance else ""
+        )
 
     def get_config(self, key, default=None):
         """
@@ -33,7 +45,6 @@ class BaseModule:
 
     def init_log(self, debug):
         """method reserved for initialising the logging directory"""
-        print("DD")
         # os.makedirs(self.log_directory, exist_ok=True)
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
@@ -48,10 +59,15 @@ class BaseModule:
 
     def log_write(self, input_str, inOut="input"):
         """logs string to file"""
-        self.logger.info("Read ")
+        self.logger.info(
+            f"Read input file-string provided by {self.past_module_instance}.{self.past_module_method_instance}."
+        )
+        self.pre_conversion_text = input_str
 
     def log_output(self, input_str):
         """method reserved for logging outnput-state"""
+        if input_str != self.pre_conversion_text:
+            self.logger.info("Modified File-string.")
         pass
 
     def process(self, input_str):
@@ -99,6 +115,7 @@ class ProcessingPipeline:
             config = config_file
 
         self.load_configuration_yaml(config)
+        self.logger.info("\n\nInitialised pipeline.\n")
 
     def load_configuration_yaml(self, config):
         """
@@ -109,6 +126,7 @@ class ProcessingPipeline:
         module_dir = os.path.normpath(os.path.dirname(__file__))
 
         past_module_instance = ""
+        past_module_method_instance = ""
         for module_info in config["pipeline"]:
             if module_info["enabled"]:
                 # Dynamically load the module by its filename (module_info['name'])
@@ -134,8 +152,10 @@ class ProcessingPipeline:
                         config=module_config,
                         log_directory=self.log_directory,
                         past_module_instance=past_module_instance,
+                        past_module_method_instance=past_module_method_instance,
                     )
                     past_module_instance = module_instance.__module__
+                    past_module_method_instance = module_instance.name
                     self.modules.append(module_instance)
                 else:
                     self.logger.warning(
