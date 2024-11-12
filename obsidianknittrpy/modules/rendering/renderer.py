@@ -62,6 +62,7 @@ class RenderingPipeline:
         input_name=None,
         custom_file_names=None,
         debug=False,
+        log_level=None,
     ):
         """
         Initialize the rendering pipeline.
@@ -80,8 +81,8 @@ class RenderingPipeline:
         self.debug = debug
 
         # Set up logging
-        logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(level=log_level)
 
         # Ensure output directory exists
         os.makedirs(self.output_directory, exist_ok=True)
@@ -226,7 +227,9 @@ def prepare_file_strings(file_string, output_types, output_format_values):
             file_strings[format_name] = file_string
         else:
             # Log or handle the case where the format is not found in output_format_values
-            print(f"Warning: {format_name} not found in output_format_values.")
+            logging.warning(
+                f"Format '{format_name}' not found in output_format_values."
+            )
 
     return file_strings
 

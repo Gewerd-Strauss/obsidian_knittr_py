@@ -1,4 +1,5 @@
 import os
+import logging
 
 
 def convert_format_args(args):
@@ -27,9 +28,9 @@ def convert_format_args(args):
             arguments[key] = value  # Add each argument to the dictionary
 
     # Print all arguments in the specified format
-    print("Formatted Arguments:")
+    logging.debug("Formatted Arguments:")
     for k, v in arguments.items():
-        print(f'["{k}"] = "{v}"')
+        logging.debug(f'["{k}"] = "{v}"')
 
     return arguments
 

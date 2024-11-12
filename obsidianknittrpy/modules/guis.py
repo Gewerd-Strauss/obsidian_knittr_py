@@ -3,10 +3,15 @@ from tkinter import ttk
 import pyperclip as pc
 import os as os
 import warnings as wn
+import logging as logging
 
 
 class ObsidianKnittrGUI:
-    def __init__(self, settings, file_history=[], formats=[]):
+    def __init__(self, settings, file_history=[], formats=[], loglevel=None):
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(level=loglevel)
         self.output_types = formats
         self.file_history = file_history
         self.output_selections = {}
@@ -483,7 +488,7 @@ class ObsidianKnittrGUI:
                 results["output_type"].append(output_type)
 
         if len(results["output_type"]) == 0:
-            print(
+            self.logger.info(
                 "no format selected, please select a format"
             )  # TODO: replace this with a notifyUser-call - since its a GUI, we must notify in it?
             return
@@ -520,9 +525,10 @@ class ObsidianKnittrGUI:
             results["obsidian_html"]["verb"] = "convert"
         else:
             results["obsidian_html"]["verb"] = "run"
-
-        print("Submit clicked")
-        print("Results:", results)  # Print the gathered results for verification
+        self.logger.debug("Submit clicked")
+        self.logger.debug(
+            "Results:", extra=results
+        )  # Print the gathered results for verification
         self.results = results
         self.close(set_escape=False)
         pass
@@ -535,7 +541,7 @@ class ObsidianKnittrGUI:
             if var.get():
                 results["output_type"].append(output_type)
         if len(results["output_type"]) == 0:
-            print("no format selected, please select a format")
+            self.logger.debug("no format selected, please select a format")
             return
         results["execution_directory"] = (
             self.exec_dir_selection.get()
@@ -566,19 +572,21 @@ class ObsidianKnittrGUI:
         else:
             results["obsidian_html"]["verb"] = "run"
 
-        print("Full Submit clicked")
-        print("Results:", results)  # Print the gathered results for verification
+        self.logger.debug("Full Submit clicked")
+        self.logger.debug(
+            "Results:", results
+        )  # Print the gathered results for verification
         self.results = results
         self.close(set_escape=False)
         pass
 
     def edit_general_config(self):
         # Placeholder for Edit General Config logic
-        print("Edit General Config clicked")
+        self.logger.debug("Edit General Config clicked")
 
     def show_about(self):
         # Placeholder for About dialog
-        print("About clicked")
+        self.logger.debug("About clicked")
         self.update_last_execution_labels("A", "B")
 
     def close(self, set_escape=True):
@@ -603,6 +611,7 @@ def handle_ot_guis(args, pb, CH, same_manuscript_chosen, format_definitions):
             DDL_ParamDelimiter="-<>-",
             skip_gui=CH.get_key("GENERAL_CONFIGURATION", "full_submit"),
             stepsized_gui_show=False,
+            loglevel=args["loglevel"],
         )  # Create instance of OT
 
         # Merge commandline-args values into the ot.arguments where available
@@ -689,6 +698,8 @@ def handle_ot_guis(args, pb, CH, same_manuscript_chosen, format_definitions):
     for format, ot in pb["objects"]["output_formats"].items():
         # Here, format is the key (e.g., "quarto::docx")
         # and ot is the instance of the OT class
-        print(f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}")
+        ot.logger.debug(
+            f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}"
+        )
 
     return pb, CH

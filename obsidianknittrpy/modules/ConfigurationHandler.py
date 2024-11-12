@@ -4,12 +4,17 @@ import argparse
 import re as re
 from appdirs import site_config_dir
 from pathlib import Path
+import logging
 
 
 class ConfigurationHandler:
 
-    def __init__(self, last_run_path=None, is_gui=None):
+    def __init__(self, last_run_path=None, loglevel=None, is_gui=None):
         """Initialises the default settings"""
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(loglevel)
         # Load default configuration in code
         self.application_directory = os.path.normpath(
             os.path.join(
@@ -398,7 +403,9 @@ quarto::pdf
                         self.default_history_location, 'w', encoding='utf-8'
                     ) as f:
                         yaml.dump(self.file_history, f, allow_unicode=True)
-                    print(f"Configuration saved to {self.default_history_location}")
+                    self.logger.debug(
+                        f"Configuration saved to {self.default_history_location}"
+                    )
             except yaml.YAMLError as e:
                 print(f"Error parsing YAML file: {e}")
             except Exception as e:
@@ -536,7 +543,9 @@ quarto::pdf
         try:
             # Update main config with custom settings, ignoring extra fields
             for key, value in custom_config.items():
-                print(f"Changed setting {config_section}.{key} to '{value}'")
+                self.logger.debug(
+                    f"Changed setting {config_section}.{key} to '{value}'"
+                )
                 self.applied_settings[config_section][key] = value
             # self.applied_settings[config_section]
             # self.config.update(custom_config)
@@ -569,9 +578,11 @@ quarto::pdf
                     last_run_config = yaml.safe_load(f)
                 if last_run_config is not None:
                     self.applied_settings.update(last_run_config)
-                print("Last run configuration loaded for GUI mode.")
+                self.logger.info("Last run configuration loaded for GUI mode.")
             except FileNotFoundError:
-                print("Last run configuration not found; using default configuration.")
+                self.logger.warning(
+                    "Last run configuration not found; resorting to default configuration."
+                )
 
     def save_last_run(self, last_run_path=None):
         """Save the current configuration as the last run configuration."""
@@ -579,9 +590,11 @@ quarto::pdf
             try:
                 with open(last_run_path, 'w', encoding='utf-8') as f:
                     yaml.dump(self.applied_settings, f, allow_unicode=True)
-                print(f"Configuration saved to {last_run_path}")
+                self.logger.info(f"Configuration saved to {last_run_path}")
             except FileNotFoundError:
-                print("Last run configuration not found; changes not saved.")
+                self.logger.error(
+                    f"Last run configuration '{last_run_path}' not found; changes not saved."
+                )
 
     def load_file_history(self, file_history_path=None):
         """Load the file-history"""
@@ -591,9 +604,13 @@ quarto::pdf
                     file_history_config = yaml.safe_load(f)
                 if file_history_config is not None:
                     self.file_history.extend(file_history_config)
-                    print("File-history-config loaded for GUI mode.")
+                    self.logger.info(
+                        f"GUI-mode: File-history-config loaded from '{file_history_path}'."
+                    )
             except FileNotFoundError:
-                print("File-history-configuration not found; using no configuration.")
+                self.logger.error(
+                    f"File-history-configuration '{file_history_path}' not found, gui-file-history was not saved."
+                )
 
     def save_file_history(self, file_history_path=None):
         """Save the current configuration as the last run configuration."""
@@ -601,9 +618,11 @@ quarto::pdf
             try:
                 with open(file_history_path, 'w', encoding='utf-8') as f:
                     yaml.dump(self.file_history, f, allow_unicode=True)
-                print(f"Configuration saved to {file_history_path}")
+                self.logger.info(f"Configuration saved to '{file_history_path}'.")
             except FileNotFoundError:
-                print("File-history configuration not found; changes not saved.")
+                self.logger.error(
+                    f"File-history configuration '{file_history_path}' not found; changes not saved."
+                )
 
     ### EXPORTERS ###
     def export_config(self, default=False, file_path=None):
@@ -612,9 +631,12 @@ quarto::pdf
             with open(file_path, 'w', encoding='utf-8') as f:
                 if default:
                     yaml.dump(self.default_settings, f, allow_unicode=True)
+                    self.logger.info(
+                        f"Default Configuration exported to '{file_path}'."
+                    )
                 else:
                     yaml.dump(self.applied_settings, f, allow_unicode=True)
-            print(f"Custom configuration exported to {file_path}")
+                    self.logger.info(f"Custom Configuration exported to '{file_path}'.")
         else:
             print(self.applied_settings)
 

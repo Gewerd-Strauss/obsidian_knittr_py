@@ -22,7 +22,7 @@ import os as os
 import sys as sys
 
 
-def main(pb, CH):
+def main(pb, CH, loglevel=None):
     wn.warn("main processing function is not implemented yet.")
     # Level = 0 > manuscript_dir > check
     # Level = -1 > true vault-root > check
@@ -96,6 +96,7 @@ def main(pb, CH):
         file_strings=file_strings,
         file_suffixes=file_suffixes,
         output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+        log_level=loglevel,
     )
     renderer.render(
         parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
@@ -119,7 +120,9 @@ def handle_gui(args, pb):
     # 1. translate arguments
     args = convert_format_args(args)
     # 2. setup config-manager
-    CH = ConfigurationHandler(last_run_path=None, is_gui=True)
+    CH = ConfigurationHandler(
+        last_run_path=None, loglevel=args["loglevel"], is_gui=True
+    )
     # setup defaults, load last-run
     CH.apply_defaults()
     CH.load_last_run(
@@ -134,6 +137,7 @@ def handle_gui(args, pb):
         settings=settings,
         file_history=CH.get_config("file_history"),
         formats=CH.get_formats(CH.get_config("format_definitions")),
+        loglevel=args["loglevel"],
     )
     if main_gui.closed:
         sys.exit(0)
@@ -208,7 +212,7 @@ def handle_gui(args, pb):
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
 
-    main(pb, CH)
+    main(pb, CH, args["loglevel"])
 
 
 # You can also include other handler functions if needed.
