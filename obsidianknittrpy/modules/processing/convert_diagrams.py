@@ -4,9 +4,17 @@ import re
 
 class ProcessDiagramCodeblocks(BaseModule):
 
-    def __init__(self, name="ProcessDiagramCodeblocks", config=None):
+    def __init__(
+        self,
+        name="ProcessDiagramCodeblocks",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+    ):
         super().__init__(name, config=config)
         self.codeblock_langs = self.get_config("codeblock_langs", default={})
+        self.log_directory = log_directory if log_directory else ""
+        self.past_module_instance = past_module_instance if past_module_instance else ""
 
     def process(self, data):
         """

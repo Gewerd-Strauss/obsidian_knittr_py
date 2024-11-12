@@ -63,7 +63,12 @@ def main(pb, CH, loglevel=None):
         pb["objects"]["obsidian_limiter"].remove_limiter()
     arguments = CH.get_key("GENERAL_CONFIGURATION")
     pipeline = ProcessingPipeline(
-        config_file=CH.applied_pipeline, arguments=arguments, debug=True
+        config_file=CH.applied_pipeline,
+        arguments=arguments,
+        debug=True,
+        log_directory=os.path.normpath(
+            os.path.join(CH.get_key("DIRECTORIES_PATHS", "output_dir"), "mod")
+        ),
     )
     path_ = get_text_file_path(
         obsidian_html.output["output_path"],

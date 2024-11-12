@@ -3,10 +3,18 @@ import re
 
 
 class ProcessInvalidQuartoFrontmatterFields(BaseModule):
-    def __init__(self, name="ProcessInvalidQuartoFrontmatterFields", config=None):
+    def __init__(
+        self,
+        name="ProcessInvalidQuartoFrontmatterFields",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+    ):
         super().__init__(name, config=config)
         # Get erroneous_keys as a dictionary from config, e.g., {"aliases": []}
         self.erroneous_keys = self.get_config("erroneous_keys", default={})
+        self.log_directory = log_directory if log_directory else ""
+        self.past_module_instance = past_module_instance if past_module_instance else ""
 
     def process(self, data):
         """
