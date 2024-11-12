@@ -35,7 +35,8 @@ class ProcessInvalidQuartoFrontmatterFields(BaseModule):
             if in_frontmatter:
                 for key, replacement_value in self.erroneous_keys.items():
                     # Look for `key: null` pattern and replace with `key: <replacement_value>`
-                    pattern = rf"^{key}:\s*null\s*$"
+                    pattern = rf'^{key}:\s*"*null"*\s*'
+                    # pattern = rf"^{key}:\s*null\s*$"
                     if re.match(pattern, trimmed):
                         line = f"{key}: {replacement_value}"
                         break
