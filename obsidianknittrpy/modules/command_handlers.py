@@ -20,6 +20,7 @@ from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
 import os as os
 import sys as sys
+import logging as logging
 
 
 def main(pb, CH, loglevel=None):
@@ -74,7 +75,6 @@ def main(pb, CH, loglevel=None):
         obsidian_html.output["output_path"],
     )
     processed_string = pipeline.run(load_text_file(path_))
-    print(processed_string)
     file_strings = ""
     if CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 1:
         # OHTML-output-directory
@@ -213,7 +213,7 @@ def handle_gui(args, pb):
                 CH.applied_settings["OUTPUT_FORMAT_VALUES"][format][arg] = ot.arguments[
                     arg
                 ]["Value"]
-            print(
+            logging.debug(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
 
