@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 import pyperclip as pc
 import os as os
-import warnings as wn
 import logging as logging
 
 
@@ -400,19 +399,21 @@ class ObsidianKnittrGUI:
         filetypes = [("Markdown files", "*.md")]
         title = "Choose manuscript file"
         # --
-        print("Choose Manuscript clicked")
+        self.logger.debug("Choose Manuscript clicked")
 
         clipboard = pc.paste()
         path = clipboard.replace("/", "\\")
 
         if os.path.exists(path) and not os.path.isdir(path):
             ext = os.path.splitext(path)[1].lower()
-            print(f"Path {path} from clipboard exists.")
+            self.logger.debug(f"Path {path} from clipboard exists.")
             if ext == ".md":
                 # self.root.withdraw()
                 fp = path
         else:
-            print("Clipboard does not hold a valid path, so open a file-dialog instead")
+            self.logger.debug(
+                "Clipboard does not hold a valid path, so open a file-dialog instead"
+            )
             # TODO: do we even port the setsearchroototolastmrunmanuscriptfolder stuff?
             # if (self.config.SetSearchRootToLastRunManuscriptFolder):
             allow_last_run = False
@@ -431,17 +432,17 @@ class ObsidianKnittrGUI:
                     initialdir=searchroot, title=title, filetypes=filetypes
                 )
             if not os.path.exists(fp):
-                wn.warn(
+                self.logger.warning(
                     f"{self.classname}: File '{fp}' does not exist. Please select a different file."
                 )
             ext = os.path.splitext(fp)[1].lower()
             if not ext == ".md":
-                wn.warn(
+                self.logger.warning(
                     f"{self.classname}: File '{fp}' is not a markdown-file. Please select a markdown-file (file-suffix: '.md')"
                 )
             if fp == "":
                 return  # no file selected
-            print(fp)
+            self.logger.debug(f"selected file: '{fp}'")
         self.update_filehistory(fp)
         # self.root.deiconify()
 
@@ -473,7 +474,7 @@ class ObsidianKnittrGUI:
     def update_last_execution_labels(self, last_manuscript_path, last_level):
         """Update the text for last execution labels."""
         DL = -300
-        wn.warn(
+        self.logger.warning(
             f"pass through default config and implement  default level 'DL' {DL} here"
         )
         self.last_exec_label1.config(text=f"LM: {last_manuscript_path}")
