@@ -404,12 +404,12 @@ quarto::pdf
                     ) as f:
                         yaml.dump(self.file_history, f, allow_unicode=True)
                     self.logger.debug(
-                        f"Configuration saved to {self.default_history_location}"
+                        f"File-history saved to {self.default_history_location}"
                     )
             except yaml.YAMLError as e:
-                print(f"Error parsing YAML file: {e}")
+                self.logger.error(f"Error parsing YAML file: {e}")
             except Exception as e:
-                print(f"An error occurred: {e}")
+                self.logger.error(f"An error occurred: {e}")
 
     def init_guiconfiguration_history(self):
         if self.default_guiconfiguration_location is not None:
@@ -424,13 +424,13 @@ quarto::pdf
                         self.default_guiconfiguration_location, 'w', encoding='utf-8'
                     ) as f:
                         yaml.dump(self.default_guiconfiguration, f, allow_unicode=True)
-                    print(
-                        f"Configuration saved to {self.default_guiconfiguration_location}"
+                    self.logger.debug(
+                        f"GUI-Configuration saved to {self.default_guiconfiguration_location}"
                     )
             except yaml.YAMLError as e:
-                print(f"Error parsing YAML file: {e}")
+                self.logger.error(f"Error parsing YAML file: {e}")
             except Exception as e:
-                print(f"An error occurred: {e}")
+                self.logger.error(f"An error occurred: {e}")
 
     def init_obsidianhtml_configuration(self):
         if self.default_obsidianhtmlconfiguration_location is not None:
@@ -449,13 +449,13 @@ quarto::pdf
                         encoding='utf-8',
                     ) as f:
                         yaml.dump(self.obsidianhtml_config, f, allow_unicode=True)
-                    print(
-                        f"Configuration saved to {self.default_obsidianhtmlconfiguration_location}"
+                    self.logger.debug(
+                        f"ObsidianHTML-Configuration saved to {self.default_obsidianhtmlconfiguration_location}"
                     )
             except yaml.YAMLError as e:
-                print(f"Error parsing YAML file: {e}")
+                self.logger.error(f"Error parsing YAML file: {e}")
             except Exception as e:
-                print(f"An error occurred: {e}")
+                self.logger.error(f"An error occurred: {e}")
 
     ### Getters
 
@@ -509,7 +509,7 @@ quarto::pdf
         if 'setting1' not in self.config:
             raise ValueError("Configuration missing 'setting1'")
         # Add additional validation as needed
-        print("Configuration validated successfully.")
+        self.logger.debug("Configuration validated successfully.")
 
     def merge_applied_settings(self, custom_config_path):
         """
@@ -526,9 +526,9 @@ quarto::pdf
 
             # Update main config with custom settings, ignoring extra fields
             self.merge_config(custom_config)
-            print(f"Configuration merged with {custom_config_path}")
+            self.logger.info(f"Configuration merged with {custom_config_path}")
         except FileNotFoundError:
-            print(
+            self.logger.error(
                 f"Custom configuration file not found at {custom_config_path}. No merge performed."
             )
 
@@ -537,7 +537,7 @@ quarto::pdf
             # Update main config with custom settings, ignoring extra fields
             self.config.update(custom_config)
         except yaml.YAMLError as e:
-            print(f"Error parsing YAML file: {e}")
+            self.logger.error(f"Error parsing YAML file: {e}")
 
     def merge_config_for_save(self, custom_config, config_section):
         try:
@@ -550,7 +550,7 @@ quarto::pdf
             # self.applied_settings[config_section]
             # self.config.update(custom_config)
         except yaml.YAMLError as e:
-            print(f"Error parsing YAML file: {e}")
+            self.logger.error(f"Error parsing YAML file: {e}")
 
     def load_cli_args(self):
         """Load and apply command-line arguments, if any."""
@@ -578,10 +578,10 @@ quarto::pdf
                     last_run_config = yaml.safe_load(f)
                 if last_run_config is not None:
                     self.applied_settings.update(last_run_config)
-                self.logger.info("Last run configuration loaded for GUI mode.")
+                self.logger.info("Last-Run configuration loaded for GUI mode.")
             except FileNotFoundError:
                 self.logger.warning(
-                    "Last run configuration not found; resorting to default configuration."
+                    "Last-Run configuration not found; resorting to default configuration."
                 )
 
     def save_last_run(self, last_run_path=None):
@@ -590,7 +590,7 @@ quarto::pdf
             try:
                 with open(last_run_path, 'w', encoding='utf-8') as f:
                     yaml.dump(self.applied_settings, f, allow_unicode=True)
-                self.logger.info(f"Configuration saved to {last_run_path}")
+                self.logger.info(f"Last-Run configuration saved to {last_run_path}")
             except FileNotFoundError:
                 self.logger.error(
                     f"Last run configuration '{last_run_path}' not found; changes not saved."
@@ -618,7 +618,7 @@ quarto::pdf
             try:
                 with open(file_history_path, 'w', encoding='utf-8') as f:
                     yaml.dump(self.file_history, f, allow_unicode=True)
-                self.logger.info(f"Configuration saved to '{file_history_path}'.")
+                self.logger.info(f"File-history-config saved to '{file_history_path}'.")
             except FileNotFoundError:
                 self.logger.error(
                     f"File-history configuration '{file_history_path}' not found; changes not saved."
