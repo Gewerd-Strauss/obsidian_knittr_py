@@ -158,3 +158,135 @@ class EnforceMinimalLinebreaks(BaseModule):
         """Process the text by enforcing line breaks around headers and code blocks."""
         input_str = self.enforce_max_newlines(input_str)
         return input_str
+
+
+class ProcessEquationReferences(BaseModule):
+    def __init__(
+        self,
+        name="ProcessEquationReferences",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
+    ):
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
+
+    def process(self, input_str):
+        """
+        Moves equation references outside of LaTeX blocks and appends them at the end of the respective blocks.
+        The reference format is changed to `{#eq:<label>}`.
+
+        Args:
+            input_str (str): The input markdown string containing LaTeX blocks with references.
+
+        Returns:
+            str: The modified string with equation references moved and reformatted.
+        """
+        # Regex pattern to match LaTeX blocks and capture the equation reference
+        latex_block_pattern = r"(\$\$.*?)(\()(\\#eq:.*?)(\))(.*?\$\$)"
+        result_str = input_str
+
+        # Find all LaTeX blocks with equation references inside
+        matches = re.finditer(latex_block_pattern, input_str, re.DOTALL)
+
+        for match in matches:
+            latex_block = match.group(1)
+            opening_brace = match.group(2)
+            equation_reference = match.group(
+                3
+            ).strip()  # Extract reference like \#eq:fieldcapacityequation1
+            closing_brace = match.group(4)
+            remaining_latex = match.group(5)
+
+            # Remove the equation reference from the LaTeX block
+            latex_block_clean = latex_block.replace(equation_reference, "").strip()
+
+            # merge the block-portions
+            latex_block_combined = latex_block_clean + remaining_latex
+
+            # Format the reference to be appended after the block
+            label = equation_reference.replace(
+                "\\#", "{#"
+            ).strip()  # Remove the backslash and hash
+            label = label.replace("#eq:", "#eq-")
+            formatted_reference = f"$$ {label}" + "}"
+
+            total_block = latex_block_combined + formatted_reference
+
+            total_block = total_block.replace(
+                "$$" + formatted_reference, formatted_reference
+            )
+            # Replace the old LaTeX block in the original string with the clean one
+            result_str = result_str.replace(
+                match.group(0), "\n\n" + total_block + "\n\n"
+            )
+
+        return result_str
+
+
+class ConvertBookdownToQuartoReferencing(BaseModule):
+
+    def __init__(
+        self,
+        name="ConvertBookdownToQuartoReferencing",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
+    ):
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
+        # Retrieve the flag for removing Quarto reference types from cross-references
+        self.quarto_strip_reference_prefixes = self.get_config(
+            "quarto_strip_reference_prefixes", False
+        )
+
+    def process(self, input_str):
+        """
+        Convert Bookdown-style references to Quarto-style references and optionally remove Quarto reference types from cross-references.
+
+        Parameters:
+            input_str (str): Input string containing the markdown with Bookdown references.
+
+        Returns:
+            str: The modified string with Bookdown references converted to Quarto references.
+        """
+        needle = r"\\@ref\((?P<Type>\w*):(?P<Label>[^)]*)\)"
+        matches = re.finditer(needle, input_str)
+
+        for match in matches:
+            full_match = match.group(0)
+            type_ = match.group("Type")
+            label = match.group("Label")
+            lbl = label  # Just to match the AHK variable names (although 'lbl' is unused in AHK)
+
+            # Adjust label based on the reference type
+            if type_ == "tab":
+                if "tbl-" not in label:
+                    label = "tbl-" + label
+                type_ = "tbl"
+            else:
+                if f"{type_}-" not in label:
+                    label = f"{type_}-{label}"
+
+            # Replace the reference in the string
+            if self.quarto_strip_reference_prefixes:
+                input_str = input_str.replace(full_match, f"[-@{label}]")
+            else:
+                input_str = input_str.replace(full_match, f"@{label}")
+
+            # Replace table references (e.g., 'tbl-WateringMethodTables' → 'tbl-WateringMethodTables')
+            input_str = input_str.replace(f"r {lbl}", f"r {label}")
+
+        return input_str

@@ -144,6 +144,14 @@ pipeline:
     config: {erroneous_keys: {"aliases":[],"alias":"null"}}
     enabled: True
   - file_name: quarto_modules
+    module_name: ConvertBookdownToQuartoReferencing
+    config: {quarto_strip_reference_prefixes: False}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: ProcessEquationReferences
+    config: {}
+    enabled: True
+  - file_name: quarto_modules
     module_name: EnforceLinebreaksOnQuartoBlocks
     config: {}
     enabled: True
