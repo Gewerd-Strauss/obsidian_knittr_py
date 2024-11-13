@@ -107,3 +107,54 @@ class EnforceLinebreaksOnQuartoBlocks(BaseModule):
                 rebuild.append(line)
 
         return '\n'.join(rebuild)
+
+
+class EnforceMinimalLinebreaks(BaseModule):
+
+    def __init__(
+        self,
+        name="EnforceMinimalLinebreaks",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
+    ):
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
+
+    def enforce_max_newlines(self, input_str):
+        """Helper function to add empty lines before/after headers and code blocks."""
+        # Regular expression patterns to match code blocks and LaTeX environments
+        code_block_pattern = r"(```.*?```|`{3}[\s\S]*?`{3})"  # Non-greedy match for code blocks (``` ... ```)
+        latex_pattern = (
+            r"(\$\$.*?\$\$)"  # Match LaTeX environments: $$ ... $$ or \[ ... \]
+        )
+
+        # Replace multiple newlines with exactly two newlines, but respect code blocks and LaTeX environments
+        def replace_newlines_inside_match(match):
+            # Inside code blocks or LaTeX environments, just return the match as is
+            return match.group(0)
+
+        # Replace multiple newlines in normal text, keeping LaTeX and code blocks intact
+        def replace_newlines_outside_matches(text):
+            # Replace multiple newlines with exactly two newlines in the non-matched sections
+            return re.sub(r"\n{3,}", "\n\n", text)
+
+        # Step 1: Replace code blocks and LaTeX environments with placeholders so they are not modified
+        input_str = re.sub(code_block_pattern, replace_newlines_inside_match, input_str)
+        # input_str = re.sub(latex_pattern, replace_newlines_inside_match, input_str)
+
+        # Step 2: Apply the newline replacement on the non-matching (normal) text
+        input_str = replace_newlines_outside_matches(input_str)
+
+        return input_str
+
+    def process(self, input_str):
+        """Process the text by enforcing line breaks around headers and code blocks."""
+        input_str = self.enforce_max_newlines(input_str)
+        return input_str

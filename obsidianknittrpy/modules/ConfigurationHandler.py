@@ -147,6 +147,10 @@ pipeline:
     module_name: EnforceLinebreaksOnQuartoBlocks
     config: {}
     enabled: True
+  - file_name: quarto_modules
+    module_name: EnforceMinimalLinebreaks
+    config: {}
+    enabled: True
   - file_name: module_file
     module_name: ModuleName
     config: {}
