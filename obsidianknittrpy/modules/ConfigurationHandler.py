@@ -115,9 +115,13 @@ class ConfigurationHandler:
     def init_default_pipeline(self):
         self.default_pipeline_yaml = """
 pipeline:
-  - file_name: convert_obsidianhtml_image_srcs
+  - file_name: obsidianhtml_modules
     module_name: ConvertImageSRCs
     config: {}
+    enabled: True
+  - file_name: obsidianhtml_modules
+    module_name: RemoveObsidianHTMLIncludeErrors
+    config: {purge_errors: False, error_needles: [r"(Obsidianhtml:\s+Error:\s+.*)$"]}
     enabled: True
   - file_name: general_processing
     module_name: ProcessTags
