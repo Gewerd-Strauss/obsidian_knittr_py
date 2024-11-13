@@ -143,6 +143,10 @@ pipeline:
     module_name: ProcessInvalidQuartoFrontmatterFields
     config: {erroneous_keys: {"aliases":[],"alias":"null"}}
     enabled: True
+  - file_name: quarto_modules
+    module_name: EnforceLinebreaksOnQuartoBlocks
+    config: {}
+    enabled: True
   - file_name: module_file
     module_name: ModuleName
     config: {}

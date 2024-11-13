@@ -58,3 +58,52 @@ class ProcessInvalidQuartoFrontmatterFields(BaseModule):
 
         # Rebuild the entire file content as a single string
         return "\n".join(result_lines)
+
+
+class EnforceLinebreaksOnQuartoBlocks(BaseModule):
+    def __init__(
+        self,
+        name="EnforceLinebreaksOnQuartoBlocks",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
+    ):
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
+
+    def process(self, input_str):
+        """Process the text by enforcing line breaks around headers and code blocks."""
+        lines = input_str.splitlines()
+        rebuild = []
+        inside_code_block = False
+
+        for idx, line in enumerate(lines):
+            trimmed_line = line.strip()
+
+            # Detect the start of a code block (``` or ```{)
+            if re.match(r"^```", trimmed_line):
+                if inside_code_block:
+                    # We're at the end of a code block, add a newline after it
+                    rebuild.append(line + "\n")
+                    inside_code_block = False
+                else:
+                    # Beginning of a code block, add a newline before it
+                    rebuild.append("\n" + line)
+                    inside_code_block = True
+            elif inside_code_block:
+                # Skip lines inside a code block
+                rebuild.append(line)
+            elif re.match(r"^#+\s+.*", trimmed_line):
+                # It's a header, add a newline before and after the header
+                rebuild.append("\n" + line + "\n")
+            else:
+                # Otherwise, just append the line
+                rebuild.append(line)
+
+        return '\n'.join(rebuild)
