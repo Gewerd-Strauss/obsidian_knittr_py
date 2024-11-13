@@ -114,8 +114,10 @@ class ProcessingPipeline:
         except:
             config = config_file
 
+        print("\n")
+        self.logger.info("Initialising pipeline.")
         self.load_configuration_yaml(config)
-        self.logger.info("\n\nInitialised pipeline.\n")
+        self.logger.info("Initialised pipeline.")
 
     def load_configuration_yaml(self, config):
         """
@@ -173,4 +175,5 @@ class ProcessingPipeline:
             module.log_input(input_str)
             input_str = module.process(input_str)
             module.log_output(input_str)
+        self.logger.debug(f"Processing-pipeline finished conversion.")
         return input_str
