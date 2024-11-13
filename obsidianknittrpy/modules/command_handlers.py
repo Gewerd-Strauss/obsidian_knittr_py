@@ -62,7 +62,10 @@ def main(pb, CH, loglevel=None):
     obsidian_html.run()
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         pb["objects"]["obsidian_limiter"].remove_limiter()
-    arguments = CH.get_key("GENERAL_CONFIGURATION")
+    arguments = {}
+    arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
+    arguments.update(CH.get_key("OBSIDIAN_HTML"))
+    arguments.update(CH.get_key("ENGINE_CONFIGURATION"))
     pipeline = ProcessingPipeline(
         config_file=CH.applied_pipeline,
         arguments=arguments,
