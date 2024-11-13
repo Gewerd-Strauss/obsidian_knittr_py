@@ -121,7 +121,7 @@ pipeline:
     enabled: True
   - file_name: obsidianhtml_modules
     module_name: RemoveObsidianHTMLIncludeErrors
-    config: {purge_errors: False, error_needles: [r"(Obsidianhtml:\s+Error:\s+.*)$"]}
+    config: {purge_errors: False, error_needles: [r"(Obsidianhtml\:\s+Error\:\s+.*)$"]}
     enabled: True
   - file_name: general_processing
     module_name: ProcessTags
