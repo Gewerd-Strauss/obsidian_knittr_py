@@ -144,6 +144,7 @@ def handle_gui(args, pb):
     for module in CH.applied_pipeline["pipeline"]:
         logging.debug(str(module))
     main_gui = ObsidianKnittrGUI(
+        pipeline=CH.applied_pipeline["pipeline"],
         settings=settings,
         file_history=CH.get_config("file_history"),
         formats=CH.get_formats(CH.get_config("format_definitions")),

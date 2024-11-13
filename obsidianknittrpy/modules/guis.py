@@ -6,11 +6,15 @@ import logging as logging
 
 
 class ObsidianKnittrGUI:
-    def __init__(self, settings, file_history=[], formats=[], loglevel=None):
+
+    def __init__(
+        self, settings, file_history=[], formats=[], pipeline=[], loglevel=None
+    ):
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
         )
         self.logger.setLevel(level=loglevel)
+        self.pipeline = pipeline
         self.output_types = formats
         self.file_history = file_history
         self.output_selections = {}
@@ -97,11 +101,13 @@ class ObsidianKnittrGUI:
         frame_margin_x = 5
         frame_margin_y = 5
         show_top_frame = False
-        render_debug = False
+        render_debug = self.logger.getEffectiveLevel() <= logging.DEBUG
+        enable_module_frame = self.logger.getEffectiveLevel() <= logging.DEBUG
         # Main frames for layout sections
         left_frame = tk.Frame(self.root, bg="green" if render_debug else None)
         right_frame = tk.Frame(self.root, bg="red" if render_debug else None)
         top_frame = tk.Frame(self.root, bg="purple" if render_debug else None)
+        righterer_frame = tk.Frame(self.root, bg="orange" if render_debug else None)
         title_bar_factor = 0.04 if show_top_frame else 0.00
 
         top_frame.place(
@@ -115,6 +121,12 @@ class ObsidianKnittrGUI:
         )
         right_frame.place(
             x=self.width / 2,
+            y=self.height * title_bar_factor,
+            width=self.width / 2,
+            height=(self.height * (1 - title_bar_factor)),
+        )
+        righterer_frame.place(
+            x=self.width,
             y=self.height * title_bar_factor,
             width=self.width / 2,
             height=(self.height * (1 - title_bar_factor)),
@@ -235,6 +247,20 @@ class ObsidianKnittrGUI:
             width=engine_frame_width,
             height=engine_frame_height,
         )
+        dynamic_label_frame = tk.LabelFrame(
+            righterer_frame, text="Module Configuration", bg=bg_col
+        )
+        dynamic_label_frame_x = frame_margin_x / 2
+        dynamic_label_frame_y = frame_margin_y / 2 + 0
+        output_frame_width_2 = output_frame_width + 290
+        dynamic_label_frame_width = self.width / 2 - frame_margin_x
+        dynamic_label_frame.place(
+            x=dynamic_label_frame_x,  # Position it to the right of the right_frame
+            y=dynamic_label_frame_y,
+            width=dynamic_label_frame_width,  # Adjust width as needed for the dynamic content
+            height=self.height,  # Span the full height of the GUI
+        )
+
         button_frame = tk.Frame(right_frame, bg=bg_col)
         buttom_frame_x = frame_margin_x / 2
         buttom_frame_y = engine_frame_y + engine_frame_height + frame_margin_y
@@ -256,7 +282,7 @@ class ObsidianKnittrGUI:
         canvas.create_window((0, 0), window=checkbox_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         canvas.place(relwidth=0.9, relheight=1)
-        scrollbar.place(relx=0.9, rely=0, relheight=1)
+        scrollbar.place(relx=0.95, rely=0, relheight=1)
 
         for output_type in self.output_types:
             if output_type in self.output_selections:
@@ -379,6 +405,65 @@ class ObsidianKnittrGUI:
         version_label_1.pack(anchor=tk.W)  # place(relx=0.5, rely=0.9, anchor="center")
         version_label_2.pack(anchor=tk.W)  # place(relx=0.5, rely=0.92, anchor="center")
 
+        ########## MODULE CONFIGURATION ##########
+        # Create a LabelFrame to enclose the scrollable dynamic content area
+
+        # Set up a scrollable canvas within dynamic_label_frame
+        canvas = tk.Canvas(dynamic_label_frame)
+        scrollbar = tk.Scrollbar(
+            dynamic_label_frame, orient="vertical", command=canvas.yview
+        )
+        module_frame = tk.Frame(
+            canvas
+        )  # This frame will hold the module-specific widgets
+        module_frame.bind(
+            "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        # Configure the canvas and scrollbar within dynamic_label_frame
+        canvas.create_window((0, 0), window=module_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.place(relwidth=0.9, relheight=1)
+        scrollbar.place(relx=0.95, rely=0, relheight=1)
+        # width=self.width / 2,
+        # Adjust GUI dimensions to include the new LabelFrame width
+        self.root.geometry(f"{int(self.width * 1.5)}x{self.height}")
+
+        # Loop through modules in pipeline to create labels and checkboxes dynamically
+        for i, module in enumerate(self.pipeline):
+            # Label with module name and instruction
+            if module['module_name'] == "ModuleName":
+                continue
+            module_label = tk.Label(
+                module_frame,
+                text=f"{module['module_name']}: {module.get('Instruction', '')}",
+            )
+            module_label.pack(anchor="w", padx=5, pady=2)
+
+            # Checkbox for `enabled` status
+            enabled_var = tk.IntVar(value=module["enabled"])
+            enabled_checkbox = tk.Checkbutton(
+                module_frame, text="Enabled", variable=enabled_var
+            )
+            enabled_checkbox.pack(anchor="w", padx=10)
+            setattr(self, f"module_{module['module_name']}_enabled", enabled_var)
+
+            # Dynamically create checkboxes for each boolean config key
+            for key, value in module["config"].items():
+                if isinstance(value, bool):
+                    bool_var = tk.IntVar(value=value)
+                    checkbox = tk.Checkbutton(
+                        module_frame,
+                        text=f"{key.replace('_', ' ').title()}",
+                        variable=bool_var,
+                    )
+                    checkbox.pack(anchor="w", padx=15)
+
+                    # Save the variable with a unique attribute name
+                    setattr(self, f"module_{module['module_name']}_{key}", bool_var)
+        if not enable_module_frame:
+            dynamic_label_frame.place_forget()
+            self.root.geometry(f"{int(self.width * 1.0)}x{self.height}")
         ########## BOTTOM BUTTONS ##########
         tk.Button(button_frame, text="Submit", command=self.submit).pack(
             side=tk.LEFT, padx=1
@@ -480,7 +565,30 @@ class ObsidianKnittrGUI:
         self.last_exec_label1.config(text=f"LM: {last_manuscript_path}")
         self.last_exec_label2.config(text=f"LL: {last_level} DL:{DL}")
 
+    def update_pipeline_from_gui(self):
+        for module in self.pipeline:
+            # Get the 'enabled' checkbox state
+            enabled_var_name = f"module_{module['module_name']}_enabled"
+            enabled_var = getattr(self, enabled_var_name, None)
+            if enabled_var:
+                self.logger.debug(
+                    f"Toggling Module {module['module_name']} {'on' if enabled_var.get() else 'off'}"
+                )
+                module['enabled'] = bool(enabled_var.get())
+
+            # Update each boolean configuration in 'config'
+            for key, value in module['config'].items():
+                if isinstance(value, bool):  # Ensure we're updating only boolean keys
+                    config_var_name = f"module_{module['module_name']}_{key}"
+                    config_var = getattr(self, config_var_name, None)
+                    if config_var:
+                        self.logger.debug(
+                            f"\tModule {module['module_name']}: Setting '{key}' {'on' if config_var.get() else 'off'}"
+                        )
+                        module['config'][key] = bool(config_var.get())
+
     def submit(self):
+        self.update_pipeline_from_gui()
         # output_type, execution_directories
         results = {}
         results["output_type"] = []
@@ -535,6 +643,7 @@ class ObsidianKnittrGUI:
         pass
 
     def full_submit(self):
+        self.update_pipeline_from_gui()
         # output_type, execution_directories
         results = {}
         results["output_type"] = []
