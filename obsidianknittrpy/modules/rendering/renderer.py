@@ -86,7 +86,7 @@ class RenderingPipeline:
 
         # Ensure output directory exists
         os.makedirs(self.output_directory, exist_ok=True)
-
+        print("\n")
         self.logger.info("RenderingPipeline initialized.")
 
     def validate(self):
@@ -186,7 +186,9 @@ class RenderingPipeline:
             quart_working_directory = working_directory or os.path.dirname(
                 temp_file_path
             )
-
+            self.logger.info(
+                f"Setting Quarto's working-directory to '{quart_working_directory}'"
+            )
             # Run Quarto render command
             try:
                 command = [
