@@ -443,15 +443,22 @@ class ObsidianKnittrGUI:
             module_label = tk.Label(
                 module_frame,
                 text=f"{module['module_name']}: {module.get('Instruction', '')}",
+                wraplength=int(dynamic_label_frame_width * 0.97),
             )
-            module_label.pack(anchor="w", padx=5, pady=2)
+            module_label.pack(anchor=tk.W, padx=5, pady=2)
 
             # Checkbox for `enabled` status
             enabled_var = tk.IntVar(value=module["enabled"])
+
+            # Check if 'force_active' exists and is True, then disable the checkbox
+            force_active = module.get('force_active', False)
             enabled_checkbox = tk.Checkbutton(
-                module_frame, text="Enabled", variable=enabled_var
+                module_frame,
+                text="Enabled",
+                variable=enabled_var,
+                state=tk.DISABLED if force_active else tk.NORMAL,
             )
-            enabled_checkbox.pack(anchor="w", padx=10)
+            enabled_checkbox.pack(anchor=tk.W, padx=10)
             setattr(self, f"module_{module['module_name']}_enabled", enabled_var)
 
             # Dynamically create checkboxes for each boolean config key
@@ -463,7 +470,7 @@ class ObsidianKnittrGUI:
                         text=f"{key.replace('_', ' ').title()}",
                         variable=bool_var,
                     )
-                    checkbox.pack(anchor="w", padx=15)
+                    checkbox.pack(anchor=tk.W, padx=15)
 
                     # Save the variable with a unique attribute name
                     setattr(self, f"module_{module['module_name']}_{key}", bool_var)
