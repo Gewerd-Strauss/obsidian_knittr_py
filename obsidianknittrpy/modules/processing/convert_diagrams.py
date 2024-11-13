@@ -12,13 +12,14 @@ class ProcessDiagramCodeblocks(BaseModule):
         past_module_instance=None,
         past_module_method_instance=None,
     ):
-        super().__init__(name, config=config)
-        self.codeblock_langs = self.get_config("codeblock_langs", default={})
-        self.log_directory = log_directory if log_directory else ""
-        self.past_module_instance = past_module_instance if past_module_instance else ""
-        self.past_module_method_instance = (
-            past_module_method_instance if past_module_method_instance else ""
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
         )
+        self.codeblock_langs = self.get_config("codeblock_langs", default={})
 
     def process(self, data):
         """

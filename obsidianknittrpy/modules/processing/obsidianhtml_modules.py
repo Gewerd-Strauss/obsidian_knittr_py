@@ -2,6 +2,7 @@ from .processing_module_runner import BaseModule
 import re as re
 import urllib.parse
 import html
+import os
 
 
 class ConvertImageSRCs(BaseModule):
@@ -84,7 +85,13 @@ class RemoveObsidianHTMLIncludeErrors(BaseModule):
         past_module_instance=None,
         past_module_method_instance=None,
     ):
-        super().__init__(name, config=config)
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
         # Get error_needles as a dictionary from config, e.g., {"aliases": []}
         self.error_needles = self.get_config("error_needles", default={})
         # Compile each pattern
@@ -92,11 +99,6 @@ class RemoveObsidianHTMLIncludeErrors(BaseModule):
             re.compile(needle[2:-2]) for needle in self.error_needles
         ]
         purge_errors = self.get_config("purge_errors")
-        self.log_directory = log_directory if log_directory else ""
-        self.past_module_instance = past_module_instance if past_module_instance else ""
-        self.past_module_method_instance = (
-            past_module_method_instance if past_module_method_instance else ""
-        )
 
     def process(self, input_str):
         if self.get_config(key="purge_errors", default=False):

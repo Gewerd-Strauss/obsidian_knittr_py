@@ -12,14 +12,15 @@ class ProcessInvalidQuartoFrontmatterFields(BaseModule):
         past_module_instance=None,
         past_module_method_instance=None,
     ):
-        super().__init__(name, config=config)
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
         # Get erroneous_keys as a dictionary from config, e.g., {"aliases": []}
         self.erroneous_keys = self.get_config("erroneous_keys", default={})
-        self.log_directory = log_directory if log_directory else ""
-        self.past_module_instance = past_module_instance if past_module_instance else ""
-        self.past_module_method_instance = (
-            past_module_method_instance if past_module_method_instance else ""
-        )
 
     def process(self, input_str):
         """
