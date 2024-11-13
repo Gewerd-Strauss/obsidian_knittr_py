@@ -429,6 +429,12 @@ class ObsidianKnittrGUI:
         # Adjust GUI dimensions to include the new LabelFrame width
         self.root.geometry(f"{int(self.width * 1.5)}x{self.height}")
 
+        instruction_label = tk.Label(
+            module_frame,
+            text=f"Modules are executed top to bottom",
+            wraplength=int(dynamic_label_frame_width * 0.97),
+        )
+        instruction_label.pack(anchor=tk.W, padx=5, pady=2)
         # Loop through modules in pipeline to create labels and checkboxes dynamically
         for i, module in enumerate(self.pipeline):
             # Label with module name and instruction
