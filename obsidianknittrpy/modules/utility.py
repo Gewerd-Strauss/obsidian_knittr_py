@@ -1,4 +1,5 @@
 import os
+import logging
 
 
 def convert_format_args(args):
@@ -27,9 +28,9 @@ def convert_format_args(args):
             arguments[key] = value  # Add each argument to the dictionary
 
     # Print all arguments in the specified format
-    print("Formatted Arguments:")
+    logging.debug("Formatted Arguments:")
     for k, v in arguments.items():
-        print(f'["{k}"] = "{v}"')
+        logging.debug(f'["{k}"] = "{v}"')
 
     return arguments
 
@@ -67,10 +68,18 @@ def init_picknick_basket():
     return {"settings": settings, "objects": other, "manuscript": manuscript}
 
 
-def load_text_file(file_directory, file_name="index.md"):
-    """Load the text from a file."""
+def get_text_file_path(file_directory, file_name="index.md"):
     try:
         file_path = os.path.normpath(os.path.join(file_directory, file_name))
+        return file_path
+    except FileNotFoundError:
+        print(f"File '{file_path}' not found.")
+        return None
+
+
+def load_text_file(file_path):
+    """Load the text from a file."""
+    try:
         with open(file_path, "r", encoding="utf-8") as file:
             return file.read()
     except FileNotFoundError:

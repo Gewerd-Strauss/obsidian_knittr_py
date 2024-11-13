@@ -3,6 +3,7 @@ from collections import deque
 from tkinter import ttk
 import tkinter as tk
 import os as os
+import logging
 
 
 # class TtkCheckList is sourced from https://stackoverflow.com/a/67348336, and slightly adopted to suit my own needs.
@@ -60,7 +61,7 @@ class TtkCheckList(ttk.Treeview):
             parent_iid, text = item.rsplit(self._separator, maxsplit=1)
         except ValueError:
             parent_iid, text = "", item
-        print(f"parent:{parent_iid}")
+        logging.debug(f"parent:{parent_iid}")
         self.insert(
             parent_iid,
             index="end",
@@ -103,7 +104,13 @@ class TtkCheckList(ttk.Treeview):
 
 
 class ObsidianHTML_Limiter:
-    def __init__(self, manuscript_path, auto_submit=False, level=-1, cli_args=None):
+    def __init__(
+        self, manuscript_path, auto_submit=False, level=-1, cli_args=None, loglevel=None
+    ):
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(level=loglevel)
         self.width = 750
         self.height = 550
         if os.path.exists(manuscript_path):
@@ -216,7 +223,7 @@ class ObsidianHTML_Limiter:
             clicked=partial(check_new, self),
         )  # TODO: replace this with the tkchecklist in 'treeview_checkboxes.py'. Then implement the callbacks for selecting the correct indeces.
         for item in self.adjusted_directory_structure[1]:
-            print(item)
+            logging.debug(item)
             self.tree.add_item(item)
         self.tree.pack(expand=True, fill=tk.BOTH, anchor=tk.W)
         self.tree.heading("#0", text="Vault Structure", anchor="w")
@@ -241,7 +248,7 @@ class ObsidianHTML_Limiter:
             self.root.bind(
                 f"{i}", lambda event, idx=i: self.select_kth_level(idx, event)
             )
-            print(f"binding '<Alt-{i}>'")
+            logging.debug(f"binding '<Alt-{i}>'")
 
         self.root.bind("<Alt-s>", self.submit)
 
@@ -264,8 +271,6 @@ class ObsidianHTML_Limiter:
             while not len(children) == 0:
                 iid = children[-1]  # Get the iid of the last item
                 children = self.tree.get_children(iid)
-                print(iid)
-                print("DD")
 
             check_new(self, iid)
 
@@ -287,38 +292,38 @@ class ObsidianHTML_Limiter:
 
     def add_limiter(self):
         if self.selected_limiter_is_vaultroot:
-            print("Selected limiter is the vault root. No action taken.")
+            self.logger.debug("Selected limiter is the vault root. No action taken.")
             self.selected_limiter_preexisted = True
             return
 
         # Check if the directory exists
         if os.path.exists(self.selected_limiter_directory):
             self.selected_limiter_preexisted = True
-            print(
+            self.logger.info(
                 f"Directory '{self.selected_limiter_directory}' already exists. No action taken."
             )
         else:
             # Create the directory
             os.makedirs(self.selected_limiter_directory)
             self.selected_limiter_preexisted = False
-            print(f"Created directory '{self.selected_limiter_directory}'.")
+            self.logger.info(f"Created directory '{self.selected_limiter_directory}'.")
             # self.close()
 
     def remove_limiter(self):
         if self.selected_limiter_is_vaultroot:
-            print("Cannot remove limiter; it is the vault root.")
+            self.logger.warning("Cannot remove limiter; it is the vault root.")
             return
 
         if self.selected_limiter_preexisted:
-            print("Cannot remove limiter; it was pre-existing.")
+            self.logger.warning("Cannot remove limiter; it was pre-existing.")
             return
 
         # Remove the limiter directory
         try:
             os.rmdir(self.selected_limiter_directory)  # Only remove if empty
-            print(f"Removed directory '{self.selected_limiter_directory}'.")
+            self.logger.info(f"Removed directory '{self.selected_limiter_directory}'.")
         except Exception as e:
-            print(
+            self.logger.error(
                 f"Failed to remove directory '{self.selected_limiter_directory}': {e}"
             )
 
@@ -335,7 +340,6 @@ class ObsidianHTML_Limiter:
 
             # self.add_subdirectories(path_id, path, level)
             level = level + 1
-        print("DD")
 
     def assemble_tv_string(array):
         tv_string = ""
@@ -412,7 +416,4 @@ def check_new(instance, iid):
     # and then parse out the dots to get my selected path during submission.
     instance.selected_limiter_is_vaultroot = (
         limiter_directory == instance.directory_structure[0]
-    )
-    print(
-        f"Set limiter-directory to '{limiter_directory}', is vault-root:{instance.selected_limiter_is_vaultroot}"
     )

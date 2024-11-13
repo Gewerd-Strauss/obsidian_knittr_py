@@ -1,5 +1,16 @@
+import logging
+
+
 class BaseModule:
-    def __init__(self, name, config=None):
+
+    def __init__(
+        self,
+        name,
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
+    ):
         """
         Base class for all processing modules.
         :param name: Name of the module
@@ -7,6 +18,14 @@ class BaseModule:
         """
         self.name = name
         self.config = config if config else {}
+        self.log_directory = log_directory if log_directory else ""
+        self.past_module_instance = (
+            past_module_instance if past_module_instance else "obsidian-html"
+        )
+
+        self.past_module_method_instance = (
+            past_module_method_instance if past_module_method_instance else ""
+        )
 
     def get_config(self, key, default=None):
         """
@@ -24,12 +43,31 @@ class BaseModule:
         """
         self.config.update(kwargs)
 
-    def log_input(self):
-        """method reserved for logging input-state"""
+    def init_log(self, debug):
+        """method reserved for initialising the logging directory"""
+        # os.makedirs(self.log_directory, exist_ok=True)
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(logging.DEBUG if debug else logging.INFO)
         pass
 
-    def log_output(self):
+    def log_input(self, input_str):
+        """method reserved for logging input-state"""
+        self.log_write(input_str=input_str, inOut="input")
+        pass
+
+    def log_write(self, input_str, inOut="input"):
+        """logs string to file"""
+        self.logger.info(
+            f"Read input file-string provided by {self.past_module_instance}.{self.past_module_method_instance}."
+        )
+        self.pre_conversion_text = input_str
+
+    def log_output(self, input_str):
         """method reserved for logging outnput-state"""
+        if input_str != self.pre_conversion_text:
+            self.logger.info("Modified File-string.")
         pass
 
     def process(self, input_str):
@@ -55,15 +93,20 @@ class ProcessingPipeline:
     This class gets executed on the immediate output of obsidian-html
     """
 
-    def __init__(self, config_file, arguments=None, debug=False):
+    def __init__(self, config_file, arguments=None, debug=False, log_directory=None):
         """
         Initialize the processing pipeline.
         :param config_file: Path to YAML configuration file
         """
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(logging.DEBUG if debug else logging.INFO)
         self.debug = debug
         self.modules = []
         self.arguments = arguments if arguments else {}
         self.arguments["debug"] = debug
+        self.log_directory = log_directory
         try:
             if os.path.exists(config_file):
                 with open(config_file, "r") as f:
@@ -71,7 +114,10 @@ class ProcessingPipeline:
         except:
             config = config_file
 
+        print("\n")
+        self.logger.info("Initialising pipeline.")
         self.load_configuration_yaml(config)
+        self.logger.info("Initialised pipeline.")
 
     def load_configuration_yaml(self, config):
         """
@@ -81,6 +127,8 @@ class ProcessingPipeline:
 
         module_dir = os.path.normpath(os.path.dirname(__file__))
 
+        past_module_instance = ""
+        past_module_method_instance = ""
         for module_info in config["pipeline"]:
             if module_info["enabled"]:
                 # Dynamically load the module by its filename (module_info['name'])
@@ -102,11 +150,17 @@ class ProcessingPipeline:
 
                     # Initialize the module with the merged config
                     module_instance = module_class(
-                        module_info["module_name"], config=module_config
+                        module_info["module_name"],
+                        config=module_config,
+                        log_directory=self.log_directory,
+                        past_module_instance=past_module_instance,
+                        past_module_method_instance=past_module_method_instance,
                     )
+                    past_module_instance = module_instance.__module__
+                    past_module_method_instance = module_instance.name
                     self.modules.append(module_instance)
                 else:
-                    print(
+                    self.logger.warning(
                         f"Module {module_info['module_name']} not found in {module_dir}"
                     )
 
@@ -117,7 +171,9 @@ class ProcessingPipeline:
         :return: The final processed string
         """
         for module in self.modules:
-            module.log_input()
+            module.init_log(self.debug)
+            module.log_input(input_str)
             input_str = module.process(input_str)
-            module.log_output()
+            module.log_output(input_str)
+        self.logger.debug(f"Processing-pipeline finished conversion.")
         return input_str

@@ -25,6 +25,12 @@ def common_arguments(parser):
         "--OHTML.ForkPath",
         help="Path to custom ObsidianHTML fork, if using `--OHTML.UseCustomFork`.",
     )
+    parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
     # Add pass-through argument
     parser.add_argument(
         "pass_through",

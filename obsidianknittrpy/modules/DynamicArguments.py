@@ -1,6 +1,7 @@
 import re
 import os
 from math import floor
+import logging as logging
 import webbrowser
 import tkinter as tk
 import warnings as wn
@@ -44,7 +45,13 @@ class OT:
         DDL_ParamDelimiter="-<>-",
         skip_gui=False,
         stepsized_gui_show=False,
+        loglevel="Info",
     ):
+        self.loglevel = loglevel
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(loglevel)
         self.config_file = config_file
         self.type = format
         self.DDL_ParamDelimiter = DDL_ParamDelimiter
@@ -434,7 +441,9 @@ class OT:
     ):
         """Generates the GUI: static and dynamic parts, and populates it."""
         print("Generates the GUI and populates it")
-        self.gui_instance = OT_GUI(self.arguments, self.config_file, self.type)
+        self.gui_instance = OT_GUI(
+            self.arguments, self.config_file, self.type, self.loglevel
+        )
 
     def submit_gui():
         """After the GUI is submitted, this function must be called to modify the arguments in self.arguments if the user changed values in the GUI"""
@@ -466,7 +475,7 @@ from datetime import datetime
 
 
 class OT_GUI:
-    def __init__(self, arguments, config_file, type):
+    def __init__(self, arguments, config_file, type, loglevel=None):
         self.root = tk.Tk()  # Initialize the Tkinter root window here
         self.classname = f"ot_gui ({type})"
         self.root.title(f"Params GUI ({type})")
@@ -474,6 +483,10 @@ class OT_GUI:
         self.config_file = config_file
         self.type = type
         self.tabs = ttk.Notebook(self.root)
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(level=loglevel)
 
         self.create_gui()
         self.bind_method_hotkey("<Alt-s>", "submit")
@@ -605,7 +618,7 @@ class OT_GUI:
             # combobox: allow editing. Strip readonly if present, then warn the use to use ddl if readonly is desired
             if "readonly" in options_list:  # except if it is explicitly noted
                 options_list.remove("readonly")
-                wn.warn(
+                self.logger.debug(  # use debugging because this code results in the expected behaviour for this control-type. Debugging will yield the reason
                     f"{self.name}: Option 'readonly' present in {value.Control}'s parameter got ignored. To use a DDL without write-access, use control-type 'ddl'."
                 )
             combobox = ttk.Combobox(
@@ -614,7 +627,7 @@ class OT_GUI:
             )
         elif value.Control == "ddl":  # for ddl, force readonly
             if "readonly" not in options_list:
-                wn.warn(
+                self.logger.debug(  # use debugging because this code results in the expected behaviour for this control-type. Debugging will yield the reason
                     f"{self.classname}: Option 'readonly' not present in {value.Control}'s parameter. 'readonly' was forcefully applied. To use a DDL with write-access, use control-type 'combobox'."
                 )
             combobox = ttk.Combobox(tab_frame, values=options_list, state="readonly")
@@ -763,7 +776,7 @@ class OT_GUI:
             if HiddenHeaders[Header]:
                 continue
             row_index = 0
-            print(f"Adding to tab {Header}")
+            self.logger.debug(f"Adding to tab {Header}")
             for parameter, value in self.arguments.items():
                 if value["Control"] in ["meta", "Meta"]:
                     continue
@@ -882,6 +895,7 @@ class OT_GUI:
             folder_path = os.path.dirname(file_path)
             webbrowser.open(folder_path)
         else:
+            self.logger.warning("No valid file selected, or the file does not exist.")
             messagebox.showwarning(
                 "Warning", "No valid file selected or file does not exist."
             )
