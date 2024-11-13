@@ -141,6 +141,8 @@ def handle_gui(args, pb):
     # retrieve objects for use in later
     settings = CH.get_config("settings")
     # 2. launch main GUI
+    for module in CH.applied_pipeline["pipeline"]:
+        logging.debug(str(module))
     main_gui = ObsidianKnittrGUI(
         settings=settings,
         file_history=CH.get_config("file_history"),
