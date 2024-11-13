@@ -21,17 +21,17 @@ class ProcessInvalidQuartoFrontmatterFields(BaseModule):
             past_module_method_instance if past_module_method_instance else ""
         )
 
-    def process(self, data):
+    def process(self, input_str):
         """
         Fix invalid frontmatter fields by replacing 'null' values for specified keys with their configured replacement.
 
         Parameters:
-            data (str): Input text data containing YAML frontmatter to process.
+            input_str (str): Input text input_str containing YAML frontmatter to process.
 
         Returns:
-            str: Processed data with 'null' values replaced by specified replacements for each key in frontmatter.
+            str: Processed input_str with 'null' values replaced by specified replacements for each key in frontmatter.
         """
-        lines = data.splitlines()
+        lines = input_str.splitlines()
         in_frontmatter = False
         result_lines = []
 
