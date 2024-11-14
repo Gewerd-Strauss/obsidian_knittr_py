@@ -115,6 +115,11 @@ class ConfigurationHandler:
     def init_default_pipeline(self):
         self.default_pipeline_yaml = """
 pipeline:
+  - file_name: purge_contents
+    module_name: PurgeContents
+    Instruction: Remove all contents except frontmatter and headers
+    config: {purged_frontmatter_keys: ["bibliography","csl","filters"]}
+    enabled: False
   - file_name: obsidianhtml_modules
     module_name: ConvertImageSRCs
     Instruction: Convert Image SRC's created by obsidian-HTML
