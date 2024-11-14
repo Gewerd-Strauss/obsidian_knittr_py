@@ -139,6 +139,7 @@ pipeline:
     module_name: ProcessFrontmatterNulls
     config: {}
     enabled: True
+    force_module_enabled_state: True
   - file_name: quarto_modules
     module_name: ProcessInvalidQuartoFrontmatterFields
     config: {erroneous_keys: {"aliases":[],"alias":"null"}}

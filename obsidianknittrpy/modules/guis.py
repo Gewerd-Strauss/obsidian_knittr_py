@@ -450,13 +450,13 @@ class ObsidianKnittrGUI:
             # Checkbox for `enabled` status
             enabled_var = tk.IntVar(value=module["enabled"])
 
-            # Check if 'force_active' exists and is True, then disable the checkbox
-            force_active = module.get('force_active', False)
+            # Check if 'force_module_enabled_state' exists and is True, then disable the checkbox
+            force_module_enabled_state = module.get('force_module_enabled_state', False)
             enabled_checkbox = tk.Checkbutton(
                 module_frame,
                 text="Enabled",
                 variable=enabled_var,
-                state=tk.DISABLED if force_active else tk.NORMAL,
+                state=tk.DISABLED if force_module_enabled_state else tk.NORMAL,
             )
             enabled_checkbox.pack(anchor=tk.W, padx=10)
             setattr(self, f"module_{module['module_name']}_enabled", enabled_var)
