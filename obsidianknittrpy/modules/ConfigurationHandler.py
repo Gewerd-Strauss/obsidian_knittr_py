@@ -117,6 +117,7 @@ class ConfigurationHandler:
 pipeline:
   - file_name: obsidianhtml_modules
     module_name: ConvertImageSRCs
+    Instruction: Convert Image SRC's created by obsidian-HTML
     config: {}
     enabled: True
   - file_name: obsidianhtml_modules
