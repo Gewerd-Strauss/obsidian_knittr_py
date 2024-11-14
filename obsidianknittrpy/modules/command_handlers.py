@@ -62,7 +62,10 @@ def main(pb, CH, loglevel=None):
     obsidian_html.run()
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         pb["objects"]["obsidian_limiter"].remove_limiter()
-    arguments = CH.get_key("GENERAL_CONFIGURATION")
+    arguments = {}
+    arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
+    arguments.update(CH.get_key("OBSIDIAN_HTML"))
+    arguments.update(CH.get_key("ENGINE_CONFIGURATION"))
     pipeline = ProcessingPipeline(
         config_file=CH.applied_pipeline,
         arguments=arguments,
@@ -138,7 +141,10 @@ def handle_gui(args, pb):
     # retrieve objects for use in later
     settings = CH.get_config("settings")
     # 2. launch main GUI
+    for module in CH.applied_pipeline["pipeline"]:
+        logging.debug(str(module))
     main_gui = ObsidianKnittrGUI(
+        pipeline=CH.applied_pipeline["pipeline"],
         settings=settings,
         file_history=CH.get_config("file_history"),
         formats=CH.get_formats(CH.get_config("format_definitions")),

@@ -1,4 +1,5 @@
 import logging
+import shutil
 
 
 class BaseModule:
@@ -19,6 +20,10 @@ class BaseModule:
         self.name = name
         self.config = config if config else {}
         self.log_directory = log_directory if log_directory else ""
+        self.log_directory = os.path.normpath(
+            os.path.join(self.log_directory, self.name)
+        )
+
         self.past_module_instance = (
             past_module_instance if past_module_instance else "obsidian-html"
         )
@@ -45,7 +50,13 @@ class BaseModule:
 
     def init_log(self, debug):
         """method reserved for initialising the logging directory"""
-        # os.makedirs(self.log_directory, exist_ok=True)
+        self.input_log_file = os.path.normpath(
+            os.path.join(self.log_directory, "input.md")
+        )
+        self.output_log_file = os.path.normpath(
+            os.path.join(self.log_directory, "output.md")
+        )
+        os.makedirs(self.log_directory, exist_ok=True)
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
         )
@@ -54,21 +65,27 @@ class BaseModule:
 
     def log_input(self, input_str):
         """method reserved for logging input-state"""
-        self.log_write(input_str=input_str, inOut="input")
-        pass
-
-    def log_write(self, input_str, inOut="input"):
-        """logs string to file"""
         self.logger.info(
             f"Read input file-string provided by {self.past_module_instance}.{self.past_module_method_instance}."
         )
         self.pre_conversion_text = input_str
+        self.log_write(input_str=input_str, inOut="input")
+        pass
+
+    def log_write(self, input_str, inOut="input", encoding='utf-8'):
+        """logs string to file"""
+        if inOut == "input":
+            with open(self.input_log_file, 'w', encoding=encoding) as file:
+                file.write(input_str)
+        elif inOut == "output":
+            with open(self.output_log_file, 'w', encoding=encoding) as file:
+                file.write(input_str)
 
     def log_output(self, input_str):
         """method reserved for logging outnput-state"""
         if input_str != self.pre_conversion_text:
             self.logger.info("Modified File-string.")
-        pass
+        self.log_write(input_str=input_str, inOut="output")
 
     def process(self, input_str):
         """
@@ -107,6 +124,9 @@ class ProcessingPipeline:
         self.arguments = arguments if arguments else {}
         self.arguments["debug"] = debug
         self.log_directory = log_directory
+        if os.path.exists(self.log_directory):
+            self.logger.info(f"Removed module-logging-directory {self.log_directory}.")
+            shutil.rmtree(self.log_directory)
         try:
             if os.path.exists(config_file):
                 with open(config_file, "r") as f:

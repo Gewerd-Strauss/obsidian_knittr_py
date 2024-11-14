@@ -3,6 +3,10 @@ from .processing_module_runner import BaseModule
 
 
 class ProcessTags(BaseModule):
+    """
+    Documentation for 'ProcessTags'
+    """
+
     def process(self, input_str):
         remove_hashtags = self.get_config("remove_hashtags_from_tags")
         contents = input_str
@@ -101,6 +105,10 @@ class ProcessTags(BaseModule):
 
 
 class ProcessAbstract(BaseModule):
+    """
+    Documentation for 'ProcessAbstract'
+    """
+
     def process(self, input_str):
         lines = input_str.splitlines()
         rebuild = []
@@ -129,7 +137,29 @@ class ProcessAbstract(BaseModule):
 
 
 class ProcessFrontmatterNulls(BaseModule):
-    """Module processes the frontmatter section to ensure that a YAML key with value 'null' (unquoted) gets quoted. Should always be run."""
+    """
+    Module processes the frontmatter section to ensure that a YAML key with value 'null' (unquoted) gets quoted. Should always be run.
+
+    E.g.
+
+    ```md
+    ---
+    format: docx
+    title: ProcessFrontmatterNulls_Example
+    alias: null
+    ---
+    ```
+
+    converts to
+
+    ```md
+    ---
+    format: docx
+    title: ProcessFrontmatterNulls_Example
+    alias: "null"
+    ---
+    ```
+    """
 
     def process(self, input_str):
         lines = input_str.splitlines()
@@ -150,7 +180,7 @@ class ProcessFrontmatterNulls(BaseModule):
                 # Within the front matter
                 # Replace 'null' values with quoted '""null""'
                 if re.search(r".+:\s*null\b", line):
-                    line = line.replace("null", '""null""')
+                    line = line.replace("null", '"null"')
 
                 # Check if 'tags:' is empty, add empty list if so
                 if "tags:" in line and not any(
