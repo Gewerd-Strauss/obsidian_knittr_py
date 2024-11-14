@@ -53,7 +53,9 @@ class PurgeContents(BaseModule):
     # Limitations
 
     The following cases will cause this module to fail:
-    1. presence of a dynamic bibliography- or CSL-file in the working-directory, e.g.
+
+    The presence of a dynamic bibliography- or CSL-file in the working-directory, e.g.
+
     ``````qmd
     ---
     format: pdf
@@ -64,7 +66,9 @@ class PurgeContents(BaseModule):
 
     continues on here
     ``````
-    Because this utility by default cleans its working directory before rendering. If the reference-files are not being copied over from the input directory
+
+    Because this utility by default cleans its working directory before rendering.
+    Since this means that these local files can never exist to be referenced by 'Quarto' during rendering, these keys are dropped from the frontmatter to prevent 'Quarto' from crashing.
     """
 
     def __init__(
@@ -208,6 +212,9 @@ class PurgeContents(BaseModule):
         return "\n".join(rebuild)
 
     def process(self, data):
+        """
+        The module's entry-point executed during 'ProcessingPipeline.Run()'
+        """
         data = self.purge_main(data)
         data = self.modify_frontmatter(data)
         return data
