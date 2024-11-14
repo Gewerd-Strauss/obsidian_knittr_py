@@ -1,19 +1,29 @@
 # command_handlers.py
 
-from obsidianknittrpy.modules.utility import convert_format_args, load_text_file
+from obsidianknittrpy.modules.utility import (
+    convert_format_args,
+    load_text_file,
+    get_text_file_path,
+)
 from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
 from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
 )
+from obsidianknittrpy.modules.rendering.renderer import (
+    RenderingPipeline,
+    prepare_file_strings,
+    prepare_file_suffixes,
+)
 from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
 import os as os
+import sys as sys
+import logging as logging
 
 
-def main(pb, CH):
-    wn.warn("main processing function is not implemented yet.")
+def main(pb, CH, loglevel=None):
     # Level = 0 > manuscript_dir > check
     # Level = -1 > true vault-root > check
     # Level > 0 = manuscript_dir - level
@@ -26,6 +36,7 @@ def main(pb, CH):
             ),
             auto_submit=CH.get_key("GENERAL_CONFIGURATION", "full_submit"),
             level=CH.get_key("OBSIDIAN_HTML_LIMITER", "level"),
+            loglevel=loglevel,
         )
         obsidian_limiter.add_limiter()
         pb["objects"]["obsidian_limiter"] = obsidian_limiter
@@ -53,14 +64,49 @@ def main(pb, CH):
         pb["objects"]["obsidian_limiter"].remove_limiter()
     arguments = CH.get_key("GENERAL_CONFIGURATION")
     pipeline = ProcessingPipeline(
-        config_file=CH.applied_pipeline, arguments=arguments, debug=True
+        config_file=CH.applied_pipeline,
+        arguments=arguments,
+        debug=True,
+        log_directory=os.path.normpath(
+            os.path.join(CH.get_key("DIRECTORIES_PATHS", "output_dir"), "mod")
+        ),
     )
-    processed_string = pipeline.run(
-        load_text_file(
-            obsidian_html.output["output_path"],
+    path_ = get_text_file_path(
+        obsidian_html.output["output_path"],
+    )
+    processed_string = pipeline.run(load_text_file(path_))
+    file_strings = ""
+    if CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 1:
+        # OHTML-output-directory
+        working_directory = os.path.dirname(os.path.realpath(path_))
+    elif CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 2:
+        # Location of source-note in vault
+        working_directory = os.path.dirname(
+            os.path.realpath(CH.get_key("MANUSCRIPT", "manuscript_path"))
         )
+    elif False:
+        pass  # figure out how to set the rendering directory dynamically.
+
+    # Call function
+    file_strings = prepare_file_strings(
+        file_string=processed_string,
+        output_types=CH.get_key("OUTPUT_TYPE"),
+        output_format_values=CH.get_key("OUTPUT_FORMAT_VALUES"),
     )
-    print(processed_string)
+    file_suffixes = prepare_file_suffixes(pb["objects"]["output_formats"])
+
+    renderer = RenderingPipeline(
+        custom_file_names=None,
+        debug=False,
+        file_strings=file_strings,
+        file_suffixes=file_suffixes,
+        output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+        log_level=loglevel,
+    )
+    renderer.render(
+        parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
+        working_directory=working_directory,
+    )
     pass
 
 
@@ -79,7 +125,9 @@ def handle_gui(args, pb):
     # 1. translate arguments
     args = convert_format_args(args)
     # 2. setup config-manager
-    CH = ConfigurationHandler(last_run_path=None, is_gui=True)
+    CH = ConfigurationHandler(
+        last_run_path=None, loglevel=args["loglevel"], is_gui=True
+    )
     # setup defaults, load last-run
     CH.apply_defaults()
     CH.load_last_run(
@@ -94,7 +142,10 @@ def handle_gui(args, pb):
         settings=settings,
         file_history=CH.get_config("file_history"),
         formats=CH.get_formats(CH.get_config("format_definitions")),
+        loglevel=args["loglevel"],
     )
+    if main_gui.closed:
+        sys.exit(0)
     # 3. Save file-history
     main_gui.update_filehistory(main_gui.results["manuscript"]["manuscript_path"])
     CH.file_history = main_gui.file_history
@@ -162,11 +213,11 @@ def handle_gui(args, pb):
                 CH.applied_settings["OUTPUT_FORMAT_VALUES"][format][arg] = ot.arguments[
                     arg
                 ]["Value"]
-            print(
+            logging.debug(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
 
-    main(pb, CH)
+    main(pb, CH, args["loglevel"])
 
 
 # You can also include other handler functions if needed.

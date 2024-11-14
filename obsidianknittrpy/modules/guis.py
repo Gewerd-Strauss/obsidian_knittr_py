@@ -2,11 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 import pyperclip as pc
 import os as os
-import warnings as wn
+import logging as logging
 
 
 class ObsidianKnittrGUI:
-    def __init__(self, settings, file_history=[], formats=[]):
+    def __init__(self, settings, file_history=[], formats=[], loglevel=None):
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(level=loglevel)
         self.output_types = formats
         self.file_history = file_history
         self.output_selections = {}
@@ -20,6 +24,7 @@ class ObsidianKnittrGUI:
         self.root.minsize(self.width, self.height)  # set minimum size
         self.root.resizable(False, False)  # disable resizing of GUI
         self.root.wm_attributes("-topmost", 1)
+        self.closed = False
         self.obsidian_options_selections = {
             "verb": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verb"] == "convert"),
             "use_custom_fork": tk.IntVar(
@@ -394,19 +399,21 @@ class ObsidianKnittrGUI:
         filetypes = [("Markdown files", "*.md")]
         title = "Choose manuscript file"
         # --
-        print("Choose Manuscript clicked")
+        self.logger.debug("Choose Manuscript clicked")
 
         clipboard = pc.paste()
         path = clipboard.replace("/", "\\")
 
         if os.path.exists(path) and not os.path.isdir(path):
             ext = os.path.splitext(path)[1].lower()
-            print(f"Path {path} from clipboard exists.")
+            self.logger.debug(f"Path {path} from clipboard exists.")
             if ext == ".md":
                 # self.root.withdraw()
                 fp = path
         else:
-            print("Clipboard does not hold a valid path, so open a file-dialog instead")
+            self.logger.debug(
+                "Clipboard does not hold a valid path, so open a file-dialog instead"
+            )
             # TODO: do we even port the setsearchroototolastmrunmanuscriptfolder stuff?
             # if (self.config.SetSearchRootToLastRunManuscriptFolder):
             allow_last_run = False
@@ -425,17 +432,17 @@ class ObsidianKnittrGUI:
                     initialdir=searchroot, title=title, filetypes=filetypes
                 )
             if not os.path.exists(fp):
-                wn.warn(
+                self.logger.warning(
                     f"{self.classname}: File '{fp}' does not exist. Please select a different file."
                 )
             ext = os.path.splitext(fp)[1].lower()
             if not ext == ".md":
-                wn.warn(
+                self.logger.warning(
                     f"{self.classname}: File '{fp}' is not a markdown-file. Please select a markdown-file (file-suffix: '.md')"
                 )
             if fp == "":
                 return  # no file selected
-            print(fp)
+            self.logger.debug(f"selected file: '{fp}'")
         self.update_filehistory(fp)
         # self.root.deiconify()
 
@@ -467,7 +474,7 @@ class ObsidianKnittrGUI:
     def update_last_execution_labels(self, last_manuscript_path, last_level):
         """Update the text for last execution labels."""
         DL = -300
-        wn.warn(
+        self.logger.warning(
             f"pass through default config and implement  default level 'DL' {DL} here"
         )
         self.last_exec_label1.config(text=f"LM: {last_manuscript_path}")
@@ -482,7 +489,7 @@ class ObsidianKnittrGUI:
                 results["output_type"].append(output_type)
 
         if len(results["output_type"]) == 0:
-            print(
+            self.logger.info(
                 "no format selected, please select a format"
             )  # TODO: replace this with a notifyUser-call - since its a GUI, we must notify in it?
             return
@@ -519,11 +526,12 @@ class ObsidianKnittrGUI:
             results["obsidian_html"]["verb"] = "convert"
         else:
             results["obsidian_html"]["verb"] = "run"
-
-        print("Submit clicked")
-        print("Results:", results)  # Print the gathered results for verification
+        self.logger.debug("Submit clicked")
+        self.logger.debug(
+            "Results:", extra=results
+        )  # Print the gathered results for verification
         self.results = results
-        self.close()
+        self.close(set_escape=False)
         pass
 
     def full_submit(self):
@@ -534,7 +542,7 @@ class ObsidianKnittrGUI:
             if var.get():
                 results["output_type"].append(output_type)
         if len(results["output_type"]) == 0:
-            print("no format selected, please select a format")
+            self.logger.debug("no format selected, please select a format")
             return
         results["execution_directory"] = (
             self.exec_dir_selection.get()
@@ -565,22 +573,25 @@ class ObsidianKnittrGUI:
         else:
             results["obsidian_html"]["verb"] = "run"
 
-        print("Full Submit clicked")
-        print("Results:", results)  # Print the gathered results for verification
+        self.logger.debug("Full Submit clicked")
+        self.logger.debug(
+            "Results:", results
+        )  # Print the gathered results for verification
         self.results = results
-        self.close()
+        self.close(set_escape=False)
         pass
 
     def edit_general_config(self):
         # Placeholder for Edit General Config logic
-        print("Edit General Config clicked")
+        self.logger.debug("Edit General Config clicked")
 
     def show_about(self):
         # Placeholder for About dialog
-        print("About clicked")
+        self.logger.debug("About clicked")
         self.update_last_execution_labels("A", "B")
 
-    def close(self):
+    def close(self, set_escape=True):
+        self.closed = set_escape
         self.root.destroy()
 
 
@@ -601,6 +612,7 @@ def handle_ot_guis(args, pb, CH, same_manuscript_chosen, format_definitions):
             DDL_ParamDelimiter="-<>-",
             skip_gui=CH.get_key("GENERAL_CONFIGURATION", "full_submit"),
             stepsized_gui_show=False,
+            loglevel=args["loglevel"],
         )  # Create instance of OT
 
         # Merge commandline-args values into the ot.arguments where available
@@ -687,6 +699,8 @@ def handle_ot_guis(args, pb, CH, same_manuscript_chosen, format_definitions):
     for format, ot in pb["objects"]["output_formats"].items():
         # Here, format is the key (e.g., "quarto::docx")
         # and ot is the instance of the OT class
-        print(f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}")
+        ot.logger.debug(
+            f"Format: {format}, Output Type: {ot.type}, Arguments: {ot.arguments}"
+        )
 
     return pb, CH

@@ -12,6 +12,7 @@ from obsidianknittrpy.modules.command_handlers import (
     handle_gui,
 )
 from obsidianknittrpy.modules.utility import init_picknick_basket
+import logging
 
 
 def main():
@@ -39,6 +40,8 @@ def main():
     gui_parser_setup(gui_parser)
 
     args = parser.parse_args()
+    logging.basicConfig(level=args.loglevel)
+
     pb = init_picknick_basket()
     # Command handling
     if args.command == "convert":
