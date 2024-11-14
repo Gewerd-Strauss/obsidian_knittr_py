@@ -3,6 +3,10 @@ from .processing_module_runner import BaseModule
 
 
 class ProcessTags(BaseModule):
+    """
+    Documentation for 'ProcessTags'
+    """
+
     def process(self, input_str):
         remove_hashtags = self.get_config("remove_hashtags_from_tags")
         contents = input_str
@@ -101,6 +105,10 @@ class ProcessTags(BaseModule):
 
 
 class ProcessAbstract(BaseModule):
+    """
+    Documentation for 'ProcessAbstract'
+    """
+
     def process(self, input_str):
         lines = input_str.splitlines()
         rebuild = []

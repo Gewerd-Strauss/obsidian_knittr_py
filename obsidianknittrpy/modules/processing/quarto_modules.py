@@ -4,6 +4,9 @@ import yaml
 
 
 class ProcessInvalidQuartoFrontmatterFields(BaseModule):
+    """
+    Documentation for 'ProcessInvalidQuartoFrontmatterFields'
+    """
 
     def __init__(
         self,
@@ -62,6 +65,10 @@ class ProcessInvalidQuartoFrontmatterFields(BaseModule):
 
 
 class EnforceLinebreaksOnQuartoBlocks(BaseModule):
+    """
+    Documentation for 'EnforceLinebreaksOnQuartoBlocks'
+    """
+
     def __init__(
         self,
         name="EnforceLinebreaksOnQuartoBlocks",
@@ -111,6 +118,9 @@ class EnforceLinebreaksOnQuartoBlocks(BaseModule):
 
 
 class EnforceMinimalLinebreaks(BaseModule):
+    """
+    Documentation for 'EnforceMinimalLinebreaks'
+    """
 
     def __init__(
         self,
@@ -162,6 +172,10 @@ class EnforceMinimalLinebreaks(BaseModule):
 
 
 class ProcessEquationReferences(BaseModule):
+    """
+    Documentation for 'ProcessEquationReferences'
+    """
+
     def __init__(
         self,
         name="ProcessEquationReferences",
@@ -232,6 +246,9 @@ class ProcessEquationReferences(BaseModule):
 
 
 class ConvertBookdownToQuartoReferencing(BaseModule):
+    """
+    Documentation for 'ConvertBookdownToQuartoReferencing'
+    """
 
     def __init__(
         self,

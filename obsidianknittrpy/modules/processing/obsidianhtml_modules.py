@@ -6,6 +6,10 @@ import os
 
 
 class ConvertImageSRCs(BaseModule):
+    """
+    Documentation for 'ConvertImageSRCs'
+    """
+
     def process(self, input_str):
         # Regex to match <img> tags with src, width, alt, and title attributes
         regex = r'<img src="(?P<src>.+?)" width="(?P<width>\d*)" alt="(?P<alt>.*?)" title="(?P<title>.*?)" \/>'
@@ -76,6 +80,9 @@ class ConvertImageSRCs(BaseModule):
 
 
 class RemoveObsidianHTMLIncludeErrors(BaseModule):
+    """
+    Documentation for 'RemoveObsidianHTMLIncludeErrors'
+    """
 
     def __init__(
         self,
