@@ -115,9 +115,19 @@ class ConfigurationHandler:
     def init_default_pipeline(self):
         self.default_pipeline_yaml = """
 pipeline:
-  - file_name: convert_obsidianhtml_image_srcs
+  - file_name: purge_contents
+    module_name: PurgeContents
+    Instruction: Remove all contents except frontmatter and headers
+    config: {purged_frontmatter_keys: ["bibliography","csl","filters"]}
+    enabled: False
+  - file_name: obsidianhtml_modules
     module_name: ConvertImageSRCs
+    Instruction: Convert Image SRC's created by obsidian-HTML
     config: {}
+    enabled: True
+  - file_name: obsidianhtml_modules
+    module_name: RemoveObsidianHTMLIncludeErrors
+    config: {purge_errors: False, error_needles: [r"(Obsidianhtml\:\s+Error\:\s+.*)$"]}
     enabled: True
   - file_name: general_processing
     module_name: ProcessTags
@@ -135,9 +145,30 @@ pipeline:
     module_name: ProcessFrontmatterNulls
     config: {}
     enabled: True
+    force_module_enabled_state: True
   - file_name: quarto_modules
     module_name: ProcessInvalidQuartoFrontmatterFields
     config: {erroneous_keys: {"aliases":[],"alias":"null"}}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: ConvertBookdownToQuartoReferencing
+    config: {quarto_strip_reference_prefixes: False}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: ProcessEquationReferences
+    config: {}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: EnforceLinebreaksOnQuartoBlocks
+    config: {}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: EnforceMinimalLinebreaks
+    config: {}
+    enabled: True
+  - file_name: quarto_modules
+    module_name: EnforceFrontmatterYAML
+    config: {}
     enabled: True
   - file_name: module_file
     module_name: ModuleName

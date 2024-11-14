@@ -2,9 +2,14 @@ from .processing_module_runner import BaseModule
 import re as re
 import urllib.parse
 import html
+import os
 
 
 class ConvertImageSRCs(BaseModule):
+    """
+    Documentation for 'ConvertImageSRCs'
+    """
+
     def process(self, input_str):
         # Regex to match <img> tags with src, width, alt, and title attributes
         regex = r'<img src="(?P<src>.+?)" width="(?P<width>\d*)" alt="(?P<alt>.*?)" title="(?P<title>.*?)" \/>'
@@ -72,3 +77,40 @@ class ConvertImageSRCs(BaseModule):
         """
 
         return html.unescape(text)
+
+
+class RemoveObsidianHTMLIncludeErrors(BaseModule):
+    """
+    Documentation for 'RemoveObsidianHTMLIncludeErrors'
+    """
+
+    def __init__(
+        self,
+        name="RemoveObsidianHTMLIncludeErrors",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
+    ):
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
+        # Get error_needles as a dictionary from config, e.g., {"aliases": []}
+        self.error_needles = self.get_config("error_needles", default={})
+        # Compile each pattern
+        self.compiled_error_needles = [
+            re.compile(needle[2:-2]) for needle in self.error_needles
+        ]
+        purge_errors = self.get_config("purge_errors")
+
+    def process(self, input_str):
+        if self.get_config(key="purge_errors", default=False):
+            for regex in self.compiled_error_needles:
+                input_str = re.sub(
+                    pattern=regex, repl="", string=input_str
+                )  # Remove all matches (substitute with an empty string)
+        return input_str

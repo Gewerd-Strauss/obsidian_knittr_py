@@ -33,4 +33,4 @@ QMD:
     quartopurgeTags - does nothing, can be ignored.
 
 QMD (args.noContent)
-    quartopurgeContents
+    quartopurgeContents                             DONE

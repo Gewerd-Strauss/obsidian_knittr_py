@@ -197,7 +197,7 @@ class RenderingPipeline:
                     temp_file_path,
                     "--to",
                     self.file_suffixes[format_name],
-                    "--metadata-file=",
+                    "--metadata-file",
                     yaml_file_path,
                     "--output",
                     os.path.basename(output_file_path),
