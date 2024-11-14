@@ -1,5 +1,6 @@
 from .processing_module_runner import BaseModule
 import re
+import yaml
 
 
 class ProcessInvalidQuartoFrontmatterFields(BaseModule):
@@ -290,3 +291,76 @@ class ConvertBookdownToQuartoReferencing(BaseModule):
             input_str = input_str.replace(f"r {lbl}", f"r {label}")
 
         return input_str
+
+
+class EnforceFrontmatterYAML(BaseModule):
+    """
+    Module extracts the frontmatter-yaml from the file-string and formats it via
+
+    ```py
+    yaml.dump(
+        yaml.safe_load(frontmatter_str),
+        default_flow_style=False,
+        allow_unicode=True
+        )
+    ```
+
+    to ensure it conforms to standard frontmatter formatting rules.
+    """
+
+    def __init__(
+        self,
+        name="EnforceFrontmatterYAML",
+        config=None,
+        log_directory=None,
+        past_module_instance=None,
+        past_module_method_instance=None,
+    ):
+        super().__init__(
+            name,
+            config=config,
+            log_directory=log_directory,
+            past_module_instance=past_module_instance,
+            past_module_method_instance=past_module_method_instance,
+        )
+
+    def process(self, input_str: str):
+        """
+        Modify the frontmatter of a Quarto document and return it formatted properly.
+        Assumes that the frontmatter is a valid YAML block within the document.
+        """
+        # Split the document into frontmatter and content
+        if input_str.startswith('---'):
+            frontmatter_end = input_str.find('---', 3)  # Find the second '---'
+            if frontmatter_end == -1:
+                raise ValueError("Invalid frontmatter format, no closing '---' found.")
+
+            frontmatter_str = input_str[
+                3:frontmatter_end
+            ].strip()  # Extract frontmatter
+            markdown_content = input_str[
+                frontmatter_end + 3 :
+            ].strip()  # Extract markdown content
+
+            # Parse the YAML frontmatter into a Python dictionary
+            try:
+                frontmatter_dict = yaml.safe_load(frontmatter_str)
+            except yaml.YAMLError as e:
+                raise ValueError(f"Error parsing YAML frontmatter: {e}")
+
+            # Dump the frontmatter back into YAML format
+            # We set default_flow_style=False for pretty formatting
+            # You can also customize the indentations here if needed
+            new_frontmatter_str = yaml.dump(
+                frontmatter_dict, default_flow_style=False, allow_unicode=True
+            )
+
+            # if the string begins with another `---`, strip that away for safety.
+            if markdown_content[0:3] == "---":
+                markdown_content = markdown_content[3:]
+            # Ensure proper Quarto frontmatter format by adding the --- delimiters
+            new_input_str = f'---\n{new_frontmatter_str}---\n{markdown_content}'
+
+            return new_input_str
+        else:
+            raise ValueError("The input-string does not contain valid frontmatter.")
