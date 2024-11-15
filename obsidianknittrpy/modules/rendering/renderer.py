@@ -204,7 +204,7 @@ class RenderingPipeline:
                 ]
                 subprocess.run(command, check=True, cwd=quart_working_directory)
                 self.logger.info(
-                    f"Rendered {format_name} output to: {os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}"
+                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'"
                 )
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Failed to render {format_name} output. Error: {e}")

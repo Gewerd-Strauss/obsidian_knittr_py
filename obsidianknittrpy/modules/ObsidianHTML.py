@@ -25,6 +25,7 @@ class ObsidianHTML:
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
         )
+        self.logger.info(f"Converting '{manuscript_path}' to standard markdown.")
         self.manuscript_path = manuscript_path
         self.encoding = encoding
         self.encoding = self.encoding if use_own_fork else "utf-8"
