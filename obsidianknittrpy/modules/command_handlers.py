@@ -126,7 +126,6 @@ def handle_gui(args, pb, CH):
     """Execute the GUI command."""
 
     # setup defaults, load last-run
-    CH.apply_defaults()
     CH.load_last_run(
         last_run_path=CH.default_guiconfiguration_location
     )  # must be modified to point to the lastrun-path.
