@@ -11,7 +11,11 @@ from obsidianknittrpy.modules.command_handlers import (
     handle_convert,
     handle_gui,
 )
-from obsidianknittrpy.modules.utility import init_picknick_basket
+from obsidianknittrpy.modules.utility import (
+    init_picknick_basket,
+    convert_format_args,
+)
+from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import logging
 
 
@@ -44,14 +48,24 @@ def main():
 
     pb = init_picknick_basket()
     # Command handling
-    if args.command == "convert":
+    # 1. translate arguments
+    args = convert_format_args(args)
+
+    # 2. setup config-manager
+    CH = ConfigurationHandler(
+        last_run_path=None, loglevel=args["loglevel"], is_gui=True
+    )
+
+    # 3. setup resource-logger
+    # RL = ResourceLogger()
+    if args["command"] == "convert":
         # Parse pass-through arguments
         print("implement commandline-pathway")
         # Print all arguments in the desired format
         # print_arguments(parsed_args)
-        handle_convert(args, pb)
-    elif args.command == "gui":
-        handle_gui(args, pb)
+        handle_convert(args, pb, CH)
+    elif args["command"] == "gui":
+        handle_gui(args, pb, CH)
     else:
         parser.print_help()
 

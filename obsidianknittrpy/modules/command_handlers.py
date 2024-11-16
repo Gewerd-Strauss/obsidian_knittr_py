@@ -16,7 +16,6 @@ from obsidianknittrpy.modules.rendering.renderer import (
     prepare_file_strings,
     prepare_file_suffixes,
 )
-from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
 import os as os
 import sys as sys
@@ -113,24 +112,19 @@ def main(pb, CH, loglevel=None):
     pass
 
 
-def handle_convert(args, pb):
+def handle_convert(args, pb, CH):
     """Execute the convert command."""
     print(f"Converting {args.input} to formats: {args.format}")
     # Implement conversion logic here based on arguments
     args = convert_format_args(args)
     # TOOD: implement processing from GUI-classes that _is_ required, see 'handle_ot_gui_passthrough()'
-    pb, CH = handle_ot_guis(args, pb, CH="")
+    pb, CH = handle_ot_guis(args, pb, CH)
     main(pb)
 
 
-def handle_gui(args, pb):
+def handle_gui(args, pb, CH):
     """Execute the GUI command."""
-    # 1. translate arguments
-    args = convert_format_args(args)
-    # 2. setup config-manager
-    CH = ConfigurationHandler(
-        last_run_path=None, loglevel=args["loglevel"], is_gui=True
-    )
+
     # setup defaults, load last-run
     CH.apply_defaults()
     CH.load_last_run(
