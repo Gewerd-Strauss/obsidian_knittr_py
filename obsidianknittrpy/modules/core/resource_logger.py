@@ -18,7 +18,7 @@ class ResourceLogger:
     def log(self, module, action, resource):
         """Logs an action with a timestamp."""
         timestamp = datetime.datetime.now().isoformat()
-        log_entry = f"[{timestamp}] {module.ljust(20)} {action.ljust(10)} {resource}\n"
+        log_entry = f"[{timestamp}] {module.ljust(100)} {action.ljust(30)} {resource}\n"
         if self.log_file is not None:
             with open(self.log_file, "a", encoding="utf-8") as log:
                 if len(self.logs_pre_logfile_existance) > 0:
