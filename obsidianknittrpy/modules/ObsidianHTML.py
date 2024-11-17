@@ -56,7 +56,7 @@ class ObsidianHTML:
         # Define the configuration template as a multi-line string with the manuscript path injected
         self.config_template = f"""
 # Input and output path of markdown files
-obsidian_entrypoint_path_str: {self.manuscript_path}
+obsidian_entrypoint_path_str: {os.path.normpath(self.manuscript_path)}
 max_note_depth: 15
 copy_vault_to_tempdir: True
 
