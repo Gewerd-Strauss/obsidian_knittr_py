@@ -95,10 +95,10 @@ class ConfigurationHandler:
                 "limit_scope": False,
             },
             "GENERAL_CONFIGURATION": {
-                "remove_hashtags_from_tags": False,
                 "strip_local_md_links": False,
                 "keep_filename": False,
                 "render_to_outputs": False,
+                "parallelise_rendering": False,
                 "backup_output_before_rendering": False,
             },
             "ENGINE_CONFIGURATION": {"quarto_strip_reference_prefixes": False},
