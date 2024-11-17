@@ -2,6 +2,7 @@ import subprocess, os, yaml, json, shutil, re
 from obsidianknittrpy.modules.rendering.YamlHandler import YamlHandler
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 import logging
+import time
 
 
 class RenderManager:
@@ -321,7 +322,15 @@ class RenderManager:
 
         pipeline = (
             MultiRenderingPipeline_v2(
-                self.input_path, self.output_directory, self.dependencies
+                file_strings=self.file_strings,
+                file_suffixes=self.file_suffixes,
+                output_directory=self.output_directory,
+                input_name=self.input_name,
+                custom_file_names=self.custom_file_names,
+                debug=self.debug,
+                log_level=self.log_level,
+                working_directory=self.working_directory,
+                yaml_files=self.yaml_file_paths,
             )
             if self.use_parallel
             else RenderingPipeline_v2(
@@ -469,12 +478,9 @@ class RenderingPipeline_v2:
         )
         return file_path
 
-    def run(self, parameters={}):
+    def run(self):
         """
         Main rendering method. Renders each file string to its specified format using Quarto.
-
-        :param parameters: Dictionary of common YAML parameters to apply to all formats.
-        :param working_directory: The working directory for Quarto. Defaults to the .qmd file’s directory.
         """
         for format_name, file_string in self.file_strings.items():
             self.logger.info(f"Rendering format: {format_name}")
@@ -517,22 +523,62 @@ from concurrent.futures import ThreadPoolExecutor
 
 class MultiRenderingPipeline_v2(RenderingPipeline_v2):
     def run(self):
-        """Executes rendering in parallel."""
+        """
+        Main rendering method. Renders each file string to its specified format using Quarto.
+        Executes in parallel
+        """
+        self.output_paths = {}
+        self.output_filenames = {}
+        # prepare file-strings, write to path; then collect the paths.
+        for format_name, file_string in self.file_strings.items():
+            self.logger.info(f"Rendering format: {format_name}")
+            # self.resource_logger.log("yamlialize", "created", yaml_file_path)
+
+            # Write the file string to a temporary file
+            self.output_paths[format_name] = self.write_file_string(
+                file_string, format_name
+            )
+
+            # Determine output filename
+            self.output_filenames[format_name] = self.determine_output_filename(
+                format_name
+            )
+
+            # Determine the working directory for Quarto
+        quart_working_directory = self.working_directory
+        self.logger.info(
+            f"Setting Quarto's working-directory to '{quart_working_directory}'"
+        )
+        # Run Quarto render command
         with ThreadPoolExecutor() as executor:
             futures = [
-                executor.submit(self.yamlialize_and_render, format_name, parameters)
-                for format_name, parameters in self.dependencies.items()
+                executor.submit(self.futures_render, format_name)
+                for format_name, parameters in self.output_paths.items()
             ]
             for future in futures:
                 future.result()
 
-    def yamlialize_and_render(self, format_name, parameters):
+    def futures_render(self, format_name):
         """Combines YAML generation and rendering for parallel execution."""
-        yaml_file_path = self.yamlialize(parameters, format_name)
-        self.resource_logger.log("MultiRenderingPipeline", "rendering", yaml_file_path)
+        # yaml_file_path = self.yamlialize(parameters, format_name)
+        # self.resource_logger.log("MultiRenderingPipeline", "rendering", yaml_file_path)
 
         # Render via subprocess.
-        subprocess.run(
-            ["quarto", "render", yaml_file_path, "--output-dir", self.output_directory],
-            check=True,
-        )
+        try:
+            command = [
+                "quarto",
+                "render",
+                self.output_paths[format_name],
+                "--to",
+                self.file_suffixes[format_name],
+                "--metadata-file",
+                self.yaml_file_paths[format_name],
+                "--output",
+                os.path.basename(self.output_filenames[format_name]),
+            ]
+            subprocess.run(command, check=True, cwd=self.working_directory)
+            self.logger.info(
+                f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(self.working_directory,os.path.basename(self.output_paths[format_name])))}'"
+            )
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"Failed to render {format_name} output. Error: {e}")
