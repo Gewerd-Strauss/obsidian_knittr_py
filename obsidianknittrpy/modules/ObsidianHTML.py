@@ -232,8 +232,7 @@ toggles:
             return match.group("md_path").strip()
         return ""
 
-    def run(self):
-        """Main method to run ObsidianHTML."""
+    def setup_config(self, RL):
         if not self.initialized:
             return False
 
@@ -241,7 +240,20 @@ toggles:
             os.makedirs(self.output_dir)
 
         self.remove_config()
+        RL.log(
+            action="removed",
+            module=f"{self.__module__}.setup_config",
+            resource=self.config_path,
+        )
         self.create_config()
+        RL.log(
+            action="created",
+            module=f"{self.__module__}.setup_config",
+            resource=self.config_path,
+        )
+
+    def run(self):
+        """Main method to run ObsidianHTML."""
         if not self.validate_config():
             return False
         work_dir = self.work_dir
