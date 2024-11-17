@@ -16,6 +16,8 @@ from obsidianknittrpy.modules.processing.processing_module_runner import (
 )
 from obsidianknittrpy.modules.rendering.renderer import (
     RenderingPipeline,
+)
+from obsidianknittrpy.modules.rendering.file_strings import (
     prepare_file_strings,
     prepare_file_suffixes,
 )
