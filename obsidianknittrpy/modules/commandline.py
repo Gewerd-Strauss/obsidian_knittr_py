@@ -1,6 +1,3 @@
-import argparse
-
-
 def common_arguments(parser):
     """Add common arguments to each subcommand."""
     parser.add_argument(

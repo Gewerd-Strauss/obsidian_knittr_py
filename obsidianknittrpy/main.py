@@ -17,8 +17,8 @@ from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
     convert_format_args,
 )
-from obsidianknittrpy.modules.core.resource_logger import ResourceLogger
-from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
+from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
+from obsidianknittrpy.modules.core.ConfigurationHandler import ConfigurationHandler
 import logging
 
 

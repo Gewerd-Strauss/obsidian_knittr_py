@@ -5,9 +5,11 @@ from obsidianknittrpy.modules.utility import (
     load_text_file,
     get_text_file_path,
 )
-from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
-from obsidianknittrpy.modules.obsidian_html.vault_limiter import ObsidianHTML_Limiter
-from obsidianknittrpy.modules.core.resource_logger import ResourceLogger
+from obsidianknittrpy.modules.guis.guis import handle_ot_guis, ObsidianKnittrGUI
+from obsidianknittrpy.modules.obsidian_html.ObsidianHTML_Limiter import (
+    ObsidianHTML_Limiter,
+)
+from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 from obsidianknittrpy.modules.obsidian_html.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,

@@ -1,6 +1,6 @@
 import logging
 import shutil
-from obsidianknittrpy.modules.core.resource_logger import ResourceLogger
+from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 
 
 class BaseModule:

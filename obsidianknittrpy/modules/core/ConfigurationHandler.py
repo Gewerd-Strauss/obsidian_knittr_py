@@ -5,7 +5,7 @@ import re as re
 from appdirs import site_config_dir
 from pathlib import Path
 import logging
-from obsidianknittrpy.modules.core.resource_logger import ResourceLogger
+from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 
 
 class ConfigurationHandler:
