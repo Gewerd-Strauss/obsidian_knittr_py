@@ -719,7 +719,7 @@ class ObsidianKnittrGUI:
 
 #########
 
-from obsidianknittrpy.modules.DynamicArguments import OT
+from obsidianknittrpy.modules.guis.DynamicArguments import OT
 
 
 def handle_ot_guis(args, pb, CH, same_manuscript_chosen, format_definitions):

@@ -1,5 +1,6 @@
 import logging
 import shutil
+from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 
 
 class BaseModule:
@@ -11,6 +12,7 @@ class BaseModule:
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         """
         Base class for all processing modules.
@@ -31,6 +33,8 @@ class BaseModule:
         self.past_module_method_instance = (
             past_module_method_instance if past_module_method_instance else ""
         )
+        self.RL = ResourceLogger()
+        self.RL.log_file = log_file
 
     def get_config(self, key, default=None):
         """
@@ -85,6 +89,11 @@ class BaseModule:
         """method reserved for logging outnput-state"""
         if input_str != self.pre_conversion_text:
             self.logger.info("Modified File-string.")
+            self.RL.log(
+                module=f"{self.__module__}.{self.name}",
+                action="modified",
+                resource="file_string",
+            )
         self.log_write(input_str=input_str, inOut="output")
 
     def process(self, input_str):
@@ -110,7 +119,9 @@ class ProcessingPipeline:
     This class gets executed on the immediate output of obsidian-html
     """
 
-    def __init__(self, config_file, arguments=None, debug=False, log_directory=None):
+    def __init__(
+        self, config_file, arguments=None, debug=False, log_directory=None, RL=None
+    ):
         """
         Initialize the processing pipeline.
         :param config_file: Path to YAML configuration file
@@ -124,8 +135,14 @@ class ProcessingPipeline:
         self.arguments = arguments if arguments else {}
         self.arguments["debug"] = debug
         self.log_directory = log_directory
+        self.RL = RL
         if os.path.exists(self.log_directory):
             self.logger.info(f"Removed module-logging-directory {self.log_directory}.")
+            self.RL.log(
+                self.__class__.__module__ + "." + self.__class__.__qualname__,
+                "removed",
+                self.log_directory,
+            )
             shutil.rmtree(self.log_directory)
         try:
             if os.path.exists(config_file):
@@ -137,6 +154,11 @@ class ProcessingPipeline:
         print("\n")
         self.logger.info("Initialising pipeline.")
         self.load_configuration_yaml(config)
+        RL.log(
+            self.__class__.__module__ + "." + self.__class__.__qualname__,
+            "loaded",
+            f"module-config from {os.path.normpath(os.path.dirname(__file__))}",
+        )
         self.logger.info("Initialised pipeline.")
 
     def load_configuration_yaml(self, config):
@@ -175,11 +197,22 @@ class ProcessingPipeline:
                         log_directory=self.log_directory,
                         past_module_instance=past_module_instance,
                         past_module_method_instance=past_module_method_instance,
+                        log_file=self.RL.log_file,
                     )
                     past_module_instance = module_instance.__module__
                     past_module_method_instance = module_instance.name
+                    self.RL.log(
+                        self.__class__.__module__ + "." + self.__class__.__qualname__,
+                        "initiated",
+                        f"{module_path} : {module_info["module_name"]}",
+                    )
                     self.modules.append(module_instance)
                 else:
+                    self.RL.log(
+                        self.__class__.__module__ + "." + self.__class__.__qualname__,
+                        "load_failed",
+                        f"{module_dir}.{module_info["module_name"]}",
+                    )
                     self.logger.warning(
                         f"Module {module_info['module_name']} not found in {module_dir}"
                     )
