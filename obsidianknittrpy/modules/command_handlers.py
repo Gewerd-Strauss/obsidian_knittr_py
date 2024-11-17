@@ -7,6 +7,7 @@ from obsidianknittrpy.modules.utility import (
 )
 from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
+from obsidianknittrpy.modules.core.resource_logger import ResourceLogger
 from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
@@ -28,6 +29,7 @@ def main(pb, CH, loglevel=None):
     # Level > 0 = manuscript_dir - level
     # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
     # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
+    RL = ResourceLogger(log_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"))
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         obsidian_limiter = ObsidianHTML_Limiter(
             manuscript_path=os.path.normpath(
@@ -38,6 +40,11 @@ def main(pb, CH, loglevel=None):
             loglevel=loglevel,
         )
         obsidian_limiter.add_limiter()
+        RL.log(
+            action="created",
+            module=f"{obsidian_limiter.__module__}.add_limiter",
+            resource=obsidian_limiter.selected_limiter_directory,
+        )
         pb["objects"]["obsidian_limiter"] = obsidian_limiter
         CH.applied_settings["OBSIDIAN_HTML_LIMITER"]["level"] = obsidian_limiter.level
         CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
@@ -58,9 +65,24 @@ def main(pb, CH, loglevel=None):
         # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
         output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
     )
+    obsidian_html.setup_config(RL)
+
     obsidian_html.run()
+    path_ = get_text_file_path(
+        obsidian_html.output["output_path"],
+    )
+    RL.log(
+        action="created",
+        module=f"{obsidian_html.__module__}.run",
+        resource=obsidian_html.output["output_path"],
+    )
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         pb["objects"]["obsidian_limiter"].remove_limiter()
+        RL.log(
+            action="removed",
+            module=f"{pb["objects"]["obsidian_limiter"].__module__}.remove_limiter",
+            resource=obsidian_limiter.selected_limiter_directory,
+        )
     arguments = {}
     arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
     arguments.update(CH.get_key("OBSIDIAN_HTML"))
@@ -73,10 +95,8 @@ def main(pb, CH, loglevel=None):
             os.path.join(CH.get_key("DIRECTORIES_PATHS", "output_dir"), "mod")
         ),
     )
-    path_ = get_text_file_path(
-        obsidian_html.output["output_path"],
-    )
     processed_string = pipeline.run(load_text_file(path_))
+    # RL.log(action="read",module=)
     file_strings = ""
     if CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 1:
         # OHTML-output-directory
@@ -129,8 +149,19 @@ def handle_gui(args, pb, CH):
     CH.load_last_run(
         last_run_path=CH.default_guiconfiguration_location
     )  # must be modified to point to the lastrun-path.
+    RL = ResourceLogger(log_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+    RL.log(
+        action="loaded",
+        module=f"{CH.__module__}.handle_gui",
+        resource=CH.default_guiconfiguration_location,
+    )
     # load file-history
     CH.load_file_history(file_history_path=CH.default_history_location)
+    RL.log(
+        action="loaded",
+        module=f"{CH.__module__}.handle_gui",
+        resource=CH.default_history_location,
+    )
     # retrieve objects for use in later
     settings = CH.get_config("settings")
     # 2. launch main GUI

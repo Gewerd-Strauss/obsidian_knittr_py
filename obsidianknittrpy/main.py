@@ -61,7 +61,7 @@ def main():
         last_run_path=None, loglevel=args["loglevel"], is_gui=True
     )
     CH.apply_defaults()
-    # 3. setup resource-logger
+    # 3. clear out work dir
     if os.path.exists(CH.get_key("DIRECTORIES_PATHS", "work_dir")):
         shutil.rmtree(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "clears", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
