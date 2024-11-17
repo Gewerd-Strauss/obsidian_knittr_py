@@ -63,6 +63,7 @@ class RenderingPipeline:
         custom_file_names=None,
         debug=False,
         log_level=None,
+        RL=None,
     ):
         """
         Initialize the rendering pipeline.
@@ -79,13 +80,23 @@ class RenderingPipeline:
         self.input_name = input_name
         self.custom_file_names = custom_file_names if custom_file_names else {}
         self.debug = debug
+        self.RL = RL
 
         # Set up logging
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(level=log_level)
 
         # Ensure output directory exists
-        os.makedirs(self.output_directory, exist_ok=True)
+        if not os.path.exists(self.output_directory):
+            os.makedirs(self.output_directory, exist_ok=True)
+            self.RL.log(
+                self.__class__.__module__
+                + "."
+                + self.__class__.__qualname__
+                + ".render",
+                "created",
+                self.output_directory,
+            )
         print("\n")
         self.logger.info("RenderingPipeline initialized.")
 
@@ -110,6 +121,14 @@ class RenderingPipeline:
         if working_directory:
             os.chdir(working_directory)
             self.logger.info(f"Working directory set to {working_directory}")
+            self.RL.log(
+                self.__class__.__module__
+                + "."
+                + self.__class__.__qualname__
+                + ".render",
+                "set workdir",
+                working_directory,
+            )
         else:
             self.logger.info("Using default project directory as working directory.")
 
@@ -125,6 +144,14 @@ class RenderingPipeline:
             self.output_directory, f"{format_name.replace('::', '_')}_config.yaml"
         )
         YamlHandler.clean_yaml_dump(parameters, yaml_file_path)
+        self.RL.log(
+            self.__class__.__module__
+            + "."
+            + self.__class__.__qualname__
+            + ".yamlialize",
+            "created",
+            yaml_file_path,
+        )
         self.logger.info(f"YAML configuration file created: {yaml_file_path}")
         return yaml_file_path
 
@@ -161,6 +188,14 @@ class RenderingPipeline:
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write(file_string)
         self.logger.info(f"File string written to: {file_path}")
+        self.RL.log(
+            self.__class__.__module__
+            + "."
+            + self.__class__.__qualname__
+            + ".write_file_string",
+            "created",
+            file_path,
+        )
         return file_path
 
     def render(self, parameters={}, working_directory=None):
@@ -189,6 +224,14 @@ class RenderingPipeline:
             self.logger.info(
                 f"Setting Quarto's working-directory to '{quart_working_directory}'"
             )
+            self.RL.log(
+                self.__class__.__module__
+                + "."
+                + self.__class__.__qualname__
+                + ".render",
+                "set quarto's workdir",
+                quart_working_directory,
+            )
             # Run Quarto render command
             try:
                 command = [
@@ -204,7 +247,27 @@ class RenderingPipeline:
                 ]
                 subprocess.run(command, check=True, cwd=quart_working_directory)
                 self.logger.info(
-                    f"Rendered {format_name} output to: {os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}"
+                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'"
+                )
+                self.RL.log(
+                    self.__class__.__module__
+                    + "."
+                    + self.__class__.__qualname__
+                    + ".render",
+                    "rendered",
+                    os.path.normpath(temp_file_path),
+                )
+                self.RL.log(
+                    self.__class__.__module__
+                    + "."
+                    + self.__class__.__qualname__
+                    + ".render",
+                    "created",
+                    os.path.normpath(
+                        os.path.join(
+                            quart_working_directory, os.path.basename(output_file_path)
+                        )
+                    ),
                 )
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Failed to render {format_name} output. Error: {e}")

@@ -5,6 +5,7 @@ import re as re
 from appdirs import site_config_dir
 from pathlib import Path
 import logging
+from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 
 
 class ConfigurationHandler:
@@ -610,6 +611,13 @@ quarto::pdf
                 if last_run_config is not None:
                     self.applied_settings.update(last_run_config)
                 self.logger.info("Last-Run configuration loaded for GUI mode.")
+                ResourceLogger(
+                    log_directory=self.get_key("DIRECTORIES_PATHS", "work_dir")
+                ).log(
+                    module=f"{self.__module__}.load_last_run",
+                    action="loaded",
+                    resource=last_run_path,
+                )
             except FileNotFoundError:
                 self.logger.warning(
                     "Last-Run configuration not found; resorting to default configuration."
@@ -622,6 +630,13 @@ quarto::pdf
                 with open(last_run_path, 'w', encoding='utf-8') as f:
                     yaml.dump(self.applied_settings, f, allow_unicode=True)
                 self.logger.info(f"Last-Run configuration saved to {last_run_path}")
+                ResourceLogger(
+                    log_directory=self.get_key("DIRECTORIES_PATHS", "work_dir")
+                ).log(
+                    module=f"{self.__module__}.save_last_run",
+                    action="modified",
+                    resource=last_run_path,
+                )
             except FileNotFoundError:
                 self.logger.error(
                     f"Last run configuration '{last_run_path}' not found; changes not saved."
@@ -638,6 +653,13 @@ quarto::pdf
                     self.logger.info(
                         f"GUI-mode: File-history-config loaded from '{file_history_path}'."
                     )
+                    ResourceLogger(
+                        log_directory=self.get_key("DIRECTORIES_PATHS", "work_dir")
+                    ).log(
+                        module=f"{self.__module__}.load_file_history",
+                        action="loaded",
+                        resource=file_history_path,
+                    )
             except FileNotFoundError:
                 self.logger.error(
                     f"File-history-configuration '{file_history_path}' not found, gui-file-history was not saved."
@@ -650,6 +672,13 @@ quarto::pdf
                 with open(file_history_path, 'w', encoding='utf-8') as f:
                     yaml.dump(self.file_history, f, allow_unicode=True)
                 self.logger.info(f"File-history-config saved to '{file_history_path}'.")
+                ResourceLogger(
+                    log_directory=self.get_key("DIRECTORIES_PATHS", "work_dir")
+                ).log(
+                    module=f"{self.__module__}.save_file_history",
+                    action="modified",
+                    resource=file_history_path,
+                )
             except FileNotFoundError:
                 self.logger.error(
                     f"File-history configuration '{file_history_path}' not found; changes not saved."

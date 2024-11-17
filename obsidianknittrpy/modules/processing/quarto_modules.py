@@ -15,6 +15,7 @@ class ProcessInvalidQuartoFrontmatterFields(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -22,6 +23,7 @@ class ProcessInvalidQuartoFrontmatterFields(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
         # Get erroneous_keys as a dictionary from config, e.g., {"aliases": []}
         self.erroneous_keys = self.get_config("erroneous_keys", default={})
@@ -76,6 +78,7 @@ class EnforceLinebreaksOnQuartoBlocks(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -83,6 +86,7 @@ class EnforceLinebreaksOnQuartoBlocks(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
 
     def process(self, input_str):
@@ -129,6 +133,7 @@ class EnforceMinimalLinebreaks(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -136,6 +141,7 @@ class EnforceMinimalLinebreaks(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
 
     def enforce_max_newlines(self, input_str):
@@ -183,6 +189,7 @@ class ProcessEquationReferences(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -190,6 +197,7 @@ class ProcessEquationReferences(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
 
     def process(self, input_str):
@@ -257,6 +265,7 @@ class ConvertBookdownToQuartoReferencing(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -264,6 +273,7 @@ class ConvertBookdownToQuartoReferencing(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
         # Retrieve the flag for removing Quarto reference types from cross-references
         self.quarto_strip_reference_prefixes = self.get_config(
@@ -332,6 +342,7 @@ class EnforceFrontmatterYAML(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -339,6 +350,7 @@ class EnforceFrontmatterYAML(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
 
     def process(self, input_str: str):

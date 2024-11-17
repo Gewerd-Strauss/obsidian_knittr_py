@@ -5,9 +5,12 @@ from obsidianknittrpy.modules.utility import (
     load_text_file,
     get_text_file_path,
 )
-from obsidianknittrpy.modules.guis import handle_ot_guis, ObsidianKnittrGUI
-from obsidianknittrpy.modules.vault_limiter import ObsidianHTML_Limiter
-from obsidianknittrpy.modules.ObsidianHTML import ObsidianHTML
+from obsidianknittrpy.modules.guis.guis import handle_ot_guis, ObsidianKnittrGUI
+from obsidianknittrpy.modules.obsidian_html.ObsidianHTML_Limiter import (
+    ObsidianHTML_Limiter,
+)
+from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
+from obsidianknittrpy.modules.obsidian_html.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
 )
@@ -16,7 +19,6 @@ from obsidianknittrpy.modules.rendering.renderer import (
     prepare_file_strings,
     prepare_file_suffixes,
 )
-from obsidianknittrpy.modules.ConfigurationHandler import ConfigurationHandler
 import warnings as wn
 import os as os
 import sys as sys
@@ -29,6 +31,7 @@ def main(pb, CH, loglevel=None):
     # Level > 0 = manuscript_dir - level
     # obsidian_limiter.add_limiter() # < these must be called before and after oHTML is processed.
     # obsidian_limiter.remove_limiter() # < these must be called before and after oHTML is processed.
+    RL = ResourceLogger(log_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"))
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         obsidian_limiter = ObsidianHTML_Limiter(
             manuscript_path=os.path.normpath(
@@ -39,6 +42,27 @@ def main(pb, CH, loglevel=None):
             loglevel=loglevel,
         )
         obsidian_limiter.add_limiter()
+        if obsidian_limiter.selected_limiter_is_vaultroot:
+            RL.log(
+                action="used vault",
+                module=f"{obsidian_limiter.__module__}.add_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+        elif not obsidian_limiter.selected_limiter_preexisted:
+            RL.log(
+                action="created",
+                module=f"{obsidian_limiter.__module__}.add_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+        else:
+            RL.log(
+                action="used pre-existing non-root",
+                module=f"{obsidian_limiter.__module__}.add_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+            logging.critical(
+                f"{obsidian_limiter.__module__} used the directory '{obsidian_limiter.selected_limiter_directory}', but it was flagged as both pre-existing and non-root. This should be impossible."
+            )
         pb["objects"]["obsidian_limiter"] = obsidian_limiter
         CH.applied_settings["OBSIDIAN_HTML_LIMITER"]["level"] = obsidian_limiter.level
         CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
@@ -59,9 +83,31 @@ def main(pb, CH, loglevel=None):
         # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
         output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
     )
+    obsidian_html.setup_config(RL)
+
     obsidian_html.run()
+    path_ = get_text_file_path(
+        obsidian_html.output["output_path"],
+    )
+    RL.log(
+        action="created",
+        module=f"{obsidian_html.__module__}.run",
+        resource=obsidian_html.output["output_path"],
+    )
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         pb["objects"]["obsidian_limiter"].remove_limiter()
+        if pb["objects"]["obsidian_limiter"].removed_selected_limiter_directory_success:
+            RL.log(
+                action="removed",
+                module=f"{pb["objects"]["obsidian_limiter"].__module__}.remove_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+        else:
+            RL.log(
+                action="kept",
+                module=f"{pb["objects"]["obsidian_limiter"].__module__}.remove_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
     arguments = {}
     arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
     arguments.update(CH.get_key("OBSIDIAN_HTML"))
@@ -73,11 +119,10 @@ def main(pb, CH, loglevel=None):
         log_directory=os.path.normpath(
             os.path.join(CH.get_key("DIRECTORIES_PATHS", "output_dir"), "mod")
         ),
-    )
-    path_ = get_text_file_path(
-        obsidian_html.output["output_path"],
+        RL=RL,
     )
     processed_string = pipeline.run(load_text_file(path_))
+    # RL.log(action="read",module=)
     file_strings = ""
     if CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 1:
         # OHTML-output-directory
@@ -105,6 +150,7 @@ def main(pb, CH, loglevel=None):
         file_suffixes=file_suffixes,
         output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
         log_level=loglevel,
+        RL=RL,
     )
     renderer.render(
         parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
@@ -113,31 +159,36 @@ def main(pb, CH, loglevel=None):
     pass
 
 
-def handle_convert(args, pb):
+def handle_convert(args, pb, CH):
     """Execute the convert command."""
     print(f"Converting {args.input} to formats: {args.format}")
     # Implement conversion logic here based on arguments
     args = convert_format_args(args)
     # TOOD: implement processing from GUI-classes that _is_ required, see 'handle_ot_gui_passthrough()'
-    pb, CH = handle_ot_guis(args, pb, CH="")
+    pb, CH = handle_ot_guis(args, pb, CH)
     main(pb)
 
 
-def handle_gui(args, pb):
+def handle_gui(args, pb, CH):
     """Execute the GUI command."""
-    # 1. translate arguments
-    args = convert_format_args(args)
-    # 2. setup config-manager
-    CH = ConfigurationHandler(
-        last_run_path=None, loglevel=args["loglevel"], is_gui=True
-    )
+
     # setup defaults, load last-run
-    CH.apply_defaults()
     CH.load_last_run(
         last_run_path=CH.default_guiconfiguration_location
     )  # must be modified to point to the lastrun-path.
+    RL = ResourceLogger(log_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+    RL.log(
+        action="loaded",
+        module=f"{CH.__module__}.handle_gui",
+        resource=CH.default_guiconfiguration_location,
+    )
     # load file-history
     CH.load_file_history(file_history_path=CH.default_history_location)
+    RL.log(
+        action="loaded",
+        module=f"{CH.__module__}.handle_gui",
+        resource=CH.default_history_location,
+    )
     # retrieve objects for use in later
     settings = CH.get_config("settings")
     # 2. launch main GUI
