@@ -148,45 +148,43 @@ def main(pb, CH, loglevel=None):
 
     logger__ = logging.getLogger("main")
     if CH.get_key("GENERAL_CONFIGURATION", "render_to_outputs"):
-        if logger__.getEffectiveLevel() <= logging.DEBUG:
-            mod_directory = os.path.normpath(
-                os.path.join(
-                    os.path.dirname(
-                        obsidian_html.output["output_path"],
-                    ),
-                    "mod",
-                )
-            )
-            renderManager = RenderManager(
-                file_strings=file_strings,
-                custom_file_names=None,
-                debug=False,
-                file_suffixes=file_suffixes,
-                input_name=None,
-                log_level=loglevel,
-                mod_directory=mod_directory,
-                output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
-                use_parallel=CH.get_key(
-                    "GENERAL_CONFIGURATION", "parallelise_rendering"
+        # if logger__.getEffectiveLevel() <= logging.DEBUG:
+        mod_directory = os.path.normpath(
+            os.path.join(
+                os.path.dirname(
+                    obsidian_html.output["output_path"],
                 ),
-                parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
-                working_directory=working_directory,
+                "mod",
             )
-            renderManager.execute()
-        else:
-            renderer = RenderingPipeline(
-                custom_file_names=None,
-                debug=False,
-                file_strings=file_strings,
-                file_suffixes=file_suffixes,
-                output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
-                log_level=loglevel,
-                RL=RL,
-            )
-            renderer.render(
-                parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
-                working_directory=working_directory,
-            )
+        )
+        renderManager = RenderManager(
+            file_strings=file_strings,
+            custom_file_names=None,
+            debug=False,
+            file_suffixes=file_suffixes,
+            input_name=None,
+            log_level=loglevel,
+            mod_directory=mod_directory,
+            output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+            use_parallel=CH.get_key("GENERAL_CONFIGURATION", "parallelise_rendering"),
+            parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
+            working_directory=working_directory,
+        )
+        renderManager.execute()
+        # else:
+        #     renderer = RenderingPipeline(
+        #         custom_file_names=None,
+        #         debug=False,
+        #         file_strings=file_strings,
+        #         file_suffixes=file_suffixes,
+        #         output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+        #         log_level=loglevel,
+        #         RL=RL,
+        #     )
+        #     renderer.render(
+        #         parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
+        #         working_directory=working_directory,
+        #     )
     pass
 
 
