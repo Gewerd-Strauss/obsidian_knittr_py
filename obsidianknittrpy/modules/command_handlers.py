@@ -42,11 +42,27 @@ def main(pb, CH, loglevel=None):
             loglevel=loglevel,
         )
         obsidian_limiter.add_limiter()
-        RL.log(
-            action="created",
-            module=f"{obsidian_limiter.__module__}.add_limiter",
-            resource=obsidian_limiter.selected_limiter_directory,
-        )
+        if obsidian_limiter.selected_limiter_is_vaultroot:
+            RL.log(
+                action="used vault",
+                module=f"{obsidian_limiter.__module__}.add_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+        elif not obsidian_limiter.selected_limiter_preexisted:
+            RL.log(
+                action="created",
+                module=f"{obsidian_limiter.__module__}.add_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+        else:
+            RL.log(
+                action="used pre-existing non-root",
+                module=f"{obsidian_limiter.__module__}.add_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+            logging.critical(
+                f"{obsidian_limiter.__module__} used the directory '{obsidian_limiter.selected_limiter_directory}', but it was flagged as both pre-existing and non-root. This should be impossible."
+            )
         pb["objects"]["obsidian_limiter"] = obsidian_limiter
         CH.applied_settings["OBSIDIAN_HTML_LIMITER"]["level"] = obsidian_limiter.level
         CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
@@ -80,11 +96,18 @@ def main(pb, CH, loglevel=None):
     )
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         pb["objects"]["obsidian_limiter"].remove_limiter()
-        RL.log(
-            action="removed",
-            module=f"{pb["objects"]["obsidian_limiter"].__module__}.remove_limiter",
-            resource=obsidian_limiter.selected_limiter_directory,
-        )
+        if pb["objects"]["obsidian_limiter"].removed_selected_limiter_directory_success:
+            RL.log(
+                action="removed",
+                module=f"{pb["objects"]["obsidian_limiter"].__module__}.remove_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
+        else:
+            RL.log(
+                action="kept",
+                module=f"{pb["objects"]["obsidian_limiter"].__module__}.remove_limiter",
+                resource=obsidian_limiter.selected_limiter_directory,
+            )
     arguments = {}
     arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
     arguments.update(CH.get_key("OBSIDIAN_HTML"))

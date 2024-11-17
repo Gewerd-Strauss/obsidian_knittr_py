@@ -119,6 +119,7 @@ class ObsidianHTML_Limiter:
             self.default_level = level
             self.cli_args = cli_args if cli_args else {}
             self.directory_structure = self.find_obsidian_vault_root()
+            self.removed_selected_limiter_directory_success = False
             self.adjust_default_Level()
             if auto_submit:
                 self.auto_select_directory()
@@ -322,6 +323,7 @@ class ObsidianHTML_Limiter:
         try:
             os.rmdir(self.selected_limiter_directory)  # Only remove if empty
             self.logger.info(f"Removed directory '{self.selected_limiter_directory}'.")
+            self.removed_selected_limiter_directory_success = True
         except Exception as e:
             self.logger.error(
                 f"Failed to remove directory '{self.selected_limiter_directory}': {e}"
