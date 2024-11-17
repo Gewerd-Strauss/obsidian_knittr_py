@@ -124,6 +124,7 @@ def main(pb, CH, loglevel=None):
         file_suffixes=file_suffixes,
         output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
         log_level=loglevel,
+        RL=RL,
     )
     renderer.render(
         parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
