@@ -39,8 +39,8 @@ class ObsidianKnittrGUI:
             "limit_scope": tk.IntVar(value=settings["OBSIDIAN_HTML"]["limit_scope"]),
         }
         self.gen_config_selections = {
-            "remove_hashtags_from_tags": tk.IntVar(
-                value=settings["GENERAL_CONFIGURATION"]["remove_hashtags_from_tags"]
+            "parallelise_rendering": tk.IntVar(
+                value=settings["GENERAL_CONFIGURATION"]["parallelise_rendering"]
             ),
             "strip_local_md_links": tk.IntVar(
                 value=settings["GENERAL_CONFIGURATION"]["strip_local_md_links"]
@@ -365,10 +365,10 @@ class ObsidianKnittrGUI:
         ########## GENERAL CONFIGURATION ##########
 
         gen_config_opts = {
-            "remove_hashtags_from_tags": "Remove '#' from tags",
             "strip_local_md_links": "Strip local markdown links",
             "keep_filename": "Keep filename",
             "render_to_outputs": "Render manuscripts to chosen outputs",
+            "parallelise_rendering": "Render in parallel",
             "backup_output_before_rendering": "Backup Output files before rendering",
         }
         for key, text in gen_config_opts.items():
