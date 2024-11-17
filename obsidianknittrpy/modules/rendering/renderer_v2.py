@@ -345,6 +345,9 @@ class RenderManager:
                 yaml_files=self.yaml_file_paths,
             )
         )
+        self.logger.info(
+            f"Executing {pipeline.__class__.__qualname__} ({"parallel" if self.use_parallel else "sequential"})"
+        )
         start_time = time.time()
         pipeline.run()
         end_time = time.time()
@@ -589,7 +592,7 @@ class MultiRenderingPipeline_v2(RenderingPipeline_v2):
             ]
             subprocess.run(command, check=True, cwd=self.working_directory)
             self.logger.info(
-                f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(self.working_directory,os.path.basename(self.output_paths[format_name])))}'"
+                f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(self.working_directory,os.path.basename(self.output_filenames[format_name])))}'"
             )
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Failed to render {format_name} output. Error: {e}")
