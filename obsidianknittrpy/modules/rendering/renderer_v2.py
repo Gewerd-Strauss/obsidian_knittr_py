@@ -345,7 +345,18 @@ class RenderManager:
                 yaml_files=self.yaml_file_paths,
             )
         )
+        start_time = time.time()
         pipeline.run()
+        end_time = time.time()
+        self.resource_logger.log(
+            action="exec-time",
+            module=self.__class__.__module__
+            + "."
+            + self.__class__.__qualname__
+            + ".execute",
+            resource=f"({"parallel" if self.use_parallel else "sequential"}: {(time.time() - start_time)}s)",
+        )
+        pass
 
 
 class RenderingPipeline_v2:
