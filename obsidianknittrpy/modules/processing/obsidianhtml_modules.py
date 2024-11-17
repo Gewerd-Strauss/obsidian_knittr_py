@@ -91,6 +91,7 @@ class RemoveObsidianHTMLIncludeErrors(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -98,6 +99,7 @@ class RemoveObsidianHTMLIncludeErrors(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
         # Get error_needles as a dictionary from config, e.g., {"aliases": []}
         self.error_needles = self.get_config("error_needles", default={})

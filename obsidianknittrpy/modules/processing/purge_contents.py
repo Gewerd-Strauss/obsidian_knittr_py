@@ -78,6 +78,7 @@ class PurgeContents(BaseModule):
         log_directory=None,
         past_module_instance=None,
         past_module_method_instance=None,
+        log_file=None,
     ):
         super().__init__(
             name,
@@ -85,6 +86,7 @@ class PurgeContents(BaseModule):
             log_directory=log_directory,
             past_module_instance=past_module_instance,
             past_module_method_instance=past_module_method_instance,
+            log_file=log_file,
         )
         self.purged_frontmatter_keys = self.get_config(
             "purged_frontmatter_keys", default=[]

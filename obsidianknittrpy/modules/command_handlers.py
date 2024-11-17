@@ -94,6 +94,7 @@ def main(pb, CH, loglevel=None):
         log_directory=os.path.normpath(
             os.path.join(CH.get_key("DIRECTORIES_PATHS", "output_dir"), "mod")
         ),
+        RL=RL,
     )
     processed_string = pipeline.run(load_text_file(path_))
     # RL.log(action="read",module=)
