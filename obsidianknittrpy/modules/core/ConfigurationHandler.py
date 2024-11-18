@@ -44,6 +44,7 @@ class ConfigurationHandler:
                 "obsidian_html-configuration.yml",
             )
         )
+        self.applied_format_definitions_is_custom = False
 
         self.init_default_settings()  # not exported, not saved
         ## initialise directories
@@ -701,6 +702,27 @@ quarto::pdf
             except FileNotFoundError:
                 self.logger.error(
                     f"Custom pipeline '{custom_pipeline_path}' not found; default pipeline was not overwritten."
+                )
+
+    def load_custom_format_definitions(self, custom_format_definitions_path=None):
+        """
+        Loads a custom pipeline yaml-configuration.
+        Configuration must be provided in full, as it will **overwrite** the default pipeline definition
+        """
+        if custom_format_definitions_path is not None:
+            try:
+                with open(custom_format_definitions_path, "r", encoding="utf-8") as f:
+                    self.custom_format_definitions = f.read()
+                if self.custom_format_definitions is not None:
+                    self.applied_format_definitions = self.custom_format_definitions
+                    self.applied_format_definitions_is_custom = True
+                else:
+                    self.logger.error(
+                        f"The custom format-definitions '{custom_format_definitions_path}' does not contain a yaml-declaration; default pipeline was not overwritten."
+                    )
+            except FileNotFoundError:
+                self.logger.error(
+                    f"Custom format-definitons '{custom_format_definitions_path}' not found; default pipeline was not overwritten."
                 )
 
     ### EXPORTERS ###
