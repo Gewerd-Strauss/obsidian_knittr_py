@@ -31,6 +31,11 @@ def common_arguments(parser):
     parser.add_argument(
         '--custom_pipeline',
         default=None,
+        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
+    )
+    parser.add_argument(
+        '--custom_format_definitions',
+        default=None,
         help="Set the logging level (default: INFO)",
     )
     # Add pass-through argument
