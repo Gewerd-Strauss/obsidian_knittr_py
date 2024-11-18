@@ -25,6 +25,9 @@ class YamlHandler:
                     sanitized[key] = False
                 elif clean_value.isdigit():
                     sanitized[key] = int(clean_value)
+                elif clean_value.lower() == '[]':
+                    # fix `pdf-engine-opt: '[]'` >  `pdf-engine-opt: []`
+                    sanitized[key] = []
                 else:
                     sanitized[key] = clean_value
             else:
