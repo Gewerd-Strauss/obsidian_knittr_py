@@ -684,6 +684,26 @@ quarto::pdf
                     f"File-history configuration '{file_history_path}' not found; changes not saved."
                 )
 
+    def load_custom_pipeline(self, custom_pipeline_path=None):
+        """
+        Loads a custom pipeline yaml-configuration.
+        Configuration must be provided in full, as it will **overwrite** the default pipeline definition
+        """
+        if custom_pipeline_path is not None:
+            try:
+                with open(custom_pipeline_path, "r", encoding="utf-8") as f:
+                    self.custom_pipeline_yaml = yaml.safe_load(f)
+                if self.custom_pipeline_yaml is not None:
+                    self.applied_pipeline = self.custom_pipeline_yaml
+                else:
+                    self.logger.error(
+                        f"The custom pipeline '{custom_pipeline_path}' does not contain a yaml-declaration; default pipeline was not overwritten."
+                    )
+            except FileNotFoundError:
+                self.logger.error(
+                    f"Custom pipeline '{custom_pipeline_path}' not found; default pipeline was not overwritten."
+                )
+
     ### EXPORTERS ###
     def export_config(self, default=False, file_path=None):
         """Export the current configuration (modified or default) to a YAML file."""

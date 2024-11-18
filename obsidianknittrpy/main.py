@@ -61,6 +61,8 @@ def main():
         last_run_path=None, loglevel=args["loglevel"], is_gui=True
     )
     CH.apply_defaults()
+    if args["custom_pipeline"] is not None:
+        CH.load_custom_pipeline(args["custom_pipeline"])
     # 3. clear out work dir
     if os.path.exists(CH.get_key("DIRECTORIES_PATHS", "work_dir")):
         shutil.rmtree(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
