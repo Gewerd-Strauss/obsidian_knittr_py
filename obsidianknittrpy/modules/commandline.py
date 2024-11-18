@@ -28,6 +28,11 @@ def common_arguments(parser):
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
         help="Set the logging level (default: INFO)",
     )
+    parser.add_argument(
+        '--custom_pipeline',
+        default=None,
+        help="Set the logging level (default: INFO)",
+    )
     # Add pass-through argument
     parser.add_argument(
         "pass_through",

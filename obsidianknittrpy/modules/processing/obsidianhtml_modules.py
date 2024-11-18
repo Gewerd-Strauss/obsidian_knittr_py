@@ -107,12 +107,10 @@ class RemoveObsidianHTMLIncludeErrors(BaseModule):
         self.compiled_error_needles = [
             re.compile(needle[2:-2]) for needle in self.error_needles
         ]
-        purge_errors = self.get_config("purge_errors")
 
     def process(self, input_str):
-        if self.get_config(key="purge_errors", default=False):
-            for regex in self.compiled_error_needles:
-                input_str = re.sub(
-                    pattern=regex, repl="", string=input_str
-                )  # Remove all matches (substitute with an empty string)
+        for regex in self.compiled_error_needles:
+            input_str = re.sub(
+                pattern=regex, repl="", string=input_str
+            )  # Remove all matches (substitute with an empty string)
         return input_str
