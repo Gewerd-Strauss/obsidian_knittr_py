@@ -1,5 +1,5 @@
 # command_handlers.py
-
+from obsidianknittrpy import __version__
 from obsidianknittrpy.modules.utility import (
     convert_format_args,
     load_text_file,
@@ -306,10 +306,7 @@ def handle_gui(args, pb, CH):
     main(pb, CH, args["loglevel"])
 
 
-# You can also include other handler functions if needed.
-
-
 def handle_version():
     """Handle the 'version' command."""
-    print(f"Versioning not set up yet. Alpha. 0.0.1.9000")
+    print(f"Current version: {__version__}")
     exit(0)
