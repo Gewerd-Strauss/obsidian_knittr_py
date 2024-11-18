@@ -30,7 +30,7 @@ class ObsidianKnittrGUI:
         self.root.wm_attributes("-topmost", 1)
         self.closed = False
         self.obsidian_options_selections = {
-            "verb": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verb"] == "convert"),
+            "verb": tk.IntVar(value=True),
             "use_custom_fork": tk.IntVar(
                 value=settings["OBSIDIAN_HTML"]["use_custom_fork"]
             ),
@@ -316,11 +316,18 @@ class ObsidianKnittrGUI:
         # Right Top Section - "Obsidian HTML"
         # obsidian_frame.place(x=10, y=80, width=350, height=200)
         options = {
-            "verb": "!!Use verb 'Convert' for OHTML",
+            "verb": "Use verb 'Convert' for OHTML",
             "use_custom_fork": "!!Use the personal fork",
             "purge_errors": "Purge OHTML-Error-strings",
             "verbose_flag": "Set OHTML's Verbose-Flag?",
             "limit_scope": "Limit scope of OHTML?",
+        }
+        obsidian_checkbox_states = {
+            "verb": "disabled",
+            "use_custom_fork": "normal",
+            # "purge_errors": "normal",
+            "verbose_flag": "normal",
+            "limit_scope": "normal",
         }
 
         for key, text in options.items():
@@ -328,6 +335,7 @@ class ObsidianKnittrGUI:
                 obsidian_frame,
                 text=text,
                 variable=self.obsidian_options_selections[key],
+                state=obsidian_checkbox_states[key],
             ).pack(anchor=tk.W)
 
         ########## EXECUTION DIRECTORIES ##########
