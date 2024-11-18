@@ -90,7 +90,6 @@ class ConfigurationHandler:
             "OBSIDIAN_HTML": {
                 "verb": True,
                 "use_custom_fork": False,
-                "purge_errors": False,
                 "verbose_flag": False,
                 "limit_scope": False,
             },
@@ -128,7 +127,7 @@ pipeline:
     enabled: True
   - file_name: obsidianhtml_modules
     module_name: RemoveObsidianHTMLIncludeErrors
-    config: {purge_errors: False, error_needles: [r"(Obsidianhtml\:\s+Error\:\s+.*)$"]}
+    config: {error_needles: [r"(Obsidianhtml\:\s+Error\:\s+.*)$"]}
     enabled: True
   - file_name: general_processing
     module_name: ProcessTags

@@ -34,7 +34,6 @@ class ObsidianKnittrGUI:
             "use_custom_fork": tk.IntVar(
                 value=settings["OBSIDIAN_HTML"]["use_custom_fork"]
             ),
-            "purge_errors": tk.IntVar(value=settings["OBSIDIAN_HTML"]["purge_errors"]),
             "verbose_flag": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verbose_flag"]),
             "limit_scope": tk.IntVar(value=settings["OBSIDIAN_HTML"]["limit_scope"]),
         }
@@ -318,7 +317,6 @@ class ObsidianKnittrGUI:
         options = {
             "verb": "Use verb 'Convert' for OHTML",
             "use_custom_fork": "!!Use the personal fork",
-            "purge_errors": "Purge OHTML-Error-strings",
             "verbose_flag": "Set OHTML's Verbose-Flag?",
             "limit_scope": "Limit scope of OHTML?",
         }
