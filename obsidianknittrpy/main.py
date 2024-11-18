@@ -63,6 +63,8 @@ def main():
     CH.apply_defaults()
     if args["custom_pipeline"] is not None:
         CH.load_custom_pipeline(args["custom_pipeline"])
+    if args["custom_format_definitions"]:
+        CH.load_custom_format_definitions(args["custom_format_definitions"])
     # 3. clear out work dir
     if os.path.exists(CH.get_key("DIRECTORIES_PATHS", "work_dir")):
         shutil.rmtree(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
