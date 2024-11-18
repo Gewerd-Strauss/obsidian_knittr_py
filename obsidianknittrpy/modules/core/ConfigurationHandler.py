@@ -738,8 +738,10 @@ quarto::pdf
                 else:
                     yaml.dump(self.applied_settings, f, allow_unicode=True)
                     self.logger.info(f"Custom Configuration exported to '{file_path}'.")
+                    exit(0)
         else:
-            print(self.applied_settings)
+            print(yaml.dump(self.applied_settings))
+            exit(0)
 
     def get_pipeline_path(self):
         """Return the path to the pipeline configuration."""

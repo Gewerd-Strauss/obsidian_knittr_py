@@ -148,9 +148,4 @@ def parser_add_disablers(convert_parser):
 
 def gui_parser_setup(gui_parser):
     # GUI-specific options
-    gui_parser.add_argument(
-        "--theme", choices=["light", "dark"], default="light", help="GUI theme"
-    )
-    gui_parser.add_argument(
-        "--fullscreen", action="store_true", help="Launch GUI in fullscreen mode"
-    )
+    pass

@@ -13,6 +13,7 @@ from obsidianknittrpy.modules.command_handlers import (
     handle_convert,
     handle_gui,
     handle_version,
+    handle_export,
 )
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
@@ -49,6 +50,11 @@ def main():
     gui_parser_setup(gui_parser)
     # --- 'version' command setup ---
     version_parser = subparsers.add_parser("version", help="Get the version.")
+    # --- 'export' command setup ---
+    export_parser = subparsers.add_parser(
+        "export", help="Using the GUI, create a configuration to execute via 'convert'."
+    )
+    common_arguments(export_parser)
     args = parser.parse_args()
     if args.command == "version":
         handle_version()
@@ -85,6 +91,8 @@ def main():
             handle_convert(args, pb, CH)
         elif args["command"] == "gui":
             handle_gui(args, pb, CH)
+        elif args["command"] == "export":
+            handle_export(args, pb, CH)
         else:
             parser.print_help()
 
