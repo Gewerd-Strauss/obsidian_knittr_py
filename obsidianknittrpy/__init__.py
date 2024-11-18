@@ -9,5 +9,5 @@
 # )
 
 # Optionally, you can include versioning or metadata here
-__version__ = "0.0.1"
-__author__ = "Your Name"
+__version__ = "0.0.1.9000"
+__author__ = "Gewerd Strauss"

@@ -101,7 +101,7 @@ class ObsidianKnittrGUI:
         frame_margin_y = 5
         show_top_frame = False
         render_debug = self.logger.getEffectiveLevel() <= logging.DEBUG
-        enable_module_frame = self.logger.getEffectiveLevel() <= logging.DEBUG
+        enable_module_frame = True
         # Main frames for layout sections
         left_frame = tk.Frame(self.root, bg="green" if render_debug else None)
         right_frame = tk.Frame(self.root, bg="red" if render_debug else None)
