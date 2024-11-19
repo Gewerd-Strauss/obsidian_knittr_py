@@ -284,10 +284,10 @@ def handle_gui(args, pb, CH, export=False):
         #
         # If we select the latter solution, the logic-flow is identical for both CLI and GUI modes; meaning I could simplify this significantly.
 
-        if same_manuscript_chosen:
+        if same_manuscript_chosen or export:
             CH.applied_settings["OUTPUT_FORMAT_VALUES"][format] = {}
         for arg, value in ot.arguments.items():
-            if same_manuscript_chosen:
+            if same_manuscript_chosen or export:
                 CH.applied_settings["OUTPUT_FORMAT_VALUES"][format][arg] = ot.arguments[
                     arg
                 ]["Value"]
