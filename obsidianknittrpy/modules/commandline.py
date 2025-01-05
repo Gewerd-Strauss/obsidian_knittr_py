@@ -36,7 +36,7 @@ def common_arguments(parser):
     parser.add_argument(
         '--custom_format_definitions',
         default=None,
-        help="Set the logging level (default: INFO)",
+        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
     )
     # Add pass-through argument
     parser.add_argument(
@@ -166,7 +166,7 @@ def import_parser_setup(import_parser):
     import_parser.add_argument(
         '--custom_format_definitions',
         default=None,
-        help="Set the logging level (default: INFO)",
+        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
     )
     import_parser.add_argument(
         '--loglevel',

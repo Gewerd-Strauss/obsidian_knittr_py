@@ -759,8 +759,8 @@ quarto::pdf
 
     def load_custom_format_definitions(self, custom_format_definitions_path=None):
         """
-        Loads a custom pipeline yaml-configuration.
-        Configuration must be provided in full, as it will **overwrite** the default pipeline definition
+        Loads a custom format yaml-configuration.
+        Configuration must be provided in full, as it will **overwrite** the default format definition
         """
         if custom_format_definitions_path is not None:
             try:
