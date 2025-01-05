@@ -8,12 +8,14 @@ from obsidianknittrpy.modules.commandline import (
     convert_parser_setup,
     parser_add_disablers,
     gui_parser_setup,
+    import_parser_setup,
 )
 from obsidianknittrpy.modules.command_handlers import (
     handle_convert,
     handle_gui,
     handle_version,
     handle_export,
+    handle_import,
 )
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
@@ -52,9 +54,14 @@ def main():
     version_parser = subparsers.add_parser("version", help="Get the version.")
     # --- 'export' command setup ---
     export_parser = subparsers.add_parser(
-        "export", help="Using the GUI, create a configuration to execute via 'convert'."
+        "export", help="Using the GUI, create a configuration to execute via 'import'."
     )
     common_arguments(export_parser)
+    # --- 'import' command setup ---
+    import_parser = subparsers.add_parser(
+        "import", help="import a previously exported configuration."
+    )
+    import_parser = import_parser_setup(import_parser)
     args = parser.parse_args()
     if args.command == "version":
         handle_version()
@@ -93,6 +100,8 @@ def main():
             handle_gui(args, pb, CH)
         elif args["command"] == "export":
             handle_export(args, pb, CH)
+        elif args["command"] == "import":
+            handle_import(args, pb, CH)
         else:
             parser.print_help()
 
