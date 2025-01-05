@@ -8,7 +8,13 @@ import logging as logging
 class ObsidianKnittrGUI:
 
     def __init__(
-        self, settings, file_history=[], formats=[], pipeline=[], loglevel=None
+        self,
+        settings,
+        file_history=[],
+        formats=[],
+        pipeline=[],
+        loglevel=None,
+        command=str,
     ):
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
@@ -20,7 +26,9 @@ class ObsidianKnittrGUI:
         self.output_selections = {}
         self.root = tk.Tk()
         self.root.focus_force()
-        self.title = "Obsidian Knittr - automate Obsidian.md conversion"
+        self.title = (
+            "Obsidian Knittr - automate Obsidian.md conversion (" + command + ")"
+        )
         self.root.title(self.title)
         self.width = 750
         self.height = 550
