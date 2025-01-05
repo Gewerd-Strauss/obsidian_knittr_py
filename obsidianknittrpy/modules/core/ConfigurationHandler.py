@@ -100,11 +100,16 @@ class ConfigurationHandler:
                 "render_to_outputs": False,
                 "parallelise_rendering": False,
                 "backup_output_before_rendering": False,
+                "full_submit": False,
             },
             "ENGINE_CONFIGURATION": {"quarto_strip_reference_prefixes": False},
             "EXECUTION_DIRECTORIES": {"exec_dir_selection": 1},
             "OUTPUT_TYPE": [],
-            "OBSIDIAN_HTML_LIMITER": {"level": -1},
+            "OBSIDIAN_HTML_LIMITER": {
+                "level": -1,
+                "selected_limiter_is_vaultroot": bool,
+                "selected_limiter_preexisted": bool,
+            },
             "MANUSCRIPT": {
                 "manuscript_path": str,
                 "manuscript_dir": str,
@@ -555,9 +560,15 @@ quarto::pdf
         try:
             with open(custom_config_path, 'r', encoding='utf-8') as f:
                 custom_config = yaml.safe_load(f)
-
+            allowed_missing_keys = ["OUTPUT_FORMAT_VALUES"] + list(
+                custom_config["OUTPUT_FORMAT_VALUES"].keys()
+            )
             # Update main config with custom settings, ignoring extra fields
-            self.merge_config(custom_config)
+            self.applied_settings = self.merge_dicts(
+                dict_default=self.applied_settings,
+                dict_user=custom_config,
+                allowed_missing_keys=allowed_missing_keys,
+            )
             self.logger.info(f"Configuration merged with {custom_config_path}")
         except FileNotFoundError:
             self.logger.error(
@@ -570,6 +581,48 @@ quarto::pdf
             self.config.update(custom_config)
         except yaml.YAMLError as e:
             self.logger.error(f"Error parsing YAML file: {e}")
+
+    def merge_dicts(self, dict_default, dict_user, allowed_missing_keys=None):
+        """Recursively merges dict_B into dict_A."""
+        if allowed_missing_keys is None:
+            allowed_missing_keys = []
+
+        merged_dict = dict_default.copy()  # Start with dict_A as the base configuration
+
+        # Merge the dictionaries key-by-key, handling nested dicts
+        for key in dict_user:
+            if key not in dict_default:
+                # If the key is in dict_B but not in dict_A, check if it's allowed
+                if key in allowed_missing_keys:
+                    # Issue a warning if it's an allowed missing key
+                    self.logger.warning(
+                        f"Warning: Key '{key}' is present in the user config but missing in the default config. Merging from user config."
+                    )
+                    merged_dict[key] = dict_user[key]  # Merge the value from dict_B
+                else:
+                    # Raise error for unhandled keys
+                    self.logger.error(
+                        f"Error: Unhandled key '{key}' found in the user config. Unhandled keys must be removed."
+                    )
+            elif isinstance(dict_default[key], dict) and isinstance(
+                dict_user[key], dict
+            ):
+                # If both values are dictionaries, recursively merge them
+                merged_dict[key] = self.merge_dicts(
+                    dict_default[key], dict_user[key], allowed_missing_keys
+                )
+            else:
+                # Otherwise, simply overwrite the value in dict_A with dict_B
+                merged_dict[key] = dict_user[key]
+
+        # Check for keys in dict_A that are missing in dict_B
+        for key in dict_default:
+            if key not in dict_user:
+                self.logger.warning(
+                    f"Warning: Key '{key}' is present in the default config but missing in the user config. Using default value: {dict_default[key]}"
+                )
+
+        return merged_dict
 
     def merge_config_for_save(self, custom_config, config_section):
         try:
