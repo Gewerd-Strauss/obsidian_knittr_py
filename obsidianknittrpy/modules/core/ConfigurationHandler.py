@@ -227,7 +227,7 @@ quarto::docx
 	toc-depth:edit|Type:Integer|Default:3|String:"What is the maximum depth the ToC should display?"|Max:5|Min:1|ctrlOptions:Number|Tab3Parent:1. ToC and Numbering|Link:"https://quarto.org/docs/reference/formats/docx.html#table-of-contents"|Linktext:?
 	;number-offset:edit|Type:String|Default:0|String:"Offset for section headings in output?"|Tab3Parent:1. ToC and Numbering|Value:0|Link:"https://quarto.org/docs/reference/formats/docx.html#numbering"|Linktext:?
 	toc-title:edit|Type:String|String:"Set the ToC's Title"|Default:"Table of Contents"|Tab3Parent:1. ToC and Numbering|Link:"https://quarto.org/docs/reference/formats/docx.html#table-of-contents"|Linktext:?
-	reference-doc:file|Type:String|Default:"BE28 Template Internship Report - Kopie.docx"|String:"Choose format-reference Word-file."|SearchPath:""|Tab3Parent:3. General|Link:"https://quarto.org/docs/reference/formats/docx.html#format-options"|Linktext:?
+	reference-doc:file|Type:String|Default:""|String:"Choose format-reference Word-file."|SearchPath:""|Tab3Parent:3. General|Link:"https://quarto.org/docs/reference/formats/docx.html#format-options"|Linktext:?
 	df-print:ddl|Type:String|Default:"kable"|String:"Choose Method for printing data frames"|ctrlOptions:default,kable,tibble,paged|Tab3Parent:2. Figures and Tables|Link:"https://quarto.org/docs/reference/formats/docx.html#tables"|Linktext:?
 	;TODO: Finish this format, modify DynamicArguments.ahk to accept lists via a parameters "Tab3Parent" relationship: so we can map which kinds of string format we need for each package.
 	fig-height:edit|Type:Integer|Default:6|String:"Set default height in inches for figures"|Tab3Parent:2. Figures and Tables|Link:"https://quarto.org/docs/reference/formats/docx.html#figures"|Linktext:?
