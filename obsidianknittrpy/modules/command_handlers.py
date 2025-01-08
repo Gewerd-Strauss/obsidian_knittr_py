@@ -75,7 +75,9 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
             "selected_limiter_is_vaultroot"
         ] = obsidian_limiter.selected_limiter_is_vaultroot
     if not export:
-        CH.save_last_run(CH.default_guiconfiguration_location)
+        # make sure state-changes only occur when neither exporting nor importing
+        if not import_:
+            CH.save_last_run(CH.default_guiconfiguration_location)
         obsidian_html = ObsidianHTML(
             manuscript_path=CH.get_key("MANUSCRIPT", "manuscript_path"),
             config_path=CH.default_obsidianhtmlconfiguration_location,
@@ -222,7 +224,7 @@ def handle_import(args, pb, CH):
     main(pb, CH, args["loglevel"], export=False, import_=True)
 
 
-def handle_gui(args, pb, CH, export=False):
+def handle_gui(args, pb, CH, export=False, import_=False):
     """Execute the GUI command."""
 
     # setup defaults, load last-run
@@ -260,7 +262,8 @@ def handle_gui(args, pb, CH, export=False):
     # 3. Save file-history
     main_gui.update_filehistory(main_gui.results["manuscript"]["manuscript_path"])
     CH.file_history = main_gui.file_history
-    CH.save_file_history(CH.default_history_location)
+    if not export and not import_:
+        CH.save_file_history(CH.default_history_location)
     # 4. Merge applied settings into the storage.
     CH.merge_config_for_save(
         {"exec_dir_selection": main_gui.results["execution_directory"]},
@@ -339,7 +342,7 @@ def handle_export(args, pb, CH):
     but without executing any actual 'processing' itself
     TODO: verify that this is state-exchangeable with 'handle_gui'.
     """
-    handle_gui(args, pb, CH, True)
+    handle_gui(args, pb, CH, True, False)
 
 
 def handle_version():
