@@ -578,8 +578,8 @@ class ObsidianKnittrGUI:
             pass
 
     def load_configuration(self):
-        print(
-            "load configuration to populate checkbxoes, output-types, execution-directories/last-execution/..."
+        self.logger.debug(
+            "load configuration to populate checkboxes, output-types, execution-directories/last-execution/..."
         )
         pass
 

@@ -204,7 +204,7 @@ class RenderingPipeline:
                 ]
                 subprocess.run(command, check=True, cwd=quart_working_directory)
                 self.logger.info(
-                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'"
+                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'."
                 )
                 self.RL.log(
                     self.__class__.__module__
