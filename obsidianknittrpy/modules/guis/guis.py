@@ -3,6 +3,7 @@ from tkinter import ttk
 import pyperclip as pc
 import os as os
 import logging as logging
+from obsidianknittrpy.modules.utility import get_util_version
 from obsidianknittrpy.modules.guis.AboutInfo import AboutInfo
 from obsidianknittrpy import __version__
 
@@ -500,6 +501,20 @@ class ObsidianKnittrGUI:
         tk.Button(button_frame, text="About", command=self.show_about).pack(
             side=tk.LEFT, padx=1
         )
+        version_label_1.config(text="OKPY " + __version__)
+        R_v = get_util_version(
+            type="R", work_dir=settings["DIRECTORIES_PATHS"]["work_dir"]
+        )
+
+        # retrieve quarto v-text and update it
+        quarto_v = get_util_version(
+            type="quarto", work_dir=settings["DIRECTORIES_PATHS"]["work_dir"]
+        )
+        current_text_version_label_2 = version_label_2.cget("text")
+        current_text_version_label_2 = current_text_version_label_2.replace(
+            "vX.Y.Z", "v" + quarto_v
+        )
+        version_label_2.config(text=current_text_version_label_2)
 
     def choose_file(self):
         # Functionality for "Choose Manuscript" - placeholder
