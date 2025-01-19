@@ -3,6 +3,8 @@ from tkinter import ttk
 import pyperclip as pc
 import os as os
 import logging as logging
+from obsidianknittrpy.modules.guis.AboutInfo import AboutInfo
+from obsidianknittrpy import __version__
 
 
 class ObsidianKnittrGUI:
@@ -13,6 +15,7 @@ class ObsidianKnittrGUI:
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
         )
+        self.loglevel = loglevel
         self.logger.setLevel(level=loglevel)
         self.pipeline = pipeline
         self.output_types = formats
@@ -83,7 +86,7 @@ class ObsidianKnittrGUI:
         self.bind_method_hotkey("<Alt-a>", "show_about")
         self.bind_method_hotkey("<Alt-c>", "choose_file")
         self.bind_method_hotkey("<Escape>", "close")
-        self.setup_gui()
+        self.setup_gui(settings)
         self.update_filehistory()
         self.load_configuration()
         self.root.mainloop()
@@ -94,7 +97,7 @@ class ObsidianKnittrGUI:
     def disable_event(self):
         pass
 
-    def setup_gui(self):
+    def setup_gui(self, settings):
         bg_col = "lightgrey"
         bg_col = None
         frame_margin_x = 5
@@ -108,6 +111,7 @@ class ObsidianKnittrGUI:
         top_frame = tk.Frame(self.root, bg="purple" if render_debug else None)
         righterer_frame = tk.Frame(self.root, bg="orange" if render_debug else None)
         title_bar_factor = 0.04 if show_top_frame else 0.00
+        self.about_gui = AboutInfo(settings=settings, loglevel=self.loglevel)
 
         top_frame.place(
             x=0, y=0, width=self.width, height=self.height * title_bar_factor
@@ -584,6 +588,22 @@ class ObsidianKnittrGUI:
         self.last_exec_label1.config(text=f"LM: {last_manuscript_path}")
         self.last_exec_label2.config(text=f"LL: {last_level} DL:{DL}")
 
+    def show_about_info(self):
+        """
+        Show about-information:
+        - recognised tools (R, quarto, python, pandoc,obsidian-html,tex/tinytex)
+            - capabilities
+            - versions
+            - tool locations
+        - funciton must create and open a new overlay GUI which contains these info.
+            - the info can be declared in simple txt-edit format, or maybe I use some edit-fields and just populate them respectively. Dunno.
+            - or maybe I use `new OT()` and populate them. That would make it very easy to integrate, and for submission I can just register some custom callbacks which only close the about-GUI.
+
+
+        """
+        DL = -300
+        self.about_gui.show_about_info()
+
     def update_pipeline_from_gui(self):
         for module in self.pipeline:
             # Get the 'enabled' checkbox state
@@ -716,7 +736,7 @@ class ObsidianKnittrGUI:
     def show_about(self):
         # Placeholder for About dialog
         self.logger.debug("About clicked")
-        self.update_last_execution_labels("A", "B")
+        self.show_about_info()
 
     def close(self, set_escape=True):
         self.closed = set_escape
