@@ -12,28 +12,33 @@ def convert_format_args(args):
     arguments = {}
 
     # Handle pass-through arguments
-    if args.pass_through:
-        for item in args.pass_through:
-            if "::" in item and "=" in item:
-                key, value = item.split("=", 1)
-                arguments[key.strip()] = value.strip()
-            else:
-                # Here, we can just store the item as is
-                arguments[item.strip()] = (
-                    ""  # Assuming you want an empty value for other pass-through items
-                )
+    try:
+        if args.pass_through:
+            for item in args.pass_through:
+                if "::" in item and "=" in item:
+                    key, value = item.split("=", 1)
+                    arguments[key.strip()] = value.strip()
+                else:
+                    # Here, we can just store the item as is
+                    arguments[item.strip()] = (
+                        ""  # Assuming you want an empty value for other pass-through items
+                    )
+    finally:  # necessary to allow the ExtensionHandler set/unset/list methods to bypass without erroring.
+        pass
+    try:
+        # Add other arguments to the dictionary
+        for key, value in vars(
+            args
+        ).items():  # Use vars() to convert Namespace to dictionary
+            if key != "pass_through":  # Skip pass_through since it's already handled
+                arguments[key] = value  # Add each argument to the dictionary
 
-    # Add other arguments to the dictionary
-    for key, value in vars(
-        args
-    ).items():  # Use vars() to convert Namespace to dictionary
-        if key != "pass_through":  # Skip pass_through since it's already handled
-            arguments[key] = value  # Add each argument to the dictionary
-
-    # Print all arguments in the specified format
-    logging.debug("Formatted Arguments:")
-    for k, v in arguments.items():
-        logging.debug(f'["{k}"] = "{v}"')
+        # Print all arguments in the specified format
+        logging.debug("Formatted Arguments:")
+        for k, v in arguments.items():
+            logging.debug(f'["{k}"] = "{v}"')
+    finally:  # necessary to allow the ExtensionHandler set/unset/list methods to bypass without erroring.
+        pass
 
     return arguments
 
@@ -108,7 +113,6 @@ def get_util_version(type=str, work_dir=""):
             verbose=CH.get_key("OBSIDIAN_HTML", "verbose_flag"),
             own_ohtml_fork_dir=CH.get_key("DIRECTORIES_PATHS", "own_ohtml_fork_dir"),
             work_dir=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
-            # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
             output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
         )
         # obsidianhtml_available = self.check_obsidianhtml()
