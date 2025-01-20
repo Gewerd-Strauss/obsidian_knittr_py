@@ -14,11 +14,14 @@ class ExternalHandler:
 
     def set(self, key, path):
         """Sets the path for a given key."""
-        filepath = self._get_filepath(key)
-        data = {"DIRECTORIES_PATHS": {key: path}}
-        with open(filepath, "w", encoding="utf-8") as f:
-            yaml.dump(data, f)
-        print(f"Set path for '{key}' to '{path}'.")
+        if os.path.exists(path):
+            filepath = self._get_filepath(key)
+            data = {"DIRECTORIES_PATHS": {key: path}}
+            with open(filepath, "w", encoding="utf-8") as f:
+                yaml.dump(data, f)
+            print(f"Set path for '{key}' to '{path}'.")
+        else:
+            print(f"Path '{path}' does not point to a valid target.")
 
     def unset(self, key):
         """Removes the configuration for a given key."""
