@@ -3,16 +3,25 @@ from tkinter import ttk
 import pyperclip as pc
 import os as os
 import logging as logging
+from obsidianknittrpy.modules.utility import get_util_version
+from obsidianknittrpy import __version__
 
 
 class ObsidianKnittrGUI:
 
     def __init__(
-        self, settings, file_history=[], formats=[], pipeline=[], loglevel=None
+        self,
+        settings,
+        file_history=[],
+        formats=[],
+        pipeline=[],
+        loglevel=None,
+        command=str,
     ):
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
         )
+        self.loglevel = loglevel
         self.logger.setLevel(level=loglevel)
         self.pipeline = pipeline
         self.output_types = formats
@@ -20,7 +29,9 @@ class ObsidianKnittrGUI:
         self.output_selections = {}
         self.root = tk.Tk()
         self.root.focus_force()
-        self.title = "Obsidian Knittr - automate Obsidian.md conversion"
+        self.title = (
+            "Obsidian Knittr - automate Obsidian.md conversion (" + command + ")"
+        )
         self.root.title(self.title)
         self.width = 750
         self.height = 550
@@ -83,7 +94,7 @@ class ObsidianKnittrGUI:
         self.bind_method_hotkey("<Alt-a>", "show_about")
         self.bind_method_hotkey("<Alt-c>", "choose_file")
         self.bind_method_hotkey("<Escape>", "close")
-        self.setup_gui()
+        self.setup_gui(settings)
         self.update_filehistory()
         self.load_configuration()
         self.root.mainloop()
@@ -94,7 +105,7 @@ class ObsidianKnittrGUI:
     def disable_event(self):
         pass
 
-    def setup_gui(self):
+    def setup_gui(self, settings):
         bg_col = "lightgrey"
         bg_col = None
         frame_margin_x = 5
@@ -496,6 +507,20 @@ class ObsidianKnittrGUI:
         tk.Button(button_frame, text="About", command=self.show_about).pack(
             side=tk.LEFT, padx=1
         )
+        version_label_1.config(text="OKPY " + __version__)
+        R_v = get_util_version(
+            type="R", work_dir=settings["DIRECTORIES_PATHS"]["work_dir"]
+        )
+
+        # retrieve quarto v-text and update it
+        quarto_v = get_util_version(
+            type="quarto", work_dir=settings["DIRECTORIES_PATHS"]["work_dir"]
+        )
+        current_text_version_label_2 = version_label_2.cget("text")
+        current_text_version_label_2 = current_text_version_label_2.replace(
+            "vX.Y.Z", "v" + quarto_v
+        )
+        version_label_2.config(text=current_text_version_label_2)
 
     def choose_file(self):
         # Functionality for "Choose Manuscript" - placeholder
@@ -570,8 +595,8 @@ class ObsidianKnittrGUI:
             pass
 
     def load_configuration(self):
-        print(
-            "load configuration to populate checkbxoes, output-types, execution-directories/last-execution/..."
+        self.logger.debug(
+            "load configuration to populate checkboxes, output-types, execution-directories/last-execution/..."
         )
         pass
 

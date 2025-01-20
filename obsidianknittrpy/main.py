@@ -5,14 +5,15 @@ import sys
 import shutil
 from obsidianknittrpy.modules.commandline import (
     common_arguments,
-    convert_parser_setup,
     parser_add_disablers,
     gui_parser_setup,
+    import_parser_setup,
 )
 from obsidianknittrpy.modules.command_handlers import (
-    handle_convert,
     handle_gui,
     handle_version,
+    handle_export,
+    handle_import,
 )
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
@@ -31,16 +32,6 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # --- 'convert' command setup ---
-    convert_parser = subparsers.add_parser(
-        "convert",
-        help="Convert a note to specified formats.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    common_arguments(convert_parser)
-    convert_parser_setup(convert_parser)
-    parser_add_disablers(convert_parser)
-
     # --- 'gui' command setup ---
     gui_parser = subparsers.add_parser(
         "gui", help="Launch GUI mode.", formatter_class=argparse.RawTextHelpFormatter
@@ -49,6 +40,16 @@ def main():
     gui_parser_setup(gui_parser)
     # --- 'version' command setup ---
     version_parser = subparsers.add_parser("version", help="Get the version.")
+    # --- 'export' command setup ---
+    export_parser = subparsers.add_parser(
+        "export", help="Using the GUI, create a configuration to execute via 'import'."
+    )
+    common_arguments(export_parser)
+    # --- 'import' command setup ---
+    import_parser = subparsers.add_parser(
+        "import", help="import a previously exported configuration."
+    )
+    import_parser = import_parser_setup(import_parser)
     args = parser.parse_args()
     if args.command == "version":
         handle_version()
@@ -77,14 +78,12 @@ def main():
         RL.add_log_location(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "creates", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "creates", RL.log_file)
-        if args["command"] == "convert":
-            # Parse pass-through arguments
-            print("implement commandline-pathway")
-            # Print all arguments in the desired format
-            # print_arguments(parsed_args)
-            handle_convert(args, pb, CH)
-        elif args["command"] == "gui":
+        if args["command"] == "gui":
             handle_gui(args, pb, CH)
+        elif args["command"] == "export":
+            handle_export(args, pb, CH)
+        elif args["command"] == "import":
+            handle_import(args, pb, CH)
         else:
             parser.print_help()
 

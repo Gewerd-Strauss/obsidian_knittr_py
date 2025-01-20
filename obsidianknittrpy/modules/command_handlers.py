@@ -28,7 +28,7 @@ import sys as sys
 import logging as logging
 
 
-def main(pb, CH, loglevel=None):
+def main(pb, CH, loglevel=None, export=False, import_=False):
     # Level = 0 > manuscript_dir > check
     # Level = -1 > true vault-root > check
     # Level > 0 = manuscript_dir - level
@@ -74,29 +74,32 @@ def main(pb, CH, loglevel=None):
         CH.applied_settings["OBSIDIAN_HTML_LIMITER"][
             "selected_limiter_is_vaultroot"
         ] = obsidian_limiter.selected_limiter_is_vaultroot
-    CH.save_last_run(CH.default_guiconfiguration_location)
-    obsidian_html = ObsidianHTML(
-        manuscript_path=CH.get_key("MANUSCRIPT", "manuscript_path"),
-        config_path=CH.default_obsidianhtmlconfiguration_location,
-        use_convert=CH.get_key("OBSIDIAN_HTML", "verb") in ["convert", True],
-        use_own_fork=CH.get_key("OBSIDIAN_HTML", "use_custom_fork"),
-        verbose=CH.get_key("OBSIDIAN_HTML", "verbose_flag"),
-        own_ohtml_fork_dir=CH.get_key("DIRECTORIES_PATHS", "own_ohtml_fork_dir"),
-        work_dir=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
-        # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
-        output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
-    )
-    obsidian_html.setup_config(RL)
+    if not export:
+        # make sure state-changes only occur when neither exporting nor importing
+        if not import_:
+            CH.save_last_run(CH.default_guiconfiguration_location)
+        obsidian_html = ObsidianHTML(
+            manuscript_path=CH.get_key("MANUSCRIPT", "manuscript_path"),
+            config_path=CH.default_obsidianhtmlconfiguration_location,
+            use_convert=CH.get_key("OBSIDIAN_HTML", "verb") in ["convert", True],
+            use_own_fork=CH.get_key("OBSIDIAN_HTML", "use_custom_fork"),
+            verbose=CH.get_key("OBSIDIAN_HTML", "verbose_flag"),
+            own_ohtml_fork_dir=CH.get_key("DIRECTORIES_PATHS", "own_ohtml_fork_dir"),
+            work_dir=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+            # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
+            output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
+        )
+        obsidian_html.setup_config(RL)
 
-    obsidian_html.run()
-    path_ = get_text_file_path(
-        obsidian_html.output["output_path"],
-    )
-    RL.log(
-        action="created",
-        module=f"{obsidian_html.__module__}.run",
-        resource=obsidian_html.output["output_path"],
-    )
+        obsidian_html.run()
+        path_ = get_text_file_path(
+            obsidian_html.output["output_path"],
+        )
+        RL.log(
+            action="created",
+            module=f"{obsidian_html.__module__}.run",
+            resource=obsidian_html.output["output_path"],
+        )
     if CH.get_key("OBSIDIAN_HTML", "limit_scope"):
         pb["objects"]["obsidian_limiter"].remove_limiter()
         if pb["objects"]["obsidian_limiter"].removed_selected_limiter_directory_success:
@@ -111,94 +114,107 @@ def main(pb, CH, loglevel=None):
                 module=f"{pb["objects"]["obsidian_limiter"].__module__}.remove_limiter",
                 resource=obsidian_limiter.selected_limiter_directory,
             )
-    arguments = {}
-    arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
-    arguments.update(CH.get_key("OBSIDIAN_HTML"))
-    arguments.update(CH.get_key("ENGINE_CONFIGURATION"))
-    pipeline = ProcessingPipeline(
-        config_file=CH.applied_pipeline,
-        arguments=arguments,
-        debug=True,
-        log_directory=os.path.normpath(
-            os.path.join(CH.get_key("DIRECTORIES_PATHS", "output_dir"), "mod")
-        ),
-        RL=RL,
-    )
-    processed_string = pipeline.run(load_text_file(path_))
-    # RL.log(action="read",module=)
-    file_strings = ""
-    if CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 1:
-        # OHTML-output-directory
-        working_directory = os.path.dirname(os.path.realpath(path_))
-    elif CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 2:
-        # Location of source-note in vault
-        working_directory = os.path.dirname(
-            os.path.realpath(CH.get_key("MANUSCRIPT", "manuscript_path"))
+    if export:
+        CH.export_config()
+    elif not export:
+        arguments = {}
+        arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
+        arguments.update(CH.get_key("OBSIDIAN_HTML"))
+        arguments.update(CH.get_key("ENGINE_CONFIGURATION"))
+        pipeline = ProcessingPipeline(
+            config_file=CH.applied_pipeline,
+            arguments=arguments,
+            debug=True,
+            log_directory=os.path.normpath(
+                os.path.join(CH.get_key("DIRECTORIES_PATHS", "output_dir"), "mod")
+            ),
+            RL=RL,
         )
-    elif False:
-        pass  # figure out how to set the rendering directory dynamically.
-
-    # Call function
-    file_strings = prepare_file_strings(
-        file_string=processed_string,
-        output_types=CH.get_key("OUTPUT_TYPE"),
-        output_format_values=CH.get_key("OUTPUT_FORMAT_VALUES"),
-    )
-    file_suffixes = prepare_file_suffixes(pb["objects"]["output_formats"])
-
-    logger__ = logging.getLogger("main")
-    if CH.get_key("GENERAL_CONFIGURATION", "render_to_outputs"):
-        # if logger__.getEffectiveLevel() <= logging.DEBUG:
-        mod_directory = os.path.normpath(
-            os.path.join(
-                os.path.dirname(
-                    obsidian_html.output["output_path"],
-                ),
-                "mod",
+        processed_string = pipeline.run(load_text_file(path_))
+        # RL.log(action="read",module=)
+        file_strings = ""
+        if CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 1:
+            # OHTML-output-directory
+            working_directory = os.path.dirname(os.path.realpath(path_))
+        elif CH.get_key("EXECUTION_DIRECTORIES", "exec_dir_selection") == 2:
+            # Location of source-note in vault
+            working_directory = os.path.dirname(
+                os.path.realpath(CH.get_key("MANUSCRIPT", "manuscript_path"))
             )
+        elif False:
+            pass  # figure out how to set the rendering directory dynamically.
+
+        # Call function
+        file_strings = prepare_file_strings(
+            file_string=processed_string,
+            output_types=CH.get_key("OUTPUT_TYPE"),
+            output_format_values=CH.get_key("OUTPUT_FORMAT_VALUES"),
         )
-        renderManager = RenderManager(
-            file_strings=file_strings,
-            custom_file_names=None,
-            debug=False,
-            file_suffixes=file_suffixes,
-            input_name=None,
-            log_level=loglevel,
-            mod_directory=mod_directory,
-            output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
-            use_parallel=CH.get_key("GENERAL_CONFIGURATION", "parallelise_rendering"),
-            parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
-            working_directory=working_directory,
-        )
-        renderManager.execute()
-        # else:
-        #     renderer = RenderingPipeline(
-        #         custom_file_names=None,
-        #         debug=False,
-        #         file_strings=file_strings,
-        #         file_suffixes=file_suffixes,
-        #         output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
-        #         log_level=loglevel,
-        #         RL=RL,
-        #     )
-        #     renderer.render(
-        #         parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
-        #         working_directory=working_directory,
-        #     )
-    pass
+        file_suffixes = prepare_file_suffixes(pb["objects"]["output_formats"])
+
+        logger__ = logging.getLogger("main")
+        if CH.get_key("GENERAL_CONFIGURATION", "render_to_outputs"):
+            # if logger__.getEffectiveLevel() <= logging.DEBUG:
+            mod_directory = os.path.normpath(
+                os.path.join(
+                    os.path.dirname(
+                        obsidian_html.output["output_path"],
+                    ),
+                    "mod",
+                )
+            )
+            renderManager = RenderManager(
+                file_strings=file_strings,
+                custom_file_names=None,
+                debug=False,
+                file_suffixes=file_suffixes,
+                input_name=None,
+                log_level=loglevel,
+                mod_directory=mod_directory,
+                output_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+                use_parallel=CH.get_key(
+                    "GENERAL_CONFIGURATION", "parallelise_rendering"
+                ),
+                parameters=CH.get_key("OUTPUT_FORMAT_VALUES"),
+                working_directory=working_directory,
+            )
+            renderManager.execute()
+        pass
 
 
-def handle_convert(args, pb, CH):
-    """Execute the convert command."""
-    print(f"Converting {args.input} to formats: {args.format}")
-    # Implement conversion logic here based on arguments
-    args = convert_format_args(args)
-    # TOOD: implement processing from GUI-classes that _is_ required, see 'handle_ot_gui_passthrough()'
-    pb, CH = handle_ot_guis(args, pb, CH)
-    main(pb)
+def handle_import(args, pb, CH):
+    """Import config-file generated by export."""
+
+    # CH.load_last_run(
+    #     last_run_path=CH.default_guiconfiguration_location
+    # )  # must be modified to point to the lastrun-path.
+    RL = ResourceLogger(log_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+    RL.log(
+        action="loaded",
+        module=f"{CH.__module__}.handle_import",
+        resource=CH.default_guiconfiguration_location,
+    )
+    CH.merge_applied_settings(args["input"])
+
+    RL.log(
+        action="loaded",
+        module=f"{CH.__module__}.handle_import",
+        resource=args["input"],
+    )
+    CH.applied_settings["GENERAL_CONFIGURATION"]["full_submit"] = True
+
+    pb, CH = handle_ot_guis(
+        args=args,
+        pb=pb,
+        CH=CH,
+        same_manuscript_chosen=True,
+        format_definitions=CH.get_config("format_definitions"),
+    )
+
+    main(pb, CH, args["loglevel"], export=False, import_=True)
 
 
-def handle_gui(args, pb, CH):
+def handle_gui(args, pb, CH, export=False, import_=False):
     """Execute the GUI command."""
 
     # setup defaults, load last-run
@@ -229,13 +245,15 @@ def handle_gui(args, pb, CH):
         file_history=CH.get_config("file_history"),
         formats=CH.get_formats(CH.get_config("format_definitions")),
         loglevel=args["loglevel"],
+        command=args["command"],
     )
     if main_gui.closed:
         sys.exit(0)
     # 3. Save file-history
     main_gui.update_filehistory(main_gui.results["manuscript"]["manuscript_path"])
     CH.file_history = main_gui.file_history
-    CH.save_file_history(CH.default_history_location)
+    if not export and not import_:
+        CH.save_file_history(CH.default_history_location)
     # 4. Merge applied settings into the storage.
     CH.merge_config_for_save(
         {"exec_dir_selection": main_gui.results["execution_directory"]},
@@ -275,7 +293,7 @@ def handle_gui(args, pb, CH):
         # 0. Load the default configuration
         # 1. Merge commandline-provided selections into it
         # 2. Determine if this manuscript is the same as the past manuscript
-        # 2.1 If it is, load the lastrun-selections over the commandline-provided and the default selections.
+        # 2.1 If it is, load the lastrun-selections **over the** commandline-provided and the default selections.
         # 2.2 If it is not, continue
         #
         # Or maybe we should apply the commandline-changes above the lastrun-changes; so that we can
@@ -292,10 +310,10 @@ def handle_gui(args, pb, CH):
         #
         # If we select the latter solution, the logic-flow is identical for both CLI and GUI modes; meaning I could simplify this significantly.
 
-        if same_manuscript_chosen:
+        if same_manuscript_chosen or export:
             CH.applied_settings["OUTPUT_FORMAT_VALUES"][format] = {}
         for arg, value in ot.arguments.items():
-            if same_manuscript_chosen:
+            if same_manuscript_chosen or export:
                 CH.applied_settings["OUTPUT_FORMAT_VALUES"][format][arg] = ot.arguments[
                     arg
                 ]["Value"]
@@ -303,7 +321,18 @@ def handle_gui(args, pb, CH):
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
 
-    main(pb, CH, args["loglevel"])
+    main(pb, CH, args["loglevel"], export=export)
+
+
+def handle_export(args, pb, CH):
+    """
+    Executes the 'export'-command.
+
+    This is just a wrapper around 'handle_gui',
+    but without executing any actual 'processing' itself
+    TODO: verify that this is state-exchangeable with 'handle_gui'.
+    """
+    handle_gui(args, pb, CH, True, False)
 
 
 def handle_version():

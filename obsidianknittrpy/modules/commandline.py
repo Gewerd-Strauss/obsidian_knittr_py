@@ -36,7 +36,7 @@ def common_arguments(parser):
     parser.add_argument(
         '--custom_format_definitions',
         default=None,
-        help="Set the logging level (default: INFO)",
+        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
     )
     # Add pass-through argument
     parser.add_argument(
@@ -148,9 +148,93 @@ def parser_add_disablers(convert_parser):
 
 def gui_parser_setup(gui_parser):
     # GUI-specific options
-    gui_parser.add_argument(
-        "--theme", choices=["light", "dark"], default="light", help="GUI theme"
+    pass
+
+
+def import_parser_setup(import_parser):
+    import_parser.add_argument(
+        "-i",
+        "--input",
+        required=False,
+        help="Path to exported configuration-file for this utility.",
     )
-    gui_parser.add_argument(
-        "--fullscreen", action="store_true", help="Launch GUI in fullscreen mode"
+    import_parser.add_argument(
+        '--custom_pipeline',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
+    )
+    import_parser.add_argument(
+        '--custom_format_definitions',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
+    )
+    import_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+    import_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        # help="""
+        # Pass-through arguments in format 'namespace::key=value'`nValid Examples:\n- "
+        # + "quarto::pdf.author=Ballos"
+        # + "\n- "
+        # + "quarto::html.author=Professor E GADD"
+        # + "\n- "
+        # + "quarto::docx.author=Zote the mighty, a knight of great renown
+        # """,
+        help="""
+Pass-through arguments in format 'namespace::key=value'
+Valid Examples:
+\t- "quarto::pdf.author=Ballos"
+\t- "quarto::html.author=Professor E GADD"
+\t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+""",
+    )
+
+
+def export_parser_setup(export_parser):
+    # EXPORT-specific options
+    export_parser.add_argument(
+        "-i",
+        "--input",
+        required=False,
+        help="Path to exported configuration-file for this utility.",
+    )
+    export_parser.add_argument(
+        '--custom_pipeline',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
+    )
+    export_parser.add_argument(
+        '--custom_format_definitions',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
+    )
+    export_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+    export_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        # help="""
+        # Pass-through arguments in format 'namespace::key=value'`nValid Examples:\n- "
+        # + "quarto::pdf.author=Ballos"
+        # + "\n- "
+        # + "quarto::html.author=Professor E GADD"
+        # + "\n- "
+        # + "quarto::docx.author=Zote the mighty, a knight of great renown
+        # """,
+        help="""
+Pass-through arguments in format 'namespace::key=value'
+Valid Examples:
+\t- "quarto::pdf.author=Ballos"
+\t- "quarto::html.author=Professor E GADD"
+\t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+""",
     )
