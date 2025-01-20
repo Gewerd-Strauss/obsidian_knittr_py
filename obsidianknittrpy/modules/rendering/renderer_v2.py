@@ -526,7 +526,7 @@ class RenderingPipeline_v2:
                 ]
                 subprocess.run(command, check=True, cwd=quart_working_directory)
                 self.logger.info(
-                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'"
+                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'."
                 )
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Failed to render {format_name} output. Error: {e}")
@@ -592,7 +592,7 @@ class MultiRenderingPipeline_v2(RenderingPipeline_v2):
             ]
             subprocess.run(command, check=True, cwd=self.working_directory)
             self.logger.info(
-                f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(self.working_directory,os.path.basename(self.output_filenames[format_name])))}'"
+                f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(self.working_directory,os.path.basename(self.output_filenames[format_name])))}'."
             )
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Failed to render {format_name} output. Error: {e}")

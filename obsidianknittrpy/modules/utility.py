@@ -1,5 +1,8 @@
 import os
 import logging
+import subprocess
+import re as re
+from obsidianknittrpy.modules.obsidian_html import ObsidianHTML
 
 
 def convert_format_args(args):
@@ -85,3 +88,55 @@ def load_text_file(file_path):
     except FileNotFoundError:
         print(f"File '{file_path}' not found.")
         return None
+
+
+def get_util_version(type=str, work_dir=""):
+    if type == "quarto":
+        command = ["quarto", "-v"]
+    elif type == "R":
+        command = ["R", "--version"]
+    elif type == "python":
+        command = ["python", "-V"]
+    elif type == "pandoc":
+        command = ["pandoc", "-v"]
+    elif type == "ohtml":
+        obsidian_html = ObsidianHTML(
+            manuscript_path=CH.get_key("MANUSCRIPT", "manuscript_path"),
+            config_path=CH.default_obsidianhtmlconfiguration_location,
+            use_convert=CH.get_key("OBSIDIAN_HTML", "verb") in ["convert", True],
+            use_own_fork=CH.get_key("OBSIDIAN_HTML", "use_custom_fork"),
+            verbose=CH.get_key("OBSIDIAN_HTML", "verbose_flag"),
+            own_ohtml_fork_dir=CH.get_key("DIRECTORIES_PATHS", "own_ohtml_fork_dir"),
+            work_dir=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
+            # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
+            output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
+        )
+        # obsidianhtml_available = self.check_obsidianhtml()
+    result = subprocess.run(
+        command,
+        check=True,
+        cwd=work_dir,
+        capture_output=True,
+        text=True,
+    )
+    result = get_util_version_sub(result=result, type=type)
+    return result
+
+
+def get_util_version_sub(result, type=""):
+    if type == "R":
+        # Try to match the version in stdout first
+        needle = r"R version (\d+\.\d+\.\d+)"
+    elif type == "python":
+        needle = r"(\d+\.\d+\.\d+)\s+"
+    elif type == "quarto":
+        needle = r"(\d+\.\d+\.\d+)\s+"
+    elif type == "pandoc":
+        needle = r"(\d+\.\d+\.\d+)"
+    match = re.search(needle, result.stdout)
+    if not match:  # If no match in stdout, try stderr
+        match = re.search(needle, result.stderr)
+    if match:
+        return match.group(1)  # Return the version number
+
+    raise ValueError("Version number not found in the output.")

@@ -282,7 +282,7 @@ class OT:
                 if value.get("Control") == "file":
                     # Check if the file exists in the SearchPath with Default as filename
                     file_path = os.path.join(value["SearchPath"], value["Default"])
-                    if not os.path.exists(file_path):
+                    if not os.path.exists(file_path) and (file_path != ""):
                         raise FileExistsError(
                             f"output_type: {self.type}\nThe default file\n'{file_path}'\ndoes not exist. No default set."
                         )
