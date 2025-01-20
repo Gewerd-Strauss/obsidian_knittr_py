@@ -377,7 +377,6 @@ class ObsidianKnittrGUI:
 
         def show_radio():
             pass
-            print(self.exec_dir_selection.get())
 
         self.root.bind("1", select_radio)
         self.root.bind("2", select_radio)
