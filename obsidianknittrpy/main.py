@@ -8,6 +8,9 @@ from obsidianknittrpy.modules.commandline import (
     parser_add_disablers,
     gui_parser_setup,
     import_parser_setup,
+    set_parser_setup,
+    unset_parser_setup,
+    list_parser_setup,
 )
 from obsidianknittrpy.modules.command_handlers import (
     handle_gui,
@@ -21,6 +24,7 @@ from obsidianknittrpy.modules.utility import (
 )
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 from obsidianknittrpy.modules.core.ConfigurationHandler import ConfigurationHandler
+from obsidianknittrpy.modules.core.ExtensionHandler import ExternalHandler
 import logging
 
 
@@ -50,8 +54,64 @@ def main():
         "import", help="import a previously exported configuration."
     )
     import_parser = import_parser_setup(import_parser)
+
+    # --- 'extension' command setup ---
+    tools_parser = subparsers.add_parser("tools", help="Manage tool configurations.")
+    tools_subparsers = tools_parser.add_subparsers(dest="action", required=True)
+
+    # 'set' subcommand
+    set_parser = tools_subparsers.add_parser("set", help="Set a tool path.")
+    set_parser = set_parser_setup(set_parser)
+
+    # 'unset' subcommand
+    unset_parser = tools_subparsers.add_parser("unset", help="Unset a tool path.")
+    unset_parser = unset_parser_setup(unset_parser)
+
+    # 'list' subcommand
+    list_parser = tools_subparsers.add_parser(
+        "list", help="List all tool configurations."
+    )
+    list_parser = list_parser_setup(list_parser)
+
     args = parser.parse_args()
-    if args.command == "version":
+
+    if args.command == "tools":
+        # Command handling
+        # 1. translate arguments
+        args = convert_format_args(args)
+        logging.basicConfig(level=args["loglevel"])
+        pb = init_picknick_basket()
+        # 2. setup config-manager
+        RL.log("main", "inits", "default config")
+        CH = ConfigurationHandler(
+            last_run_path=None, loglevel=args["loglevel"], is_gui=True
+        )
+        CH.apply_defaults()
+        # 3. setup externalHandler
+        EH = ExternalHandler(
+            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
+        )
+        if args["action"] == "set":
+            EH.set(args["key"], args["path"])
+        elif args["action"] == "unset":
+            EH.unset(args["key"])
+        elif args["action"] == "list":
+            set_tools = EH.list(unset=False)
+            unset_tools = EH.list(unset=True)
+
+            # Check if all entries in set_tools are None
+            if any(value is not None for value in set_tools.values()):
+                print("\n---\nThe following tools are set:")
+                for key, path in set_tools.items():
+                    print(f"{key}: {path}")
+
+            # Check if all entries in unset_tools are None
+            if any(value is None for value in unset_tools.values()):
+                print("\n---\nThe following tools are unset:")
+                for key, path in unset_tools.items():
+                    print(f"{key}: {path}")
+
+    elif args.command == "version":
         handle_version()
     else:
 

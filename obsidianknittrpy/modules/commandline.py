@@ -238,3 +238,66 @@ Valid Examples:
 \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
 """,
     )
+
+
+def set_parser_setup(set_parser):
+    set_parser.add_argument("key", help="The tool key (e.g., obsidian-html).")
+    set_parser.add_argument("path", help="The custom path to the tool.")
+    set_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    set_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+
+def unset_parser_setup(unset_parser):
+    unset_parser.add_argument("key", help="The tool key (e.g., obsidian-html).")
+    unset_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    unset_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+
+def list_parser_setup(list_parser):
+    list_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    list_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
