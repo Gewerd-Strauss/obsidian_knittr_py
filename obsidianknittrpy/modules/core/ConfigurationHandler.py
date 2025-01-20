@@ -51,6 +51,7 @@ class ConfigurationHandler:
         for directory in [
             self.default_settings["DIRECTORIES_PATHS"]["work_dir"],
             self.default_settings["DIRECTORIES_PATHS"]["output_dir"],
+            self.default_settings["DIRECTORIES_PATHS"]["interface_dir"],
         ]:
             if not os.path.exists(directory):
                 os.makedirs(directory, exist_ok=True)
@@ -87,6 +88,9 @@ class ConfigurationHandler:
                     os.path.join(self.application_directory, "output")
                 ),  # default equals app_dir
                 "own_ohtml_fork_dir": None,  # Must be set if `use_custom_fork` is true
+                "interface_dir": os.path.normpath(
+                    os.path.join(self.application_directory, "interface")
+                ),  # default equals app_dir
             },
             "OBSIDIAN_HTML": {
                 "verb": True,
