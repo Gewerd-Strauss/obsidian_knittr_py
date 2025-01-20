@@ -114,7 +114,6 @@ def main():
     elif args.command == "version":
         handle_version()
     else:
-
         # Command handling
         # 1. translate arguments
         args = convert_format_args(args)
@@ -126,6 +125,9 @@ def main():
             last_run_path=None, loglevel=args["loglevel"], is_gui=True
         )
         CH.apply_defaults()
+        EH = ExternalHandler(
+            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
+        )
         if args["custom_pipeline"] is not None:
             CH.load_custom_pipeline(args["custom_pipeline"])
         if args["custom_format_definitions"]:
@@ -134,10 +136,22 @@ def main():
         if os.path.exists(CH.get_key("DIRECTORIES_PATHS", "work_dir")):
             shutil.rmtree(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
             RL.log("main", "clears", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+        ohtml_work_dir = EH.get("obsidian-html")
         os.makedirs(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.add_log_location(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "creates", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "creates", RL.log_file)
+        if ohtml_work_dir is not None:
+            CH.applied_settings["DIRECTORIES_PATHS"][
+                "own_ohtml_fork_dir"
+            ] = ohtml_work_dir
+            RL.log("main", "sets", "own_ohtml_fork_dir")
+            print(
+                "TODO: we must decouple the 'own_ohtml_fork_dir' from the configuration which gets exported/used?\n"
+                + "Is this smart? The rationale behind that is that me setting a custom config key is persistent across all executios, but do I want that?"
+                + " Or should the `own_ohtml_fork_dir` actually be a commandline argument, for more flexibility? I kinda forgot going over this before implementing ExternalHandler"
+            )
+            # CH.
         if args["command"] == "gui":
             handle_gui(args, pb, CH)
         elif args["command"] == "export":
