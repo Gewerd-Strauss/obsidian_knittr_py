@@ -4,6 +4,7 @@ from obsidianknittrpy.modules.utility import (
     convert_format_args,
     load_text_file,
     get_text_file_path,
+    pre_configure_obsidianhtml_fork,
 )
 from obsidianknittrpy.modules.guis.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.obsidian_html.ObsidianHTML_Limiter import (
@@ -214,7 +215,7 @@ def handle_import(args, pb, CH):
     main(pb, CH, args["loglevel"], export=False, import_=True)
 
 
-def handle_gui(args, pb, CH, export=False, import_=False):
+def handle_gui(args, pb, CH, EH, export=False, import_=False):
     """Execute the GUI command."""
 
     # setup defaults, load last-run
@@ -224,6 +225,14 @@ def handle_gui(args, pb, CH, export=False, import_=False):
     RL = ResourceLogger(log_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"))
     RL.log(
         action="loaded",
+        module=f"{CH.__module__}.handle_gui",
+        resource=CH.default_guiconfiguration_location,
+    )
+    CH = pre_configure_obsidianhtml_fork(
+        CH, EH, args
+    )  # must be repeated as such to overwrite changes made by loading the last-run config in its entirety will overwrite previously-made changes to the state of the CH.
+    RL.log(
+        action="modifies",
         module=f"{CH.__module__}.handle_gui",
         resource=CH.default_guiconfiguration_location,
     )
@@ -324,7 +333,7 @@ def handle_gui(args, pb, CH, export=False, import_=False):
     main(pb, CH, args["loglevel"], export=export)
 
 
-def handle_export(args, pb, CH):
+def handle_export(args, pb, CH, EH):
     """
     Executes the 'export'-command.
 
@@ -332,7 +341,7 @@ def handle_export(args, pb, CH):
     but without executing any actual 'processing' itself
     TODO: verify that this is state-exchangeable with 'handle_gui'.
     """
-    handle_gui(args, pb, CH, True, False)
+    handle_gui(args, pb, CH, EH, True, False)
 
 
 def handle_version():

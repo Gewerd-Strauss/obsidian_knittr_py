@@ -5,6 +5,49 @@ import re as re
 from obsidianknittrpy.modules.obsidian_html import ObsidianHTML
 
 
+def pre_configure_obsidianhtml_fork(CH, EH, args):
+    """
+    Applies custom Obsidian-HTML path if found in either of the following places.
+    First, it looks at the External Handler, whose static data is written to the `interface`-subdirectory in the application-directory.
+    Afterwards, it looks if the commandline arguments `--OHTML.Forkpath` and `--OHTML.UseCustomFork` are provided, and applies this path if relevant.
+    Finally, if neither of the first two occur, the relevant configuration keys are unset. This ensures that the user cannot provide
+    """
+    ## handle custom OHTML fork
+    if ("obsidian-html" in EH.list()) or (
+        "OHTML.UseCustomFork" in args and args["OHTML.UseCustomFork"]
+    ):
+        if "obsidian-html" in EH.list():
+            # 1. provided by external handler.
+            # introduce the own OHTML-fork directory if set.
+            CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = EH.get(
+                "obsidian-html"
+            )
+            CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
+        if (
+            "OHTML.UseCustomFork" in args
+            and args["OHTML.UseCustomFork"]
+            and (args["OHTML.UseCustomFork"] is not None)
+        ):
+            # 2. provided by commandline-args `OHTML.UseCustomFork` and `OHTML.ForkPath`:
+            if ("OHTML.ForkPath" in args) and (
+                args["OHTML.ForkPath"] is not None
+            ):  # if fork path is provided by commandline, insert it.
+                if os.path.exists(args["OHTML.ForkPath"]):
+                    CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = (
+                        args["OHTML.ForkPath"]
+                    )
+                CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
+            else:
+                print(
+                    "TODO: issue warning: fork path not provided but required to set own-ohtml-fork-dir"
+                )
+    else:  # 3. no custom fork used. Unset related config-keys.
+        CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = False
+        CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = None
+
+    return CH
+
+
 def convert_format_args(args):
     """Execute the convert command."""
 

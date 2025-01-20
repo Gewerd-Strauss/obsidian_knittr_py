@@ -21,6 +21,7 @@ from obsidianknittrpy.modules.command_handlers import (
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
     convert_format_args,
+    pre_configure_obsidianhtml_fork,
 )
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 from obsidianknittrpy.modules.core.ConfigurationHandler import ConfigurationHandler
@@ -135,6 +136,12 @@ def main():
         EH = ExternalHandler(
             interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
         )
+
+        RL.log("main", "sets", "own_ohtml_fork_dir")
+        CH = pre_configure_obsidianhtml_fork(
+            CH, EH, args
+        )  # this must be done here to make sure that `load_`
+
         if args["custom_pipeline"] is not None:
             CH.load_custom_pipeline(args["custom_pipeline"])
         if args["custom_format_definitions"]:
@@ -143,26 +150,14 @@ def main():
         if os.path.exists(CH.get_key("DIRECTORIES_PATHS", "work_dir")):
             shutil.rmtree(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
             RL.log("main", "clears", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
-        ohtml_work_dir = EH.get("obsidian-html")
         os.makedirs(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.add_log_location(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "creates", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "creates", RL.log_file)
-        if ohtml_work_dir is not None:
-            CH.applied_settings["DIRECTORIES_PATHS"][
-                "own_ohtml_fork_dir"
-            ] = ohtml_work_dir
-            RL.log("main", "sets", "own_ohtml_fork_dir")
-            print(
-                "TODO: we must decouple the 'own_ohtml_fork_dir' from the configuration which gets exported/used?\n"
-                + "Is this smart? The rationale behind that is that me setting a custom config key is persistent across all executios, but do I want that?"
-                + " Or should the `own_ohtml_fork_dir` actually be a commandline argument, for more flexibility? I kinda forgot going over this before implementing ExternalHandler"
-            )
-            # CH.
         if args["command"] == "gui":
-            handle_gui(args, pb, CH)
+            handle_gui(args, pb, CH, EH)
         elif args["command"] == "export":
-            handle_export(args, pb, CH)
+            handle_export(args, pb, CH, EH)
         elif args["command"] == "import":
             handle_import(args, pb, CH)
         else:
