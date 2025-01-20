@@ -98,6 +98,7 @@ def main():
         elif args["action"] == "list":
             set_tools = EH.list(unset=False)
             unset_tools = EH.list(unset=True)
+            unrecognised_tools = EH.list(unrecognised=True)
 
             # Check if all entries in set_tools are None
             if any(value is not None for value in set_tools.values()):
@@ -109,6 +110,12 @@ def main():
             if any(value is None for value in unset_tools.values()):
                 print("\n---\nThe following tools are unset:")
                 for key, path in unset_tools.items():
+                    print(f"{key}: {path}")
+
+            # Check if all entries in unset_tools are None
+            if any(value is None for value in unrecognised_tools.values()):
+                print("\n---\nThe following unrecognised tools are set:")
+                for key, path in unrecognised_tools.items():
                     print(f"{key}: {path}")
 
     elif args.command == "version":

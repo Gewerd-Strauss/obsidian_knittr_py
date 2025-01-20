@@ -29,29 +29,39 @@ class ExternalHandler:
         else:
             print(f"No configuration found for '{key}'.")
 
-    def list(self, unset=False):
+    def list(self, unset=False, unrecognised=False):
         """Lists all configured keys and their paths or tools without configuration."""
         configured_tools = {}
         unconfigured_tools = set(self.configurable_tools)
+        unrecognised_tools = set()
 
+        # Check all files in the directory
         for file in os.listdir(self.interface_dir):
             if file.endswith(".yml"):
                 key = os.path.splitext(file)[0]
+                filepath = os.path.join(self.interface_dir, file)
+
                 if key in self.configurable_tools:
+                    # Handle tools that are recognized and have configuration
                     unconfigured_tools.discard(key)
-                    with open(
-                        os.path.join(self.interface_dir, file), encoding="utf-8"
-                    ) as f:
+                    with open(filepath, encoding="utf-8") as f:
                         data = yaml.safe_load(f)
                         configured_tools[key] = data.get("DIRECTORIES_PATHS", {}).get(
                             key, "(unknown path)"
                         )
+                else:
+                    # Tools that are not recognized
+                    unrecognised_tools.add(key)
 
+        # Return unconfigured tools if requested
         if unset:
-            # Return unconfigured tools
             return {key: None for key in unconfigured_tools}
 
-        # Return configured tools
+        # Return unrecognised tools if requested
+        if unrecognised:
+            return {key: None for key in unrecognised_tools}
+
+        # Return configured tools if none of the above flags are set
         return configured_tools
 
     def get(self, key):
