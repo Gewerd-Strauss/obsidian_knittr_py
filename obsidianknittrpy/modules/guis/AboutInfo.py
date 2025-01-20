@@ -84,21 +84,21 @@ class AboutInfo:
         except subprocess.CalledProcessError:
             capabilities.append("Quarto: Not installed")
 
+    def get_package_path(self, package_name):
+        package_spec = importlib.util.find_spec(package_name)
+        if package_spec is not None:
+            return os.path.dirname(package_spec.origin)
+        else:
+            return ""
+
     def get_tool_info(self):
         """Gather recognized tool info: versions and locations"""
 
         info = []
 
-        def get_package_path(package_name):
-            package_spec = importlib.util.find_spec(package_name)
-            if package_spec is not None:
-                return os.path.dirname(package_spec.origin)
-            else:
-                return ""
-
         # Example usage
         try:
-            package_path = get_package_path("obisidian_knittr_py")
+            package_path = self.get_package_path("obisidian_knittr_py")
             okpy_version = __version__
             okpy_location = os.path.dirname(os.path.abspath(__file__))
             # python_version = get_util_version(
@@ -183,7 +183,7 @@ class AboutInfo:
             ohtml_info = self.get_obsidianhtml_info()
 
             info.append(
-                f"Obsidian-HTML (default):\n  Version: {ohtml_info["default"]["version"].lower()}\n  Path: '{ohtml_info["default"]["location"].lower()}'"
+                f"Obsidian-HTML (bundled):\n  Version: {ohtml_info["default"]["version"].lower()}\n  Path: '{ohtml_info["default"]["location"].lower()}'"
             )
             if "custom" in ohtml_info:
                 if ".exe" in ohtml_info["custom"]["location"].lower():
@@ -192,7 +192,7 @@ class AboutInfo:
                     )
                 else:
                     info.append(
-                        f"Obsidian-HTML (custom, source):\n  Version: {ohtml_info["custom"]["version"].lower()}\n  Path: '{ohtml_info["custom"]["location"].lower()}'"
+                        f"Obsidian-HTML (custom, source-code):\n  Version: {ohtml_info["custom"]["version"].lower()}\n  Path: '{ohtml_info["custom"]["location"].lower()}'"
                     )
         except subprocess.CalledProcessError:
             info.append("Obsidian-HTML: Not installed")
@@ -239,7 +239,7 @@ class AboutInfo:
                 .decode()
                 .strip()
             )
-            default_obsidian_html_location = shutil.which("obsidianhtml")
+            default_obsidian_html_location = self.get_package_path("obsidianhtml")
             info["default"]["location"] = default_obsidian_html_location
             info["default"]["version"] = default_obsidian_html_version
         return info
