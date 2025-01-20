@@ -24,7 +24,7 @@ from obsidianknittrpy.modules.utility import (
 )
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 from obsidianknittrpy.modules.core.ConfigurationHandler import ConfigurationHandler
-from obsidianknittrpy.modules.core.ExtensionHandler import ExternalHandler
+from obsidianknittrpy.modules.core.ExternalHandler import ExternalHandler
 import logging
 
 
