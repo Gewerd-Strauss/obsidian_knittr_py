@@ -51,40 +51,56 @@ class ExternalHandler:
             yaml.dump(data_, f)
         print(f"Removed '{file}.{key}'.")
 
-    def list(self, unset=False, unrecognised=False):
-        """Lists all configured keys and their paths or tools without configuration."""
-        configured_tools = {}
-        unconfigured_tools = set(self.configurable_tools)
+    def list(self, file=None):
+        """Lists all tools, their configured keys, as well as unconfigured and unrecognised tools."""
+        if file is not None:
+            # Handle case where a specific file is set
+            filepath = self._get_filepath(file)
+            if os.path.exists(filepath):
+                with open(filepath, encoding="utf-8") as f:
+                    data = yaml.safe_load(f) or {}
+                print(file)
+                for key, value in data.items():
+                    print(f"    {key}: {value}")
+            else:
+                print(f"No configuration found for '{file}'.")
+            return
+
+        set_tools = {}
+        unset_tools = set(self.configurable_tools)
         unrecognised_tools = set()
 
-        # Check all files in the directory
-        for file in os.listdir(self.interface_dir):
-            if file.endswith(".yml"):
-                key = os.path.splitext(file)[0]
-                filepath = os.path.join(self.interface_dir, file)
+        # Iterate through all YAML files in the directory
+        for filename in os.listdir(self.interface_dir):
+            if filename.endswith(".yml"):
+                tool = os.path.splitext(filename)[0]
+                filepath = os.path.join(self.interface_dir, filename)
+                with open(filepath, encoding="utf-8") as f:
+                    data = yaml.safe_load(f) or {}
 
-                if key in self.configurable_tools:
-                    # Handle tools that are recognized and have configuration
-                    unconfigured_tools.discard(key)
-                    with open(filepath, encoding="utf-8") as f:
-                        data = yaml.safe_load(f)
-                        configured_tools[key] = data.get("DIRECTORIES_PATHS", {}).get(
-                            key, "(unknown path)"
-                        )
+                if tool in self.configurable_tools:
+                    unset_tools.discard(tool)
+                    set_tools[tool] = data
                 else:
-                    # Tools that are not recognized
-                    unrecognised_tools.add(key)
+                    unrecognised_tools.add(tool)
 
-        # Return unconfigured tools if requested
-        if unset:
-            return {key: None for key in unconfigured_tools}
+        # Print Set tools
+        print("Set tools")
+        for tool, config in set_tools.items():
+            print(f"    {tool}")
+            if file is not None:
+                for key, value in config.items():
+                    print(f"        {key}: {value}")
 
-        # Return unrecognised tools if requested
-        if unrecognised:
-            return {key: None for key in unrecognised_tools}
+        # Print Unset tools
+        print("\nUnset tools")
+        for tool in unset_tools:
+            print(f"    {tool}")
 
-        # Return configured tools if none of the above flags are set
-        return configured_tools
+        # Print Unrecognised tools
+        print("\nUnrecognised tools")
+        for tool in unrecognised_tools:
+            print(f"    {tool}")
 
     def get(self, key):
         """Gets the path for a specific key."""
