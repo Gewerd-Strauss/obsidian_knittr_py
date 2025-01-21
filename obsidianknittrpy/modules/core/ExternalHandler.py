@@ -50,6 +50,9 @@ class ExternalHandler:
         with open(filepath, "w", encoding="utf-8") as f:
             yaml.dump(data_, f)
         print(f"Removed '{file}.{key}'.")
+        if len(data_) == 0:
+            os.remove(filepath)
+            print(f"Removed '{file}'.")
 
     def list(self, file=None):
         """Lists all tools, their configured keys, as well as unconfigured and unrecognised tools."""
