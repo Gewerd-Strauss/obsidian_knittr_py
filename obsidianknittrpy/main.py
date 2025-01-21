@@ -11,6 +11,7 @@ from obsidianknittrpy.modules.commandline import (
     set_parser_setup,
     unset_parser_setup,
     list_parser_setup,
+    openlist_parser_setup,
 )
 from obsidianknittrpy.modules.command_handlers import (
     handle_gui,
@@ -74,6 +75,11 @@ def main():
     )
     list_parser = list_parser_setup(list_parser)
 
+    # 'openlist' subcommand
+    openlist_parser = subparsers.add_parser(
+        "open", help="Trigger the open action. must be elaborated upon"
+    )
+    openlist_parser = openlist_parser_setup(openlist_parser)
     args = parser.parse_args()
 
     if args.command == "tools":
