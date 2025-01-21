@@ -4,8 +4,10 @@ import os
 import sys
 import logging as logging
 from obsidianknittrpy.modules.utility import get_util_version
+from obsidianknittrpy.modules.obsidian_html.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy import __version__, __author__
 import importlib.util
+import shutil as shutil
 
 
 class AboutInfo:
@@ -82,21 +84,21 @@ class AboutInfo:
         except subprocess.CalledProcessError:
             capabilities.append("Quarto: Not installed")
 
+    def get_package_path(self, package_name):
+        package_spec = importlib.util.find_spec(package_name)
+        if package_spec is not None:
+            return os.path.dirname(package_spec.origin)
+        else:
+            return ""
+
     def get_tool_info(self):
         """Gather recognized tool info: versions and locations"""
 
         info = []
 
-        def get_package_path(package_name):
-            package_spec = importlib.util.find_spec(package_name)
-            if package_spec is not None:
-                return os.path.dirname(package_spec.origin)
-            else:
-                return ""
-
         # Example usage
         try:
-            package_path = get_package_path("obisidian_knittr_py")
+            package_path = self.get_package_path("obisidian_knittr_py")
             okpy_version = __version__
             okpy_location = os.path.dirname(os.path.abspath(__file__))
             # python_version = get_util_version(
@@ -179,9 +181,19 @@ class AboutInfo:
         # Obsidian HTML (Assuming it's some kind of software installed)
         try:
             ohtml_info = self.get_obsidianhtml_info()
+
             info.append(
-                f"Obsidian-HTML:\n  Version: {ohtml_info}\n  Path: '{ohtml_info}'"
+                f"Obsidian-HTML (bundled):\n  Version: {ohtml_info["default"]["version"].lower()}\n  Path: '{ohtml_info["default"]["location"].lower()}'"
             )
+            if "custom" in ohtml_info:
+                if ".exe" in ohtml_info["custom"]["location"].lower():
+                    info.append(
+                        f"Obsidian-HTML (custom, compiled):\n  Version: {ohtml_info["custom"]["version"].lower()}\n  Path: '{ohtml_info["custom"]["location"].lower()}'"
+                    )
+                else:
+                    info.append(
+                        f"Obsidian-HTML (custom, source-code):\n  Version: {ohtml_info["custom"]["version"].lower()}\n  Path: '{ohtml_info["custom"]["location"].lower()}'"
+                    )
         except subprocess.CalledProcessError:
             info.append("Obsidian-HTML: Not installed")
         self.logger.debug(info)
@@ -192,20 +204,42 @@ class AboutInfo:
         Special handler to retrieve version of obsidian_html used - since it can be run with a custom ohtml-path provided
         """
         print("TODO: write OHTML_version_getter for AboutInfo-GUI")
-        # try:
-        #     obsidian_html_version = (
-        #         subprocess.check_output(
-        #             ["obsidian-html", "--version"], stderr=subprocess.STDOUT
-        #         )
-        #         .decode()
-        #         .strip()
-        #     )
-        #     obsidian_html_location = (
-        #         subprocess.check_output(["which", "obsidian-html"]).decode().strip()
-        #     )
-        #     info.append(
-        #         f"Obsidian HTML: {obsidian_html_version} ({obsidian_html_location})"
-        #     )
-        # except subprocess.CalledProcessError:
-        #     info.append("Obsidian HTML: Not installed")
-        pass
+        info = {}
+        info["custom"] = {}
+        info["default"] = {}
+        isset_own_obsidian_html = (
+            "own_ohtml_fork_dir" in self.settings["DIRECTORIES_PATHS"]
+        )
+        if isset_own_obsidian_html:
+            # custom fork is declared.
+            # Thus, get its path and version
+            # Afterwards, also get the default path and version
+            own_obsidian_html_location = self.settings["DIRECTORIES_PATHS"][
+                "own_ohtml_fork_dir"
+            ]
+            own_obsidian_html_version = (
+                subprocess.check_output(
+                    ["python", "-m" "obsidianhtml", "version"],
+                    stderr=subprocess.PIPE,
+                )
+                .decode()
+                .strip()
+            )
+            info["custom"]["location"] = own_obsidian_html_location
+            info["custom"]["version"] = own_obsidian_html_version
+
+        which_obsidianhtml = shutil.which('obsidianhtml')
+
+        isset_default_obsidian_html = "obsidianhtml.exe" in which_obsidianhtml.lower()
+        if isset_default_obsidian_html:
+            default_obsidian_html_version = (
+                subprocess.check_output(
+                    ["obsidianhtml", "version"], stderr=subprocess.STDOUT
+                )
+                .decode()
+                .strip()
+            )
+            default_obsidian_html_location = self.get_package_path("obsidianhtml")
+            info["default"]["location"] = default_obsidian_html_location
+            info["default"]["version"] = default_obsidian_html_version
+        return info

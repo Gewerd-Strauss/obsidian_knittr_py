@@ -8,6 +8,9 @@ from obsidianknittrpy.modules.commandline import (
     parser_add_disablers,
     gui_parser_setup,
     import_parser_setup,
+    set_parser_setup,
+    unset_parser_setup,
+    list_parser_setup,
 )
 from obsidianknittrpy.modules.command_handlers import (
     handle_gui,
@@ -18,9 +21,11 @@ from obsidianknittrpy.modules.command_handlers import (
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
     convert_format_args,
+    pre_configure_obsidianhtml_fork,
 )
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 from obsidianknittrpy.modules.core.ConfigurationHandler import ConfigurationHandler
+from obsidianknittrpy.modules.core.ExternalHandler import ExternalHandler
 import logging
 
 
@@ -50,11 +55,28 @@ def main():
         "import", help="import a previously exported configuration."
     )
     import_parser = import_parser_setup(import_parser)
-    args = parser.parse_args()
-    if args.command == "version":
-        handle_version()
-    else:
 
+    # --- 'extension' command setup ---
+    tools_parser = subparsers.add_parser("tools", help="Manage tool configurations.")
+    tools_subparsers = tools_parser.add_subparsers(dest="action", required=True)
+
+    # 'set' subcommand
+    set_parser = tools_subparsers.add_parser("set", help="Set a tool path.")
+    set_parser = set_parser_setup(set_parser)
+
+    # 'unset' subcommand
+    unset_parser = tools_subparsers.add_parser("unset", help="Unset a tool path.")
+    unset_parser = unset_parser_setup(unset_parser)
+
+    # 'list' subcommand
+    list_parser = tools_subparsers.add_parser(
+        "list", help="List all tool configurations."
+    )
+    list_parser = list_parser_setup(list_parser)
+
+    args = parser.parse_args()
+
+    if args.command == "tools":
         # Command handling
         # 1. translate arguments
         args = convert_format_args(args)
@@ -66,6 +88,39 @@ def main():
             last_run_path=None, loglevel=args["loglevel"], is_gui=True
         )
         CH.apply_defaults()
+        # 3. setup externalHandler
+        EH = ExternalHandler(
+            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
+        )
+        if args["action"] == "set":
+            EH.set(args["file"], args["key"], args["value"])
+        elif args["action"] == "unset":
+            EH.unset(args["file"], args["key"])
+        elif args["action"] == "list":
+            EH.list(file=args["file"])
+    elif args.command == "version":
+        handle_version()
+    else:
+        # Command handling
+        # 1. translate arguments
+        args = convert_format_args(args)
+        logging.basicConfig(level=args["loglevel"])
+        pb = init_picknick_basket()
+        # 2. setup config-manager
+        RL.log("main", "inits", "default config")
+        CH = ConfigurationHandler(
+            last_run_path=None, loglevel=args["loglevel"], is_gui=True
+        )
+        CH.apply_defaults()
+        EH = ExternalHandler(
+            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
+        )
+
+        RL.log("main", "sets", "own_ohtml_fork_dir")
+        CH = pre_configure_obsidianhtml_fork(
+            CH, EH, args
+        )  # this must be done here to make sure that `load_`
+
         if args["custom_pipeline"] is not None:
             CH.load_custom_pipeline(args["custom_pipeline"])
         if args["custom_format_definitions"]:
@@ -79,9 +134,9 @@ def main():
         RL.log("main", "creates", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
         RL.log("main", "creates", RL.log_file)
         if args["command"] == "gui":
-            handle_gui(args, pb, CH)
+            handle_gui(args, pb, CH, EH)
         elif args["command"] == "export":
-            handle_export(args, pb, CH)
+            handle_export(args, pb, CH, EH)
         elif args["command"] == "import":
             handle_import(args, pb, CH)
         else:
