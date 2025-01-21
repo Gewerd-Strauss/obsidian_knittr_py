@@ -241,8 +241,12 @@ Valid Examples:
 
 
 def set_parser_setup(set_parser):
-    set_parser.add_argument("key", help="The tool key (e.g., obsidian-html).")
-    set_parser.add_argument("path", help="The custom path to the tool.")
+    set_parser.add_argument(
+        "file", help="The file of the key-value-pair (e.g., obsidian-html)."
+    )
+    set_parser.add_argument("key", help="The key (e.g., obsidian-html).")
+    # set_parser.add_argument("path", help="The custom path to the tool.")
+    set_parser.add_argument("value", help="The value to associate with the 'key'.")
     set_parser.add_argument(
         "pass_through",
         nargs="*",
@@ -263,7 +267,10 @@ def set_parser_setup(set_parser):
 
 
 def unset_parser_setup(unset_parser):
-    unset_parser.add_argument("key", help="The tool key (e.g., obsidian-html).")
+    unset_parser.add_argument(
+        "file", help="The file of the key-value-pair (e.g., obsidian-html)."
+    )
+    unset_parser.add_argument("key", help="The key (e.g., obsidian-html).")
     unset_parser.add_argument(
         "pass_through",
         nargs="*",

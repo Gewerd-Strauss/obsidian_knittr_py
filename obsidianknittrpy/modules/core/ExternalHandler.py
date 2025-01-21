@@ -1,6 +1,7 @@
 import argparse
 import os
 import yaml
+from pathlib import Path
 
 
 class ExternalHandler:
@@ -12,25 +13,33 @@ class ExternalHandler:
     def _get_filepath(self, key):
         return os.path.join(self.interface_dir, f"{key}.yml")
 
-    def set(self, key, path):
-        """Sets the path for a given key."""
-        if os.path.exists(path):
-            filepath = self._get_filepath(key)
-            data = {"DIRECTORIES_PATHS": {key: path}}
-            with open(filepath, "w", encoding="utf-8") as f:
-                yaml.dump(data, f)
-            print(f"Set path for '{key}' to '{path}'.")
-        else:
-            print(f"Path '{path}' does not point to a valid target.")
+    def is_path(self, value):
+        # Check if value is a string and represents an existing path
+        return isinstance(value, str) and (
+            os.path.exists(value) or Path(value).exists()
+        )
 
-    def unset(self, key):
+    def set(self, file, key, value):
+        """Sets the path for a given key."""
+
+        filepath = self._get_filepath(file)
+        # if self.is_path(value):
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        data[key] = value
+        with open(filepath, "w", encoding="utf-8") as f:
+            yaml.dump(data, f)
+        print(f"Set '{file}.{key}' to '{value}'.")
+
+    def unset(self, file, key):
         """Removes the configuration for a given key."""
-        filepath = self._get_filepath(key)
-        if os.path.exists(filepath):
-            os.remove(filepath)
-            print(f"Unset path for '{key}'.")
-        else:
-            print(f"No configuration found for '{key}'.")
+        filepath = self._get_filepath(file)
+        with open(filepath, "r", encoding="utf-8") as f:
+            data_ = yaml.safe_load(f)  # get the data
+            data_.pop(key, None)
+        with open(filepath, "w", encoding="utf-8") as f:
+            yaml.dump(data_, f)
+        print(f"Removed '{file}.{key}'.")
 
     def list(self, unset=False, unrecognised=False):
         """Lists all configured keys and their paths or tools without configuration."""
