@@ -30,8 +30,7 @@ class ExternalHandler:
         """Sets the path for a given key."""
 
         filepath = self._get_filepath(file)
-        # if self.is_path(value):
-        if not os.path.exists(filepath):
+        if not os.path.exists(filepath):  # create file if not existent
             with open(filepath, "w", encoding="utf-8") as f:
                 yaml.dump({}, f)
         with open(filepath, "r", encoding="utf-8") as f:
@@ -44,15 +43,18 @@ class ExternalHandler:
     def unset(self, file, key):
         """Removes the configuration for a given key."""
         filepath = self._get_filepath(file)
-        with open(filepath, "r", encoding="utf-8") as f:
-            data_ = yaml.safe_load(f)  # get the data
-            data_.pop(key, None)
-        with open(filepath, "w", encoding="utf-8") as f:
-            yaml.dump(data_, f)
-        print(f"Removed '{file}.{key}'.")
-        if len(data_) == 0:
-            os.remove(filepath)
-            print(f"Removed '{file}'.")
+        if os.path.exists(filepath):
+            with open(filepath, "r", encoding="utf-8") as f:
+                data_ = yaml.safe_load(f)  # get the data
+                data_.pop(key, None)
+            with open(filepath, "w", encoding="utf-8") as f:
+                yaml.dump(data_, f)
+            print(f"Removed '{file}.{key}'.")
+            if len(data_) == 0:
+                os.remove(filepath)
+                print(f"Removed '{file}'.")
+        else:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
 
     def list(self, file=None, return_type=None):
         """Lists all tools, their configured keys, as well as unconfigured and unrecognised tools."""
