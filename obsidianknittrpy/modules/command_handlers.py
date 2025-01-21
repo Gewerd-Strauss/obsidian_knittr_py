@@ -308,7 +308,6 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
         main_gui.results["engine_configurations"], "ENGINE_CONFIGURATION"
     )
     # >> manuscript-section is saved in file-history, not here
-    # CH.merge_config_for_save(main_gui.results["manuscript"], "manuscript")
     CH.applied_settings["OUTPUT_TYPE"] = main_gui.results["output_type"]
     # 3. when main GUI submits, parse the selected formats and launch the OT-guis
     # for result in main_gui.results["general_configuration"].items():
@@ -317,7 +316,6 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
         CH.applied_settings["MANUSCRIPT"] == main_gui.results["manuscript"]
     )
     CH.applied_settings["MANUSCRIPT"] = main_gui.results["manuscript"]
-    # CH.applied_settings[]
     pb, CH = handle_ot_guis(
         args=args,
         pb=pb,

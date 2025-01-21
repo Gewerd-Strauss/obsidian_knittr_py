@@ -84,6 +84,8 @@ def main():
     args = parser.parse_args()
     if args.command is None:
         parser.print_help()
+    elif args.command == "version":
+        handle_version()
     elif args.command == "tools":
         # Command handling
         # 1. translate arguments
@@ -106,8 +108,6 @@ def main():
             EH.unset(args["file"], args["key"])
         elif args["action"] == "list":
             EH.list(file=args["file"])
-    elif args.command == "version":
-        handle_version()
     else:
         # Command handling
         # 1. translate arguments
