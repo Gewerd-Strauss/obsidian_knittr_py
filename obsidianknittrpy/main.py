@@ -82,8 +82,9 @@ def main():
     )
     openlist_parser = openlist_parser_setup(openlist_parser)
     args = parser.parse_args()
-
-    if args.command == "tools":
+    if args.command is None:
+        parser.print_help()
+    elif args.command == "tools":
         # Command handling
         # 1. translate arguments
         args = convert_format_args(args)
