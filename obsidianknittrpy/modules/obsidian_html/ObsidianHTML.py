@@ -5,6 +5,7 @@ import shutil
 import yaml
 import importlib.util
 import logging
+import obsidianhtml  # this is an alibi-import so that pipreqs will find it when building the 'requirements.txt'-file for the package.
 
 
 class ObsidianHTML:
