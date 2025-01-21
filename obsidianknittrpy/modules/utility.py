@@ -5,6 +5,49 @@ import re as re
 from obsidianknittrpy.modules.obsidian_html import ObsidianHTML
 
 
+def pre_configure_obsidianhtml_fork(CH, EH, args):
+    """
+    Applies custom Obsidian-HTML path if found in either of the following places.
+    First, it looks at the External Handler, whose static data is written to the `interface`-subdirectory in the application-directory.
+    Afterwards, it looks if the commandline arguments `--OHTML.Forkpath` and `--OHTML.UseCustomFork` are provided, and applies this path if relevant.
+    Finally, if neither of the first two occur, the relevant configuration keys are unset. This ensures that the user cannot provide
+    """
+    ## handle custom OHTML fork
+    if ("obsidian-html" in EH.list(return_type="set")) or (
+        "OHTML.UseCustomFork" in args and args["OHTML.UseCustomFork"]
+    ):
+        if "obsidian-html" in EH.list(return_type="set"):
+            # 1. provided by external handler.
+            # introduce the own OHTML-fork directory if set.
+            CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = EH.get(
+                "obsidian-html", "path"
+            )
+            CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
+        if (
+            ("OHTML.UseCustomFork" in args)
+            and args["OHTML.UseCustomFork"]
+            and (args["OHTML.UseCustomFork"] is not None)
+        ):
+            # 2. provided by commandline-args `OHTML.UseCustomFork` and `OHTML.ForkPath`:
+            if ("OHTML.ForkPath" in args) and (
+                args["OHTML.ForkPath"] is not None
+            ):  # if fork path is provided by commandline, insert it.
+                if os.path.exists(args["OHTML.ForkPath"]):
+                    CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = (
+                        args["OHTML.ForkPath"]
+                    )
+                CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
+            else:
+                print(
+                    "TODO: issue warning: fork path not provided but required to set own-ohtml-fork-dir"
+                )
+    else:  # 3. no custom fork used. Unset related config-keys.
+        CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = False
+        CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = None
+
+    return CH
+
+
 def convert_format_args(args):
     """Execute the convert command."""
 
@@ -12,28 +55,33 @@ def convert_format_args(args):
     arguments = {}
 
     # Handle pass-through arguments
-    if args.pass_through:
-        for item in args.pass_through:
-            if "::" in item and "=" in item:
-                key, value = item.split("=", 1)
-                arguments[key.strip()] = value.strip()
-            else:
-                # Here, we can just store the item as is
-                arguments[item.strip()] = (
-                    ""  # Assuming you want an empty value for other pass-through items
-                )
+    try:
+        if args.pass_through:
+            for item in args.pass_through:
+                if "::" in item and "=" in item:
+                    key, value = item.split("=", 1)
+                    arguments[key.strip()] = value.strip()
+                else:
+                    # Here, we can just store the item as is
+                    arguments[item.strip()] = (
+                        ""  # Assuming you want an empty value for other pass-through items
+                    )
+    finally:  # necessary to allow the ExtensionHandler set/unset/list methods to bypass without erroring.
+        pass
+    try:
+        # Add other arguments to the dictionary
+        for key, value in vars(
+            args
+        ).items():  # Use vars() to convert Namespace to dictionary
+            if key != "pass_through":  # Skip pass_through since it's already handled
+                arguments[key] = value  # Add each argument to the dictionary
 
-    # Add other arguments to the dictionary
-    for key, value in vars(
-        args
-    ).items():  # Use vars() to convert Namespace to dictionary
-        if key != "pass_through":  # Skip pass_through since it's already handled
-            arguments[key] = value  # Add each argument to the dictionary
-
-    # Print all arguments in the specified format
-    logging.debug("Formatted Arguments:")
-    for k, v in arguments.items():
-        logging.debug(f'["{k}"] = "{v}"')
+        # Print all arguments in the specified format
+        logging.debug("Formatted Arguments:")
+        for k, v in arguments.items():
+            logging.debug(f'["{k}"] = "{v}"')
+    finally:  # necessary to allow the ExtensionHandler set/unset/list methods to bypass without erroring.
+        pass
 
     return arguments
 
@@ -108,7 +156,6 @@ def get_util_version(type=str, work_dir=""):
             verbose=CH.get_key("OBSIDIAN_HTML", "verbose_flag"),
             own_ohtml_fork_dir=CH.get_key("DIRECTORIES_PATHS", "own_ohtml_fork_dir"),
             work_dir=CH.get_key("DIRECTORIES_PATHS", "work_dir"),
-            # work_dir=r"D:\Dokumente neu\Repositories\python\obsidian-html",
             output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
         )
         # obsidianhtml_available = self.check_obsidianhtml()
