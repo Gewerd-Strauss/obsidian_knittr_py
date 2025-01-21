@@ -340,7 +340,6 @@ class ObsidianHTML_Limiter:
                 id = self.tree.insert(id, "end", text=path, open=True)
             Levels.append(id)
 
-            # self.add_subdirectories(path_id, path, level)
             level = level + 1
 
     def assemble_tv_string(array):
@@ -370,16 +369,11 @@ class ObsidianHTML_Limiter:
             # Check if the directory contains the .obsidian folder
             if os.path.isdir(obsidian_check_path):
                 obsidian_vault_path = obsidian_check_path
-                # if stack:
-                # last_item = stack.pop()  # Remove last item if stack is not empty
-                # cap_path = os.path.join(path, last_item)
                 stack.appendleft(path)
                 return obsidian_vault_path, list(stack)
 
             # If we have reached the root directory, stop the search
             parent_dir = path
-            # if path == parent_dir:
-            #     return None  # Root reached, vault not found
 
             # Move up one directory level
             if parent_dir not in stack:  # Avoid circular appending
@@ -414,7 +408,7 @@ def check_new(instance, iid):
     instance.selected_limiter_directory = limiter_directory
     # 'iid' here  basically makes it free for me to assemble the path-string, as long
     # as I can determine if I can clean out the dots properly. If that is the case, I could just self-assign
-    # `self.tv_selection_string = iid``
+    # `self.tv_selection_string = iid`
     # and then parse out the dots to get my selected path during submission.
     instance.selected_limiter_is_vaultroot = (
         limiter_directory == instance.directory_structure[0]

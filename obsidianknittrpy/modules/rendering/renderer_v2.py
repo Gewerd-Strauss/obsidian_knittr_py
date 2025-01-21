@@ -350,6 +350,10 @@ class RenderManager:
         )
         start_time = time.time()
         pipeline.run()
+        self.output_data = {
+            "rendered_output_paths": pipeline.rendered_output_paths,
+            "rendered_output_directory": pipeline.rendered_output_directory,
+        }
         end_time = time.time()
         self.resource_logger.log(
             action="exec-time",
@@ -397,6 +401,7 @@ class RenderingPipeline_v2:
         self.debug = debug
         self.working_directory = working_directory
         self.yaml_file_paths = yaml_files
+        self.rendered_output_paths = {}
 
         # Set up logging
         self.logger = logging.getLogger(__name__)
@@ -525,9 +530,15 @@ class RenderingPipeline_v2:
                     os.path.basename(output_file_path),
                 ]
                 subprocess.run(command, check=True, cwd=quart_working_directory)
-                self.logger.info(
-                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'."
+                abs_output_path = os.path.normpath(
+                    os.path.join(
+                        quart_working_directory, os.path.basename(output_file_path)
+                    )
                 )
+                self.logger.info(
+                    f"Rendered {format_name} output to: '{abs_output_path}'."
+                )
+                self.rendered_output_paths[format_name] = abs_output_path
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Failed to render {format_name} output. Error: {e}")
 
@@ -572,6 +583,17 @@ class MultiRenderingPipeline_v2(RenderingPipeline_v2):
             for future in futures:
                 future.result()
 
+        dirs = []
+        for (
+            format_name,
+            file_path,
+        ) in self.rendered_output_paths.items():  # retrieve uniform dirname
+            dir_name = os.path.dirname(file_path)
+            dirs.append(dir_name)
+
+        if len(set(dirs)) <= 1:  # check if all elements are identical
+            self.rendered_output_directory = dirs[0]
+
     def futures_render(self, format_name):
         """Combines YAML generation and rendering for parallel execution."""
         # yaml_file_path = self.yamlialize(parameters, format_name)
@@ -591,8 +613,13 @@ class MultiRenderingPipeline_v2(RenderingPipeline_v2):
                 os.path.basename(self.output_filenames[format_name]),
             ]
             subprocess.run(command, check=True, cwd=self.working_directory)
-            self.logger.info(
-                f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(self.working_directory,os.path.basename(self.output_filenames[format_name])))}'."
+            abs_output_path = os.path.normpath(
+                os.path.join(
+                    self.working_directory,
+                    os.path.basename(self.output_filenames[format_name]),
+                )
             )
+            self.logger.info(f"Rendered {format_name} output to: '{abs_output_path}'.")
+            self.rendered_output_paths[format_name] = abs_output_path
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Failed to render {format_name} output. Error: {e}")

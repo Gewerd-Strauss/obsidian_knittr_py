@@ -38,6 +38,7 @@ class RenderingPipeline:
         self.custom_file_names = custom_file_names if custom_file_names else {}
         self.debug = debug
         self.RL = RL
+        self.rendered_output_paths = {}
 
         # Set up logging
         self.logger = logging.getLogger(__name__)
@@ -203,9 +204,15 @@ class RenderingPipeline:
                     os.path.basename(output_file_path),
                 ]
                 subprocess.run(command, check=True, cwd=quart_working_directory)
-                self.logger.info(
-                    f"Rendered {format_name} output to: '{os.path.normpath(os.path.join(quart_working_directory,os.path.basename(output_file_path)))}'."
+                abs_output_path = os.path.normpath(
+                    os.path.join(
+                        quart_working_directory, os.path.basename(output_file_path)
+                    )
                 )
+                self.logger.info(
+                    f"Rendered {format_name} output to: '{abs_output_path}'."
+                )
+                self.rendered_output_paths[format_name] = abs_output_path
                 self.RL.log(
                     self.__class__.__module__
                     + "."

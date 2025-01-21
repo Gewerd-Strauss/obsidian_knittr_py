@@ -2,6 +2,7 @@ import os
 import logging
 import subprocess
 import re as re
+import sys
 from obsidianknittrpy.modules.obsidian_html import ObsidianHTML
 
 
@@ -187,3 +188,16 @@ def get_util_version_sub(result, type=""):
         return match.group(1)  # Return the version number
 
     raise ValueError("Version number not found in the output.")
+
+
+def open_folder(folder_path):
+    """opens a directory-path on windows, macos and linux/unix"""
+    if sys.platform == "win32":
+        # Windows
+        subprocess.run(["explorer", folder_path])
+    elif sys.platform == "darwin":
+        # macOS
+        subprocess.run(["open", folder_path])
+    else:
+        # Linux or other Unix-like systems
+        subprocess.run(["xdg-open", folder_path])

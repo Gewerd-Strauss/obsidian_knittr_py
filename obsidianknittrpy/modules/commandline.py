@@ -266,6 +266,36 @@ def set_parser_setup(set_parser):
     )
 
 
+def openlist_parser_setup(openlist_parser):
+    openlist_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    openlist_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+    openlist_parser.add_argument(
+        '--custom_pipeline',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
+    )
+    openlist_parser.add_argument(
+        '--custom_format_definitions',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
+    )
+
+
 def unset_parser_setup(unset_parser):
     unset_parser.add_argument(
         "file", help="The file of the key-value-pair (e.g., obsidian-html)."
