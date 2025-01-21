@@ -68,7 +68,9 @@ class ExternalHandler:
                 for key, value in data.items():
                     print(f"    {key}: {value}")
             else:
-                raise FileNotFoundError(f"File '{filepath}' does not exist.")
+                raise FileNotFoundError(
+                    f"File '{filepath}' does not exist. Please declare a configuration-file for '{file}' and populate it using the 'set'-verb before attempting to list its entries."
+                )
             return
 
         set_tools = {}
