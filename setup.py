@@ -10,7 +10,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "your_command=your_module.your_module_file:main",  # Replace with your entry point
+            "obsidianknittrpy=obsidianknittrpy.main:main",  # Replace with your entry point
+            "okpy=obsidianknittrpy.main:main",  # Replace with your entry point
         ],
     },
     author="Gewerd Strauss",
