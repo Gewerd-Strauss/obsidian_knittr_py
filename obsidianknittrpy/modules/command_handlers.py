@@ -209,6 +209,10 @@ def handle_openlist(args, pb, CH):
         print(f"and now, we can open '{yml_data["directory"]}'")
         if os.path.exists(yml_data["directory"]):
             open_folder(yml_data["directory"])
+    else:
+        raise FileNotFoundError(
+            f"Information about the previous rendering were already deleted.\nReason: The working-directory has been cleaned after the last time this utility rendered any documents.\n- Did you use the verb 'export'?\n- Did you use the verb 'gui' (without rendering to output-targets)?"
+        )
 
 
 def handle_import(args, pb, CH):
