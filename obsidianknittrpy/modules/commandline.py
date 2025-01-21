@@ -292,6 +292,9 @@ def unset_parser_setup(unset_parser):
 
 def list_parser_setup(list_parser):
     list_parser.add_argument(
+        "file", nargs="?", help="The file of the key-value-pair (e.g., obsidian-html)."
+    )
+    list_parser.add_argument(
         "pass_through",
         nargs="*",
         help="""

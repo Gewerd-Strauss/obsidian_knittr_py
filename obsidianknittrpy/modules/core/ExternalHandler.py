@@ -5,6 +5,13 @@ from pathlib import Path
 
 
 class ExternalHandler:
+    """
+    This class handles the pre-loading of external dependencies (paths).
+
+    It does _not_ handle the implementation of said dependencies in the
+    processing-code within `main()`/`handle_x()`.
+    """
+
     def __init__(self, interface_dir):
         self.interface_dir = interface_dir
         os.makedirs(self.interface_dir, exist_ok=True)
@@ -24,6 +31,9 @@ class ExternalHandler:
 
         filepath = self._get_filepath(file)
         # if self.is_path(value):
+        if not os.path.exists(filepath):
+            with open(filepath, "w", encoding="utf-8") as f:
+                yaml.dump({}, f)
         with open(filepath, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
         data[key] = value

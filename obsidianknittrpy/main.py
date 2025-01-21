@@ -93,9 +93,9 @@ def main():
             interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
         )
         if args["action"] == "set":
-            EH.set(args["key"], args["path"])
+            EH.set(args["file"], args["key"], args["value"])
         elif args["action"] == "unset":
-            EH.unset(args["key"])
+            EH.unset(args["file"], args["key"])
         elif args["action"] == "list":
             set_tools = EH.list(unset=False)
             unset_tools = EH.list(unset=True)
