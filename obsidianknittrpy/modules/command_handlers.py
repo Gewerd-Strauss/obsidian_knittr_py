@@ -11,6 +11,7 @@ from obsidianknittrpy.modules.obsidian_html.ObsidianHTML_Limiter import (
     ObsidianHTML_Limiter,
 )
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
+from obsidianknittrpy.modules.core.ExternalHandler import ExternalHandler
 from obsidianknittrpy.modules.obsidian_html.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
@@ -180,7 +181,20 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
                 working_directory=working_directory,
             )
             renderManager.execute()
-        pass
+            # and store the output directory in a config-file to be openable afterwards.
+            OH = ExternalHandler(
+                interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir")
+            )
+            OH.set(
+                "output-data",
+                "directory",
+                renderManager.output_data["rendered_output_directory"],
+            )
+            RL.log(
+                action="created",
+                module=f"{OH.__module__}.set",
+                resource=OH._get_filepath("output-data"),
+            )
 
 
 def handle_import(args, pb, CH):
