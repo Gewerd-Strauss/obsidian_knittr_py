@@ -64,9 +64,13 @@ class ExternalHandler:
             if os.path.exists(filepath):
                 with open(filepath, encoding="utf-8") as f:
                     data = yaml.safe_load(f) or {}
-                print(file)
+                print(f"Configuration for '{file}':")
                 for key, value in data.items():
                     print(f"    {key}: {value}")
+                if file not in self.configurable_tools:
+                    raise NotImplementedError(
+                        f"A tool with the identifier '{file}' has not been implemented. Changes made to this tool's configuration will not be considered by the utility."
+                    )
             else:
                 raise FileNotFoundError(
                     f"File '{filepath}' does not exist. Please declare a configuration-file for '{file}' and populate it using the 'set'-verb before attempting to list its entries."
