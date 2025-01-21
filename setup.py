@@ -5,9 +5,14 @@ setup(
     version="0.1.9000",  # Version
     packages=find_packages(),  # Automatically find packages
     install_requires=[
-        # List your dependencies here
-        # e.g. 'requests', 'numpy', ...
+        "appdirs==1.4.4",
+        "obsidianhtml==4.0.1",
+        "pyperclip==1.9.0",
+        "PyYAML==6.0.2",
+        "setuptools==75.8.0",
+        "tkcalendar==1.6.1",
     ],
+    extras_require={"dev": ["pipreqs", "black"]},
     entry_points={
         "console_scripts": [
             "obsidianknittrpy=obsidianknittrpy.main:main",  # Replace with your entry point
