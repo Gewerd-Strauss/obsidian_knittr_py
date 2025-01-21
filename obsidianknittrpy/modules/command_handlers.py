@@ -287,6 +287,7 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
         formats=CH.get_formats(CH.get_config("format_definitions")),
         loglevel=args["loglevel"],
         command=args["command"],
+        ohtml_fork_available=CH.is_own_ohtml_fork_available,
     )
     if main_gui.closed:
         sys.exit(0)

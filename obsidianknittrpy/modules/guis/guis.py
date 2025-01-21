@@ -21,6 +21,7 @@ class ObsidianKnittrGUI:
         pipeline=[],
         loglevel=None,
         command=str,
+        ohtml_fork_available=False,
     ):
         self.logger = logging.getLogger(
             self.__class__.__module__ + "." + self.__class__.__qualname__
@@ -47,11 +48,19 @@ class ObsidianKnittrGUI:
         self.obsidian_options_selections = {
             "verb": tk.IntVar(value=True),
             "use_custom_fork": tk.IntVar(
-                value=settings["OBSIDIAN_HTML"]["use_custom_fork"]
+                value=(
+                    settings["OBSIDIAN_HTML"]["use_custom_fork"]
+                    if ohtml_fork_available
+                    else False
+                )
             ),
             "verbose_flag": tk.IntVar(value=settings["OBSIDIAN_HTML"]["verbose_flag"]),
             "limit_scope": tk.IntVar(value=settings["OBSIDIAN_HTML"]["limit_scope"]),
         }
+        if not ohtml_fork_available:
+            self.logger.warning(
+                "The use of a personal fork of Obsidian-HTML is disabled. Please set it up as an external dependency via `python -m obsidianknittrpy tools set obsidian-html path 'D:\\path\\to\\your\\obsidian-html\\fork'`, before re-starting the utility."
+            )
         self.gen_config_selections = {
             "parallelise_rendering": tk.IntVar(
                 value=settings["GENERAL_CONFIGURATION"]["parallelise_rendering"]
@@ -98,9 +107,9 @@ class ObsidianKnittrGUI:
         self.bind_method_hotkey("<Alt-a>", "show_about")
         self.bind_method_hotkey("<Alt-c>", "choose_file")
         self.bind_method_hotkey("<Escape>", "close")
-        self.setup_gui(settings)
+        self.setup_gui(settings, ohtml_fork_available)
         self.update_filehistory()
-        self.load_configuration()
+        # self.load_configuration()
         self.root.mainloop()
 
     def bind_method_hotkey(self, hotkey, method):
@@ -109,7 +118,7 @@ class ObsidianKnittrGUI:
     def disable_event(self):
         pass
 
-    def setup_gui(self, settings):
+    def setup_gui(self, settings, ohtml_fork_available):
         bg_col = "lightgrey"
         bg_col = None
         frame_margin_x = 5
@@ -338,7 +347,7 @@ class ObsidianKnittrGUI:
         }
         obsidian_checkbox_states = {
             "verb": "disabled",
-            "use_custom_fork": "normal",
+            "use_custom_fork": "normal" if ohtml_fork_available else "disabled",
             # "purge_errors": "normal",
             "verbose_flag": "normal",
             "limit_scope": "normal",
