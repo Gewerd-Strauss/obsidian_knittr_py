@@ -115,11 +115,17 @@ class ExternalHandler:
                 f"Invalid option for return_type, must be member of [None,'set','unset','unrecognised']"
             )
 
-    def get(self, key):
-        """Gets the path for a specific key."""
-        filepath = self._get_filepath(key)
+    def get(self, file, key):
+        """Gets the value for a specific key in a specific configuration-file."""
+        filepath = self._get_filepath(file)
         if os.path.exists(filepath):
-            with open(filepath, encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-                return data.get("DIRECTORIES_PATHS", {}).get(key)
-        return None
+            with open(filepath, "r", encoding="utf-8") as f:
+                data_ = yaml.safe_load(f)  # get the data
+                if key in data_:
+                    return data_[key]
+                else:
+                    raise KeyError(
+                        f"Key '{key}' not present in handled configuration-file {filepath}"
+                    )
+        else:
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")

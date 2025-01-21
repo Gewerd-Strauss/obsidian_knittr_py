@@ -20,7 +20,7 @@ def pre_configure_obsidianhtml_fork(CH, EH, args):
             # 1. provided by external handler.
             # introduce the own OHTML-fork directory if set.
             CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = EH.get(
-                "obsidian-html"
+                "obsidian-html", "path"
             )
             CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
         if (
