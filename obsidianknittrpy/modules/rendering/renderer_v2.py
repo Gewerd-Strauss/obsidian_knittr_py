@@ -71,7 +71,6 @@ class RenderManager:
                     + ".parse_mod_files",
                     resource=self.ohtml_paths_collection,
                 )
-            print("DD")
             # Additional parsing logic if required for other mod files.
         except FileNotFoundError:
             raise FileNotFoundError(f"Mod files not found in {self.mod_directory}")

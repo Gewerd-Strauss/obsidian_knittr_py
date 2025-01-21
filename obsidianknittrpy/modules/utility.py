@@ -195,7 +195,6 @@ def get_util_version_sub(result, type=""):
         match = re.search(needle, result.stderr)
     if match:
         return match.group(1)  # Return the version number
-
     raise ValueError("Version number not found in the output.")
 
 

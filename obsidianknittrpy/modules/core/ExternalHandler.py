@@ -96,7 +96,7 @@ class ExternalHandler:
                     unrecognised_tools.add(tool)
         if return_type is None:
             # Print Set tools
-            print("Set tools")
+            print("Set tools:")
             for tool, config in set_tools.items():
                 print(f"    {tool}")
                 if file is not None:
@@ -104,12 +104,12 @@ class ExternalHandler:
                         print(f"        {key}: {value}")
 
             # Print Unset tools
-            print("\nUnset tools")
+            print("\nUnset tools:")
             for tool in unset_tools:
                 print(f"    {tool}")
 
             # Print Unrecognised tools
-            print("\nUnrecognised tools")
+            print("\nUnrecognised tools:")
             for tool in unrecognised_tools:
                 print(f"    {tool}")
         else:
