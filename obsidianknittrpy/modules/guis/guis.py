@@ -9,6 +9,9 @@ from obsidianknittrpy import __version__
 
 
 class ObsidianKnittrGUI:
+    """
+    Main front-end GUI class.
+    """
 
     def __init__(
         self,

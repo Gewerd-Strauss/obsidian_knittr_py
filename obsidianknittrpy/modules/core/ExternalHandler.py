@@ -68,7 +68,7 @@ class ExternalHandler:
                 for key, value in data.items():
                     print(f"    {key}: {value}")
             else:
-                print(f"No configuration found for '{file}'.")
+                raise FileNotFoundError(f"File '{filepath}' does not exist.")
             return
 
         set_tools = {}
