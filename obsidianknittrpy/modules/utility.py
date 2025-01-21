@@ -13,10 +13,10 @@ def pre_configure_obsidianhtml_fork(CH, EH, args):
     Finally, if neither of the first two occur, the relevant configuration keys are unset. This ensures that the user cannot provide
     """
     ## handle custom OHTML fork
-    if ("obsidian-html" in EH.list()) or (
+    if ("obsidian-html" in EH.list(return_type="set")) or (
         "OHTML.UseCustomFork" in args and args["OHTML.UseCustomFork"]
     ):
-        if "obsidian-html" in EH.list():
+        if "obsidian-html" in EH.list(return_type="set"):
             # 1. provided by external handler.
             # introduce the own OHTML-fork directory if set.
             CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = EH.get(
@@ -24,7 +24,7 @@ def pre_configure_obsidianhtml_fork(CH, EH, args):
             )
             CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
         if (
-            "OHTML.UseCustomFork" in args
+            ("OHTML.UseCustomFork" in args)
             and args["OHTML.UseCustomFork"]
             and (args["OHTML.UseCustomFork"] is not None)
         ):

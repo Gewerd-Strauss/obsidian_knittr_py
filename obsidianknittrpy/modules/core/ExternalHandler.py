@@ -54,7 +54,7 @@ class ExternalHandler:
             os.remove(filepath)
             print(f"Removed '{file}'.")
 
-    def list(self, file=None):
+    def list(self, file=None, return_type=None):
         """Lists all tools, their configured keys, as well as unconfigured and unrecognised tools."""
         if file is not None:
             # Handle case where a specific file is set
@@ -86,24 +86,34 @@ class ExternalHandler:
                     set_tools[tool] = data
                 else:
                     unrecognised_tools.add(tool)
+        if return_type is None:
+            # Print Set tools
+            print("Set tools")
+            for tool, config in set_tools.items():
+                print(f"    {tool}")
+                if file is not None:
+                    for key, value in config.items():
+                        print(f"        {key}: {value}")
 
-        # Print Set tools
-        print("Set tools")
-        for tool, config in set_tools.items():
-            print(f"    {tool}")
-            if file is not None:
-                for key, value in config.items():
-                    print(f"        {key}: {value}")
+            # Print Unset tools
+            print("\nUnset tools")
+            for tool in unset_tools:
+                print(f"    {tool}")
 
-        # Print Unset tools
-        print("\nUnset tools")
-        for tool in unset_tools:
-            print(f"    {tool}")
-
-        # Print Unrecognised tools
-        print("\nUnrecognised tools")
-        for tool in unrecognised_tools:
-            print(f"    {tool}")
+            # Print Unrecognised tools
+            print("\nUnrecognised tools")
+            for tool in unrecognised_tools:
+                print(f"    {tool}")
+        else:
+            if return_type == "set":
+                return set_tools
+            elif return_type == "unset":
+                return unset_tools
+            elif return_type == "unrecognised":
+                return unrecognised_tools
+            raise ValueError(
+                f"Invalid option for return_type, must be member of [None,'set','unset','unrecognised']"
+            )
 
     def get(self, key):
         """Gets the path for a specific key."""
