@@ -5,6 +5,7 @@ from obsidianknittrpy.modules.utility import (
     load_text_file,
     get_text_file_path,
     pre_configure_obsidianhtml_fork,
+    open_folder,
 )
 from obsidianknittrpy.modules.guis.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.obsidian_html.ObsidianHTML_Limiter import (
@@ -28,6 +29,7 @@ import warnings as wn
 import os as os
 import sys as sys
 import logging as logging
+import yaml as yaml
 
 
 def main(pb, CH, loglevel=None, export=False, import_=False):
@@ -195,6 +197,18 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
                 module=f"{OH.__module__}.set",
                 resource=OH._get_filepath("output-data"),
             )
+
+
+def handle_openlist(args, pb, CH):
+    """Open the directory containing the last-rendered documents"""
+    OH = ExternalHandler(interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"))
+    p = OH._get_filepath("output-data")
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8") as f:
+            yml_data = yaml.safe_load(f)
+        print(f"and now, we can open '{yml_data["directory"]}'")
+        if os.path.exists(yml_data["directory"]):
+            open_folder(yml_data["directory"])
 
 
 def handle_import(args, pb, CH):

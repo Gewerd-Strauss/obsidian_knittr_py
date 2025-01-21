@@ -18,6 +18,7 @@ from obsidianknittrpy.modules.command_handlers import (
     handle_version,
     handle_export,
     handle_import,
+    handle_openlist,
 )
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
@@ -121,30 +122,33 @@ def main():
         EH = ExternalHandler(
             interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
         )
+        if args["command"] != "open":
 
-        RL.log("main", "sets", "own_ohtml_fork_dir")
-        CH = pre_configure_obsidianhtml_fork(
-            CH, EH, args
-        )  # this must be done here to make sure that `load_`
+            RL.log("main", "sets", "own_ohtml_fork_dir")
+            CH = pre_configure_obsidianhtml_fork(
+                CH, EH, args
+            )  # this must be done here to make sure that `load_`
 
-        if args["custom_pipeline"] is not None:
-            CH.load_custom_pipeline(args["custom_pipeline"])
-        if args["custom_format_definitions"]:
-            CH.load_custom_format_definitions(args["custom_format_definitions"])
-        # 3. clear out work dir
-        if os.path.exists(CH.get_key("DIRECTORIES_PATHS", "work_dir")):
-            shutil.rmtree(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
-            RL.log("main", "clears", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
-        os.makedirs(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
-        RL.add_log_location(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
-        RL.log("main", "creates", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
-        RL.log("main", "creates", RL.log_file)
+            if args["custom_pipeline"] is not None:
+                CH.load_custom_pipeline(args["custom_pipeline"])
+            if args["custom_format_definitions"]:
+                CH.load_custom_format_definitions(args["custom_format_definitions"])
+            # 3. clear out work dir
+            if os.path.exists(CH.get_key("DIRECTORIES_PATHS", "work_dir")):
+                shutil.rmtree(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+                RL.log("main", "clears", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+            os.makedirs(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+            RL.add_log_location(CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+            RL.log("main", "creates", CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+            RL.log("main", "creates", RL.log_file)
         if args["command"] == "gui":
             handle_gui(args, pb, CH, EH)
         elif args["command"] == "export":
             handle_export(args, pb, CH, EH)
         elif args["command"] == "import":
             handle_import(args, pb, CH)
+        elif args["command"] == "open":
+            handle_openlist(args, pb, CH)
         else:
             parser.print_help()
 
