@@ -5,12 +5,14 @@ from obsidianknittrpy.modules.utility import (
     load_text_file,
     get_text_file_path,
     pre_configure_obsidianhtml_fork,
+    open_folder,
 )
 from obsidianknittrpy.modules.guis.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.obsidian_html.ObsidianHTML_Limiter import (
     ObsidianHTML_Limiter,
 )
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
+from obsidianknittrpy.modules.core.ExternalHandler import ExternalHandler
 from obsidianknittrpy.modules.obsidian_html.ObsidianHTML import ObsidianHTML
 from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
@@ -27,6 +29,7 @@ import warnings as wn
 import os as os
 import sys as sys
 import logging as logging
+import yaml as yaml
 
 
 def main(pb, CH, loglevel=None, export=False, import_=False):
@@ -180,7 +183,36 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
                 working_directory=working_directory,
             )
             renderManager.execute()
-        pass
+            # and store the output directory in a config-file to be openable afterwards.
+            OH = ExternalHandler(
+                interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir")
+            )
+            OH.set(
+                "output-data",
+                "directory",
+                renderManager.output_data["rendered_output_directory"],
+            )
+            RL.log(
+                action="created",
+                module=f"{OH.__module__}.set",
+                resource=OH._get_filepath("output-data"),
+            )
+
+
+def handle_openlist(args, pb, CH):
+    """Open the directory containing the last-rendered documents"""
+    OH = ExternalHandler(interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"))
+    p = OH._get_filepath("output-data")
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8") as f:
+            yml_data = yaml.safe_load(f)
+        print(f"and now, we can open '{yml_data["directory"]}'")
+        if os.path.exists(yml_data["directory"]):
+            open_folder(yml_data["directory"])
+    else:
+        raise FileNotFoundError(
+            f"Information about the previous rendering were already deleted.\nReason: The working-directory has been cleaned after the last time this utility rendered any documents.\n- Did you use the verb 'export'?\n- Did you use the verb 'gui' (without rendering to output-targets)?"
+        )
 
 
 def handle_import(args, pb, CH):
@@ -276,7 +308,6 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
         main_gui.results["engine_configurations"], "ENGINE_CONFIGURATION"
     )
     # >> manuscript-section is saved in file-history, not here
-    # CH.merge_config_for_save(main_gui.results["manuscript"], "manuscript")
     CH.applied_settings["OUTPUT_TYPE"] = main_gui.results["output_type"]
     # 3. when main GUI submits, parse the selected formats and launch the OT-guis
     # for result in main_gui.results["general_configuration"].items():
@@ -285,7 +316,6 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
         CH.applied_settings["MANUSCRIPT"] == main_gui.results["manuscript"]
     )
     CH.applied_settings["MANUSCRIPT"] = main_gui.results["manuscript"]
-    # CH.applied_settings[]
     pb, CH = handle_ot_guis(
         args=args,
         pb=pb,
