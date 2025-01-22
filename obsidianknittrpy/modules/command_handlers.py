@@ -206,8 +206,10 @@ def handle_openlist(args, pb, CH):
     if os.path.exists(p):
         with open(p, "r", encoding="utf-8") as f:
             yml_data = yaml.safe_load(f)
-        print(f"and now, we can open '{yml_data["directory"]}'")
         if os.path.exists(yml_data["directory"]):
+            logger = logging.getLogger(__name__)
+            logger.setLevel(level=args["loglevel"])
+            logger.info(f"Opening output-directory '{yml_data["directory"]}'")
             open_folder(yml_data["directory"])
     else:
         raise FileNotFoundError(
