@@ -4,3 +4,10 @@ __pycache__
 .vscode/launch.json
 /assets/*config.yml
 /assets/config.yml
+
+# building
+*.egg-info
+build/*
+
+# testing
+/test-env/

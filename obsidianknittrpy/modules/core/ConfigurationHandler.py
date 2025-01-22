@@ -52,6 +52,7 @@ class ConfigurationHandler:
             self.default_settings["DIRECTORIES_PATHS"]["work_dir"],
             self.default_settings["DIRECTORIES_PATHS"]["output_dir"],
             self.default_settings["DIRECTORIES_PATHS"]["interface_dir"],
+            self.default_settings["DIRECTORIES_PATHS"]["custom_module_dir"],
         ]:
             if not os.path.exists(directory):
                 os.makedirs(directory, exist_ok=True)
@@ -90,6 +91,9 @@ class ConfigurationHandler:
                 "own_ohtml_fork_dir": None,  # Must be set if `use_custom_fork` is true
                 "interface_dir": os.path.normpath(
                     os.path.join(self.application_directory, "interface")
+                ),  # default equals app_dir
+                "custom_module_dir": os.path.normpath(
+                    os.path.join(self.application_directory, "custom_modules")
                 ),  # default equals app_dir
             },
             "OBSIDIAN_HTML": {
@@ -675,6 +679,9 @@ quarto::pdf
                     )
                     self.applied_settings["DIRECTORIES_PATHS"]["interface_dir"] = (
                         default_dirs["interface_dir"]
+                    )
+                    self.applied_settings["DIRECTORIES_PATHS"]["custom_module_dir"] = (
+                        default_dirs["custom_module_dir"]
                     )
                 self.logger.info("Last-Run configuration loaded for GUI mode.")
                 ResourceLogger(
