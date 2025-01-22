@@ -34,7 +34,9 @@ class RenderManager:
         self.working_directory = working_directory
 
         # Set up logging
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
         self.resource_logger = ResourceLogger(output_directory)
         self.logger.setLevel(level=log_level)
         # Ensure output directory exists
