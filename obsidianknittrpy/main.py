@@ -100,7 +100,8 @@ def main():
         CH.apply_defaults()
         # 3. setup externalHandler
         EH = ExternalHandler(
-            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
+            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir"),
+            loglevel=args["loglevel"],
         )
         if args["action"] == "set":
             EH.set(args["file"], args["key"], args["value"])
@@ -121,7 +122,8 @@ def main():
         )
         CH.apply_defaults()
         EH = ExternalHandler(
-            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir")
+            interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir"),
+            loglevel=args["loglevel"],
         )
         if args["command"] != "open":
 

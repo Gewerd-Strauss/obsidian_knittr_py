@@ -222,14 +222,6 @@ def export_parser_setup(export_parser):
     export_parser.add_argument(
         "pass_through",
         nargs="*",
-        # help="""
-        # Pass-through arguments in format 'namespace::key=value'`nValid Examples:\n- "
-        # + "quarto::pdf.author=Ballos"
-        # + "\n- "
-        # + "quarto::html.author=Professor E GADD"
-        # + "\n- "
-        # + "quarto::docx.author=Zote the mighty, a knight of great renown
-        # """,
         help="""
 Pass-through arguments in format 'namespace::key=value'
 Valid Examples:
@@ -245,7 +237,6 @@ def set_parser_setup(set_parser):
         "file", help="The file of the key-value-pair (e.g., obsidian-html)."
     )
     set_parser.add_argument("key", help="The key (e.g., obsidian-html).")
-    # set_parser.add_argument("path", help="The custom path to the tool.")
     set_parser.add_argument("value", help="The value to associate with the 'key'.")
     set_parser.add_argument(
         "pass_through",

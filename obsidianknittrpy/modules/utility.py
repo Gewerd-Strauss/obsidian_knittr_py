@@ -20,10 +20,16 @@ def pre_configure_obsidianhtml_fork(CH, EH, args):
         if "obsidian-html" in EH.list(return_type="set"):
             # 1. provided by external handler.
             # introduce the own OHTML-fork directory if set.
-            CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = EH.get(
-                "obsidian-html", "path"
-            )
-            CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
+            try:
+                own_ohtml_fork_dir = EH.get("obsidian-html", "path")
+                if own_ohtml_fork_dir is not None:
+                    CH.applied_settings["DIRECTORIES_PATHS"][
+                        "own_ohtml_fork_dir"
+                    ] = own_ohtml_fork_dir
+                    CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
+                    CH.is_own_ohtml_fork_available = True
+            except KeyError:
+                CH.is_own_ohtml_fork_available = False
         if (
             ("OHTML.UseCustomFork" in args)
             and args["OHTML.UseCustomFork"]
@@ -33,15 +39,18 @@ def pre_configure_obsidianhtml_fork(CH, EH, args):
             if ("OHTML.ForkPath" in args) and (
                 args["OHTML.ForkPath"] is not None
             ):  # if fork path is provided by commandline, insert it.
-                if os.path.exists(args["OHTML.ForkPath"]):
+                if os.path.exists(args["OHTML.ForkPath"]) and (
+                    os.path.isdir(args["OHTML.ForkPath"])
+                    or is_exe(args["OHTML.ForkPath"])
+                ):
                     CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = (
                         args["OHTML.ForkPath"]
                     )
+                else:
+                    raise FileNotFoundError(
+                        f"The path '{args["OHTML.ForkPath"]}' does not point to an existing directory or executable file ('.exe')."
+                    )
                 CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = True
-            else:
-                print(
-                    "TODO: issue warning: fork path not provided but required to set own-ohtml-fork-dir"
-                )
     else:  # 3. no custom fork used. Unset related config-keys.
         CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = False
         CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = None
@@ -186,7 +195,6 @@ def get_util_version_sub(result, type=""):
         match = re.search(needle, result.stderr)
     if match:
         return match.group(1)  # Return the version number
-
     raise ValueError("Version number not found in the output.")
 
 
@@ -201,3 +209,8 @@ def open_folder(folder_path):
     else:
         # Linux or other Unix-like systems
         subprocess.run(["xdg-open", folder_path])
+
+
+def is_exe(path):
+    """Check if a path points to an executable '.exe'-file."""
+    return os.path.isfile(path) and path.lower().endswith('.exe')
