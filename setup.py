@@ -10,7 +10,7 @@ except FileNotFoundError:
 setup(
     name="obsidian_knittr_py",  # Package name
     version="0.1.9000",  # Version
-    packages=find_packages(),  # Automatically find packages
+    packages=find_packages(include=["obsidianknittrpy", "obsidianknittrpy.*"]),
     install_requires=[
         "appdirs==1.4.4",
         "obsidianhtml==4.0.1",
@@ -36,6 +36,7 @@ setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Development Status :: 3 - Alpha",
     ],
     python_requires=">=3.6",  # Minimum Python version requirement
 )
