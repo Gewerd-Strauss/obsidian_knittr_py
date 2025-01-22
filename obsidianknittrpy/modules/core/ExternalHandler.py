@@ -2,6 +2,7 @@ import argparse
 import os
 import yaml
 from pathlib import Path
+import logging
 
 
 class ExternalHandler:
@@ -12,9 +13,17 @@ class ExternalHandler:
     processing-code within `main()`/`handle_x()`.
     """
 
-    def __init__(self, interface_dir):
+    def __init__(
+        self,
+        interface_dir,
+        loglevel=None,
+    ):
         self.interface_dir = interface_dir
         os.makedirs(self.interface_dir, exist_ok=True)
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(loglevel)
         self.configurable_tools = ["obsidian-html", "R"]
 
     def _get_filepath(self, key):
@@ -38,7 +47,7 @@ class ExternalHandler:
         data[key] = value
         with open(filepath, "w", encoding="utf-8") as f:
             yaml.dump(data, f)
-        print(f"Set '{file}.{key}' to '{value}'.")
+        self.logger.info(f"Set '{file}.{key}' to '{value}'.")
 
     def unset(self, file, key):
         """Removes the configuration for a given key."""
@@ -49,10 +58,10 @@ class ExternalHandler:
                 data_.pop(key, None)
             with open(filepath, "w", encoding="utf-8") as f:
                 yaml.dump(data_, f)
-            print(f"Removed '{file}.{key}'.")
+            self.logger.info(f"Removed '{file}.{key}'.")
             if len(data_) == 0:
                 os.remove(filepath)
-                print(f"Removed '{file}'.")
+                self.logger.warning(f"Removed '{file}'.")
         else:
             raise FileNotFoundError(f"File '{filepath}' does not exist.")
 

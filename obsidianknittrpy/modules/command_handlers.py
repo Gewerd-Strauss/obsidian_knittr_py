@@ -185,7 +185,8 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
             renderManager.execute()
             # and store the output directory in a config-file to be openable afterwards.
             OH = ExternalHandler(
-                interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir")
+                interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
+                loglevel=loglevel,
             )
             OH.set(
                 "output-data",
@@ -201,7 +202,10 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
 
 def handle_openlist(args, pb, CH):
     """Open the directory containing the last-rendered documents"""
-    OH = ExternalHandler(interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"))
+    OH = ExternalHandler(
+        interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
+        loglevel=args["loglevel"],
+    )
     p = OH._get_filepath("output-data")
     if os.path.exists(p):
         with open(p, "r", encoding="utf-8") as f:
