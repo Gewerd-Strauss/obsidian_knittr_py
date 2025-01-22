@@ -80,7 +80,7 @@ class ConfigurationHandler:
     def init_default_settings(self):
         self.default_settings = {
             "DIRECTORIES_PATHS": {
-                "app_dir": None,
+                "app_dir": os.path.normpath(os.path.join(self.application_directory)),
                 "work_dir": os.path.normpath(
                     os.path.join(self.application_directory, "output")
                 ),  # default equals app_dir
@@ -666,7 +666,16 @@ quarto::pdf
                 with open(last_run_path, 'r', encoding='utf-8') as f:
                     last_run_config = yaml.safe_load(f)
                 if last_run_config is not None:
+                    default_dirs = self.applied_settings["DIRECTORIES_PATHS"]
                     self.applied_settings.update(last_run_config)
+
+                    ## re-force overwrite the critical application-related paths regardless of what the contents of the
+                    self.applied_settings["DIRECTORIES_PATHS"]["app_dir"] = (
+                        default_dirs["app_dir"]
+                    )
+                    self.applied_settings["DIRECTORIES_PATHS"]["interface_dir"] = (
+                        default_dirs["interface_dir"]
+                    )
                 self.logger.info("Last-Run configuration loaded for GUI mode.")
                 ResourceLogger(
                     log_directory=self.get_key("DIRECTORIES_PATHS", "work_dir")
