@@ -590,8 +590,20 @@ class MultiRenderingPipeline_v2(RenderingPipeline_v2):
             dir_name = os.path.dirname(file_path)
             dirs.append(dir_name)
 
-        if len(set(dirs)) <= 1:  # check if all elements are identical
+        if len(set(dirs)) == 1:  # check if all elements are identical
             self.rendered_output_directory = dirs[0]
+        elif len(set(dirs)) == 0:
+            self.logger.critical("Outputs could not be rendered")
+            raise RuntimeError(
+                f"Outputs could not be rendered to their render-targets."
+            )
+        else:
+            self.logger.error(
+                "Output-formats were rendered into multiple target-directories. This should be impossible."
+            )
+            raise ValueError(
+                f"Output-formats were rendered into multiple ({len(set(dirs))}) target-directories. This should be impossible."
+            )
 
     def futures_render(self, format_name):
         """Combines YAML generation and rendering for parallel execution."""
