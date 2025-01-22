@@ -589,7 +589,7 @@ class ObsidianKnittrGUI:
         # self.root.deiconify()
 
     def update_filehistory(self, added_path=None):
-        if added_path:
+        if added_path is not None:
             added_path = os.path.normpath(added_path)
             # Move to beginning if already in the history
             if added_path in self.file_history:
@@ -606,10 +606,15 @@ class ObsidianKnittrGUI:
                 self.file_history_dropdown.current(0)
 
         except Exception as e:
-            logging.error(f"Error updating file history dropdown: {e}", exc_info=True)
-            raise RuntimeError(
-                f"An unspecified error occurred while updating the file history dropdown: {e}"
-            ) from e
+            try:
+                a = self.root.winfo_exists()
+            except tk.TclError as e2:
+                # we do not care about the tcl-error
+                # `can't invoke "winfo" command: application has been destroyed`
+                # because this scenario is not relevant. It occurs, but can be ignored.
+                # This error is issued when calling self.update_filehistory() for its side-effect of re-sorting the file-history yaml.
+                # This step is performed once during `handle_gui()` after the gui-object has been submitted and destroyed.
+                pass
 
     def load_configuration(self):
         self.logger.debug(
@@ -716,7 +721,9 @@ class ObsidianKnittrGUI:
             "Results:", extra=results
         )  # Print the gathered results for verification
         self.results = results
-        self.close(set_escape=False)
+        self.close(
+            False
+        )  # mark that the program is not escape-close-exited, but submitted.
         pass
 
     def full_submit(self):
@@ -764,7 +771,9 @@ class ObsidianKnittrGUI:
             "Results:", results
         )  # Print the gathered results for verification
         self.results = results
-        self.close(set_escape=False)
+        self.close(
+            False
+        )  # mark that the program is not escape-close-exited, but submitted.
         pass
 
     def edit_general_config(self):
