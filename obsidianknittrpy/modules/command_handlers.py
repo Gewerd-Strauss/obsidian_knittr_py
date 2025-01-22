@@ -127,6 +127,9 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
         arguments.update(CH.get_key("ENGINE_CONFIGURATION"))
         pipeline = ProcessingPipeline(
             config_file=CH.applied_pipeline,
+            custom_module_directory=CH.get_key(
+                "DIRECTORIES_PATHS", "custom_module_dir"
+            ),
             arguments=arguments,
             debug=True,
             log_directory=os.path.normpath(

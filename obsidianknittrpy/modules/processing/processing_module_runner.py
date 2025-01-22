@@ -1,6 +1,7 @@
 import logging
 import shutil
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
+from obsidianknittrpy.modules.utils.dynamic_loader import import_custom_module
 
 
 class BaseModule:
@@ -108,8 +109,10 @@ class BaseModule:
         )
 
 
+import importlib.util
 import importlib
 import os
+import sys
 import yaml
 
 
@@ -120,7 +123,13 @@ class ProcessingPipeline:
     """
 
     def __init__(
-        self, config_file, arguments=None, debug=False, log_directory=None, RL=None
+        self,
+        config_file,
+        custom_module_directory=None,
+        arguments=None,
+        debug=False,
+        log_directory=None,
+        RL=None,
     ):
         """
         Initialize the processing pipeline.
@@ -136,6 +145,7 @@ class ProcessingPipeline:
         self.arguments["debug"] = debug
         self.log_directory = log_directory
         self.RL = RL
+        self.custom_source_dir = custom_module_directory
         if os.path.exists(self.log_directory):
             self.logger.info(f"Removed module-logging-directory {self.log_directory}.")
             self.RL.log(
@@ -176,8 +186,60 @@ class ProcessingPipeline:
                 # Dynamically load the module by its filename (module_info['name'])
                 module_file = f"{module_info['file_name']}.py"
                 module_path = os.path.join(module_dir, module_file)
+                custom_module_path = os.path.join(self.custom_source_dir, module_file)
 
-                if os.path.exists(module_path):
+                if os.path.exists(custom_module_path):
+                    try:
+                        # Use the dynamic import function to load the custom module
+                        custom_module = import_custom_module(
+                            custom_module_path, module_info["module_name"]
+                        )
+
+                        # Get the class from the custom module
+                        module_class = getattr(
+                            custom_module, module_info["module_name"]
+                        )
+
+                        # Start with the config from module_info
+                        module_config = module_info.get("config", {}).copy()
+
+                        # Override with any arguments from self.arguments
+                        for key in module_config:
+                            if key in self.arguments:
+                                module_config[key] = self.arguments[key]
+
+                        # Initialize the module with the merged config
+                        module_instance = module_class(
+                            module_info["module_name"],
+                            config=module_config,
+                            log_directory=self.log_directory,
+                            past_module_instance=past_module_instance,
+                            past_module_method_instance=past_module_method_instance,
+                            log_file=self.RL.log_file,
+                        )
+                        past_module_instance = module_instance.__module__
+                        past_module_method_instance = module_instance.name
+                        self.RL.log(
+                            self.__class__.__module__
+                            + "."
+                            + self.__class__.__qualname__,
+                            "initiated",
+                            f"{custom_module_path} : {module_info['module_name']}",
+                        )
+                        self.modules.append(module_instance)
+
+                    except ImportError as e:
+                        self.logger.warning(
+                            f"Failed to load custom module {module_info['module_name']} from {custom_module_path}: {e}"
+                        )
+                        self.RL.log(
+                            self.__class__.__module__
+                            + "."
+                            + self.__class__.__qualname__,
+                            "load_failed",
+                            f"{custom_module_path} : {module_info['module_name']}",
+                        )
+                elif os.path.exists(module_path):
                     module_name = f"obsidianknittrpy.modules.processing.{module_info['file_name']}"
                     module = importlib.import_module(module_name)
                     module_class = getattr(module, module_info["module_name"])
