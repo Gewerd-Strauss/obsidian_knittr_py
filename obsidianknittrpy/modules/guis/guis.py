@@ -604,8 +604,12 @@ class ObsidianKnittrGUI:
             # Select the most recent entry if the list is not empty
             if self.file_history:
                 self.file_history_dropdown.current(0)
-        except Exception:
-            pass
+
+        except Exception as e:
+            logging.error(f"Error updating file history dropdown: {e}", exc_info=True)
+            raise RuntimeError(
+                f"An unspecified error occurred while updating the file history dropdown: {e}"
+            ) from e
 
     def load_configuration(self):
         self.logger.debug(
