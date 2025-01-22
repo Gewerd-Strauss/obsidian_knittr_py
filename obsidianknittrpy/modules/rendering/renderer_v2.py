@@ -34,7 +34,9 @@ class RenderManager:
         self.working_directory = working_directory
 
         # Set up logging
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
         self.resource_logger = ResourceLogger(output_directory)
         self.logger.setLevel(level=log_level)
         # Ensure output directory exists
@@ -71,7 +73,6 @@ class RenderManager:
                     + ".parse_mod_files",
                     resource=self.ohtml_paths_collection,
                 )
-            print("DD")
             # Additional parsing logic if required for other mod files.
         except FileNotFoundError:
             raise FileNotFoundError(f"Mod files not found in {self.mod_directory}")
@@ -591,8 +592,20 @@ class MultiRenderingPipeline_v2(RenderingPipeline_v2):
             dir_name = os.path.dirname(file_path)
             dirs.append(dir_name)
 
-        if len(set(dirs)) <= 1:  # check if all elements are identical
+        if len(set(dirs)) == 1:  # check if all elements are identical
             self.rendered_output_directory = dirs[0]
+        elif len(set(dirs)) == 0:
+            self.logger.critical("Outputs could not be rendered")
+            raise RuntimeError(
+                f"Outputs could not be rendered to their render-targets."
+            )
+        else:
+            self.logger.error(
+                "Output-formats were rendered into multiple target-directories. This should be impossible."
+            )
+            raise ValueError(
+                f"Output-formats were rendered into multiple ({len(set(dirs))}) target-directories. This should be impossible."
+            )
 
     def futures_render(self, format_name):
         """Combines YAML generation and rendering for parallel execution."""
