@@ -1,5 +1,12 @@
 from setuptools import setup, find_packages
 
+# Safely read the long description from README.md
+try:
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+except FileNotFoundError:
+    long_description = ""
+
 setup(
     name="obsidian_knittr_py",  # Package name
     version="0.1.9000",  # Version
@@ -15,14 +22,14 @@ setup(
     extras_require={"dev": ["pipreqs", "black"]},
     entry_points={
         "console_scripts": [
-            "obsidianknittrpy=obsidianknittrpy.main:main",  # Replace with your entry point
-            "okpy=obsidianknittrpy.main:main",  # Replace with your entry point
+            "obsidianknittrpy=obsidianknittrpy.main:main",  # entry-point for obsidianknittrpy
+            "okpy=obsidianknittrpy.main:main",  # entry-point shorthand
         ],
     },
     author="Gewerd Strauss",
-    author_email="/",
+    author_email="/",  # Replace with a valid email address
     description="A WIP port of https://github.com/Gewerd-Strauss/ObsidianKnittr",
-    long_description=open("README.md").read(),  # Long description from README.md
+    long_description=long_description,  # Use the long description read from README.md
     long_description_content_type="text/markdown",
     url="https://github.com/Gewerd-Strauss/obsidian_knittr_py",  # Project URL
     classifiers=[
