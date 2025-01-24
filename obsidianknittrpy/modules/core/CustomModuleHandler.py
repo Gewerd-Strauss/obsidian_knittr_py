@@ -82,6 +82,9 @@ class CustomModuleHandler:
 
         Args:
             module_name (str): Name of the module file to remove (without .py).
+
+        Returns:
+            Path: Path of the removed module file.
         """
         module_path = self.custom_modules_dir / f"{module_name}.py"
 
@@ -90,16 +93,19 @@ class CustomModuleHandler:
 
         confirm = (
             input(
-                f"Are you sure you want to remove the module '{module_path.name}',\nlocated at: '{module_path}'? (y/n): "
+                f"Are you sure you want to remove the module '{module_path.name}',\n"
+                f"located at: '{module_path}'? (y/n): "
             )
             .strip()
             .lower()
         )
-        if confirm == 'y':
+        if confirm == "y":
             module_path.unlink()
             print(f"Module '{module_path.name}' has been removed.")
+            return module_path
         else:
             print("Operation canceled.")
+            return None
 
     def list(self):
         """
@@ -130,7 +136,7 @@ class CustomModuleHandler:
 
         print("Custom Modules:")
         for entry in results:
-            print(f"{entry['class']}\n- path: {entry["file"]}")
+            print(f"{entry['class']}\n- path: {entry['file']}")
 
     def _get_builtin_classes(self):
         """
