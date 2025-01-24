@@ -342,3 +342,102 @@ def version_parser_setup(version_parser):
         action="store_true",
         help="Return version number without descriptor-string.",
     )
+
+
+def custommodule_parser_setup(custommodule_parser):
+    """
+    Set up the `custommodule` subparser and its subcommands: `list`, `add`, and `remove`.
+    """
+
+    # Add subparsers for `custommodule`
+    custommodule_subparsers = custommodule_parser.add_subparsers(
+        title="Custom Module Commands",
+        dest="custommodule_command",
+    )
+
+    # Subcommand: `list`
+    list_parser = custommodule_subparsers.add_parser(
+        "list",
+        help="List all custom modules.",
+    )
+    list_parser.add_argument(
+        "--detailed",
+        action="store_true",
+        help="Display detailed information about each module.",
+    )
+    list_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    list_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    # Subcommand: `add`
+    add_parser = custommodule_subparsers.add_parser(
+        "add",
+        help="Add a new custom module.",
+    )
+    add_parser.add_argument(
+        "module_path",
+        type=str,
+        help="Path to the Python file containing the custom module.",
+    )
+    add_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    add_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    # Subcommand: `remove`
+    remove_parser = custommodule_subparsers.add_parser(
+        "remove",
+        help="Remove an existing custom module.",
+    )
+    remove_parser.add_argument(
+        "module_name",
+        type=str,
+        help="Name of the module to remove.",
+    )
+    remove_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    remove_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    # Set a default function to handle unknown subcommands
+    custommodule_parser.set_defaults(func=lambda args: custommodule_parser.print_help())

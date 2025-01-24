@@ -13,6 +13,7 @@ from obsidianknittrpy.modules.commandline import (
     list_parser_setup,
     openlist_parser_setup,
     version_parser_setup,
+    custommodule_parser_setup,
 )
 from obsidianknittrpy.modules.command_handlers import (
     handle_gui,
@@ -85,6 +86,14 @@ def main():
         help="Open the directory containing the last-rendered output-formats, or a specific output-format.",
     )
     openlist_parser = openlist_parser_setup(openlist_parser)
+
+    # --- 'custommodule' command setup ---
+    custommodule_parser = subparsers.add_parser(
+        "custommodule",
+        help="Manage custom modules (list, add, remove)",
+    )
+    custommodule_parser = custommodule_parser_setup(custommodule_parser)
+
     args = parser.parse_args()
     if args.command is None:
         parser.print_help()
