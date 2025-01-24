@@ -196,6 +196,11 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
                 "directory",
                 renderManager.output_data["rendered_output_directory"],
             )
+            OH.set(
+                "output-data",
+                "paths",
+                renderManager.output_data["rendered_output_paths"],
+            )
             RL.log(
                 action="created",
                 module=f"{OH.__module__}.set",
