@@ -35,7 +35,8 @@ import logging
 def main():
     RL = ResourceLogger()
     parser = argparse.ArgumentParser(
-        description="Utility supporting 'convert' and 'gui' commands.",
+        description="Utility for converting a single note within an 'Obsidian.md'-vault to formats supported by the open-source publishing system 'Quarto', and then optionally converting them via 'Quarto'."
+        + "",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -56,7 +57,7 @@ def main():
     common_arguments(export_parser)
     # --- 'import' command setup ---
     import_parser = subparsers.add_parser(
-        "import", help="import a previously exported configuration."
+        "import", help="Import a previously exported configuration."
     )
     import_parser = import_parser_setup(import_parser)
 
@@ -80,7 +81,8 @@ def main():
 
     # 'openlist' subcommand
     openlist_parser = subparsers.add_parser(
-        "open", help="Trigger the open action. must be elaborated upon"
+        "open",
+        help="Open the directory containing the last-rendered output-formats, or a specific output-format.",
     )
     openlist_parser = openlist_parser_setup(openlist_parser)
     args = parser.parse_args()

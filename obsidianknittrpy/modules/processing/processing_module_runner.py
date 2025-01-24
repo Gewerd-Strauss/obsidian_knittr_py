@@ -1,7 +1,7 @@
-import logging
-import shutil
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 from obsidianknittrpy.modules.utils.dynamic_loader import import_custom_module
+import logging
+import shutil
 
 
 class BaseModule:

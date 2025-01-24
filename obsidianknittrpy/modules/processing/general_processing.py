@@ -1,5 +1,5 @@
-import re
 from .processing_module_runner import BaseModule
+import re
 
 
 class ProcessTags(BaseModule):
