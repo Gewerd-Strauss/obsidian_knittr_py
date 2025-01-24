@@ -1,5 +1,4 @@
 from .processing_module_runner import BaseModule
-import re
 
 
 class ProcessDiagramCodeblocks(BaseModule):
