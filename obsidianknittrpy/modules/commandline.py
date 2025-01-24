@@ -451,11 +451,6 @@ def custommodule_parser_setup(custommodule_parser):
         formatter_class=argparse.RawTextHelpFormatter,
     )
     list_parser.add_argument(
-        "--detailed",
-        action="store_true",
-        help="Display detailed information about each module.",
-    )
-    list_parser.add_argument(
         "pass_through",
         nargs="*",
         help="""
@@ -525,6 +520,35 @@ def custommodule_parser_setup(custommodule_parser):
         """,
     )
     remove_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    export_parser = custommodule_subparsers.add_parser(
+        "export",
+        help="Export the default YAML-configuration of a custom module.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    export_parser.add_argument(
+        "module_name",
+        type=str,
+        help="Name of the module to export.",
+        nargs="?",  # Makes this argument optional
+    )
+    export_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    export_parser.add_argument(
         '--loglevel',
         default='INFO',
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
