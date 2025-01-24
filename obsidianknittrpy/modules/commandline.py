@@ -258,15 +258,18 @@ def set_parser_setup(set_parser):
 
 
 def openlist_parser_setup(openlist_parser):
+    # Positional argument for the format (optional)
     openlist_parser.add_argument(
-        "-i",
-        "--input",
-        required=False,
-        help="The render-target to open (e.g. `quarto::pdf`/`quarto::html`/`quarto::docx`,...).",
+        "input",  # Positional argument
+        nargs="?",  # Makes this argument optional
+        help="Specify the format to open (e.g., 'quarto::html'). If not provided, the folder containing the output-files is opened.",
+        type=str,
     )
+
+    # Positional argument for pass-through parameters (optional)
     openlist_parser.add_argument(
         "pass_through",
-        nargs="*",
+        nargs="*",  # This allows for multiple pass-through arguments, if needed
         help="""
         Pass-through arguments in format 'namespace::key=value'
         Valid Examples:
