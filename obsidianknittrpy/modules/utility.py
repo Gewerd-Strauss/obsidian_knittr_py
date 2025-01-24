@@ -211,6 +211,22 @@ def open_folder(folder_path):
         subprocess.run(["xdg-open", folder_path])
 
 
+def open_file(file_path):
+    if os.path.isfile(file_path):
+        # Path is a file
+        try:
+            if sys.platform == "win32":
+                subprocess.run(["start", file_path], shell=True)
+            elif sys.platform == "darwin":
+                subprocess.run(["open", file_path])
+            else:
+                subprocess.run(["xdg-open", file_path])
+        except Exception as e:  # Catch any exception from subprocess
+            raise OSError(f"Failed to open the file {file_path}: {str(e)}")
+    else:
+        raise FileNotFoundError(f"The path {file_path} is not a valid file.")
+
+
 def is_exe(path):
     """Check if a path points to an executable '.exe'-file."""
     return os.path.isfile(path) and path.lower().endswith('.exe')
