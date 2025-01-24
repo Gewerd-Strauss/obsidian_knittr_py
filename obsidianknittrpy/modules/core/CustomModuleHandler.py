@@ -4,12 +4,17 @@ import importlib.util
 import inspect
 from pathlib import Path
 from obsidianknittrpy.modules.processing.processing_module_runner import BaseModule
+import logging
 
 
 class CustomModuleHandler:
-    def __init__(self, custom_modules_dir):
+    def __init__(self, custom_modules_dir, loglevel=None):
         self.custom_modules_dir = Path(custom_modules_dir)
         self.custom_modules_dir.mkdir(parents=True, exist_ok=True)
+        self.logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__qualname__
+        )
+        self.logger.setLevel(loglevel)
 
     def add(self, file_path):
         """
@@ -39,7 +44,7 @@ class CustomModuleHandler:
             if confirm == "y":
                 backup_path = destination.with_suffix(".backup.py")
                 shutil.copy(destination, backup_path)
-                print(f"Existing module backed up as '{backup_path.name}'.")
+                self.logger.info(f"Existing module backed up as '{backup_path.name}'.")
             else:
                 new_name = input(
                     "Enter a new name for the file (with .py extension): "
@@ -50,31 +55,32 @@ class CustomModuleHandler:
 
         # Copy the new file
         shutil.copy(file_path, destination)
-        print(f"File '{file_path.name}' added as '{destination.name}'.")
+        self.logger.info(f"File '{file_path.name}' added as '{destination.name}'.")
 
         # Attempt to import the module
         try:
             spec = importlib.util.spec_from_file_location(destination.stem, destination)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            print(f"Module '{destination.stem}' imported successfully.")
+            self.logger.info(f"Module '{destination.stem}' imported successfully.")
             # TODO: remove backup file after import was found to be successfull.
             return destination
         except Exception as e:
             # Reintroduce the backup if the import fails
             if destination.exists():
                 destination.unlink()  # Remove the problematic file
-            if backup_path.exists():
-                shutil.move(backup_path, destination)  # Restore the backup
-                print(
-                    f"Warning: Failed to import module '{destination.stem}'. "
-                    f"Reverted to the original module. Error: {e}"
-                )
-            else:
-                print(
-                    f"Warning: Failed to import module '{destination.stem}'. "
-                    f"Original file was not found. Error: {e}"
-                )
+            if backup_path is not None:
+                if backup_path.exists():
+                    shutil.move(backup_path, destination)  # Restore the backup
+                    self.logger.warning(
+                        f"Warning: Failed to import module '{destination.stem}'. "
+                        f"Reverted to the original module. Error: {e}"
+                    )
+                else:
+                    self.logger.warning(
+                        f"Warning: Failed to import module '{destination.stem}'. "
+                        f"Original file was not found. Error: {e}"
+                    )
 
     def remove(self, module_name):
         """
@@ -101,10 +107,10 @@ class CustomModuleHandler:
         )
         if confirm == "y":
             module_path.unlink()
-            print(f"Module '{module_path.name}' has been removed.")
+            self.logger.info(f"Module '{module_path.name}' has been removed.")
             return module_path
         else:
-            print("Operation canceled.")
+            self.logger.info("Operation canceled.")
             return None
 
     def list(self):
@@ -140,7 +146,7 @@ class CustomModuleHandler:
 
     def _get_builtin_classes(self):
         """
-        Retrieve all class names inheriting from BaseModule in built-in modules.
+        Retrieve all class names inheriting from BaseModule in the entire obsidianknittrpy package.
         """
         built_in_classes = set()
         for name, obj in inspect.getmembers(BaseModule, inspect.isclass):

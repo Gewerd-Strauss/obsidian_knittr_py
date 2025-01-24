@@ -104,6 +104,7 @@ def main():
         elif args["command"] == "processingmodules":
             CMH = CustomModuleHandler(
                 custom_modules_dir=CH.get_key("DIRECTORIES_PATHS", "custom_module_dir"),
+                loglevel=args["loglevel"],
             )
             if args["custommodule_command"] == "add":
                 handle_processingmodule_add(args, CH, CMH)
