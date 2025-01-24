@@ -36,7 +36,11 @@ class CustomModuleHandler:
                 .strip()
                 .lower()
             )
-            if confirm != 'y':
+            if confirm == "y":
+                backup_path = destination.with_suffix(".backup.py")
+                shutil.copy(destination, backup_path)
+                print(f"Existing module backed up as '{backup_path.name}'.")
+            else:
                 new_name = input(
                     "Enter a new name for the file (with .py extension): "
                 ).strip()
@@ -44,7 +48,7 @@ class CustomModuleHandler:
                     raise ValueError("The new name must end with .py.")
                 destination = self.custom_modules_dir / new_name
 
-        # Copy the file
+        # Copy the new file
         shutil.copy(file_path, destination)
         print(f"File '{file_path.name}' added as '{destination.name}'.")
 
@@ -54,8 +58,23 @@ class CustomModuleHandler:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             print(f"Module '{destination.stem}' imported successfully.")
+            # TODO: remove backup file after import was found to be successfull.
+            return destination
         except Exception as e:
-            print(f"Warning: Failed to import module '{destination.stem}'. Error: {e}")
+            # Reintroduce the backup if the import fails
+            if destination.exists():
+                destination.unlink()  # Remove the problematic file
+            if backup_path.exists():
+                shutil.move(backup_path, destination)  # Restore the backup
+                print(
+                    f"Warning: Failed to import module '{destination.stem}'. "
+                    f"Reverted to the original module. Error: {e}"
+                )
+            else:
+                print(
+                    f"Warning: Failed to import module '{destination.stem}'. "
+                    f"Original file was not found. Error: {e}"
+                )
 
     def remove(self, module_name):
         """
