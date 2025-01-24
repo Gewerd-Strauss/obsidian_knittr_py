@@ -528,7 +528,7 @@ def custommodule_parser_setup(custommodule_parser):
 
     export_parser = custommodule_subparsers.add_parser(
         "export",
-        help="Export the default YAML-configuration of a custom module.",
+        description="Export the YAML-configuration of the default processing-module pipeline. Alternatively by providing ",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     export_parser.add_argument(
@@ -536,6 +536,11 @@ def custommodule_parser_setup(custommodule_parser):
         type=str,
         help="Name of the module to export.",
         nargs="?",  # Makes this argument optional
+    )
+    export_parser.add_argument(
+        '--custom_pipeline',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
     )
     export_parser.add_argument(
         "pass_through",
