@@ -384,7 +384,10 @@ def handle_export(args, pb, CH, EH):
     handle_gui(args, pb, CH, EH, True, False)
 
 
-def handle_version():
+def handle_version(args):
     """Handle the 'version' command."""
-    print(f"Current version: {__version__}")
+    if args.clean:
+        print(__version__)
+    else:
+        print(f"Current version: {__version__}")
     exit(0)
