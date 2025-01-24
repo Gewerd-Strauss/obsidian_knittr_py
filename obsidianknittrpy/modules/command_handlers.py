@@ -426,7 +426,19 @@ def handle_custommodule_remove(args, CH, CMH):
     """
     Remove a module from the `custom_modules`-subdirectory in the application-directory.
     """
-    CMH.remove(args["module_name"])
+    RL = ResourceLogger(log_directory=CH.get_key("DIRECTORIES_PATHS", "work_dir"))
+    try:
+        removed_module_path = CMH.remove(args["module_name"])
+        if removed_module_path is not None:
+            RL.log(
+                action="removed",
+                module=f"handle_custommodule_remove",
+                resource=removed_module_path,
+            )
+    except OSError as eOS:
+        raise OSError(
+            f"Module '{args["module_name"]}', located in file '{removed_module_path}' could not be removed due to an OS-error ({eOS})."
+        )
 
 
 def handle_custommodule_list(CH, CMH):
