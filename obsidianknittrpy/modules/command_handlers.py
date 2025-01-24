@@ -413,3 +413,24 @@ def handle_version(args):
     else:
         print(f"Current version: {__version__}")
     exit(0)
+
+
+def handle_custommodule_add(args, CH, CMH):
+    """
+    Add a module to the `custom_modules`-subdirectory in the application-directory.
+    """
+    CMH.add(args["module_path"])
+
+
+def handle_custommodule_remove(args, CH, CMH):
+    """
+    Remove a module from the `custom_modules`-subdirectory in the application-directory.
+    """
+    CMH.remove(args["module_name"])
+
+
+def handle_custommodule_list(CH, CMH):
+    """
+    List all modules in the `custom_modules`-subdirectory in the application-directory.
+    """
+    CMH.list()
