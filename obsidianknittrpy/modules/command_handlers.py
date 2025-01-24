@@ -415,14 +415,14 @@ def handle_version(args):
     exit(0)
 
 
-def handle_custommodule_add(args, CH, CMH):
+def handle_processingmodule_add(args, CH, CMH):
     """
     Add a module to the `custom_modules`-subdirectory in the application-directory.
     """
     CMH.add(args["module_path"])
 
 
-def handle_custommodule_remove(args, CH, CMH):
+def handle_processingmodule_remove(args, CH, CMH):
     """
     Remove a module from the `custom_modules`-subdirectory in the application-directory.
     """
@@ -441,7 +441,7 @@ def handle_custommodule_remove(args, CH, CMH):
         )
 
 
-def handle_custommodule_list(CH, CMH):
+def handle_processingmodule_list(CH, CMH):
     """
     List all modules in the `custom_modules`-subdirectory in the application-directory.
     """

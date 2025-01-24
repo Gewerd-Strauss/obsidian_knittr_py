@@ -70,9 +70,9 @@ def commandline_setup():
     )
     openlist_parser = openlist_parser_setup(openlist_parser)
 
-    # --- 'custommodule' command setup ---
-    custommodule_parser = subparsers.add_parser(
-        "custommodule",
+    # --- 'processingmodules' command setup ---
+    processingmodule_parser = subparsers.add_parser(
+        "processingmodules",
         description="""
         Manage custom processing modules.
         Add and remove them, or obtain a list of currently available custom modules.
@@ -83,7 +83,7 @@ def commandline_setup():
         help="""Manage custom modules (list, add, remove)",        """,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    custommodule_parser = custommodule_parser_setup(custommodule_parser)
+    processingmodule_parser = custommodule_parser_setup(processingmodule_parser)
     return parser
 
 

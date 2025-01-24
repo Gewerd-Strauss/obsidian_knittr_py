@@ -11,9 +11,9 @@ from obsidianknittrpy.modules.command_handlers import (
     handle_export,
     handle_import,
     handle_openlist,
-    handle_custommodule_add,
-    handle_custommodule_remove,
-    handle_custommodule_list,
+    handle_processingmodule_add,
+    handle_processingmodule_remove,
+    handle_processingmodule_list,
 )
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
@@ -74,7 +74,7 @@ def main():
             interface_dir=CH.get_key("DIRECTORIES_PATHS", "interface_dir"),
             loglevel=args["loglevel"],
         )
-        if args["command"] not in ["open", "custommodule"]:
+        if args["command"] not in ["open", "processingmodules"]:
 
             RL.log("main", "sets", "own_ohtml_fork_dir")
             CH = pre_configure_obsidianhtml_fork(
@@ -101,16 +101,16 @@ def main():
             handle_import(args, pb, CH)
         elif args["command"] == "open":
             handle_openlist(args, pb, CH)
-        elif args["command"] == "custommodule":
+        elif args["command"] == "processingmodules":
             CMH = CustomModuleHandler(
                 custom_modules_dir=CH.get_key("DIRECTORIES_PATHS", "custom_module_dir"),
             )
             if args["custommodule_command"] == "add":
-                handle_custommodule_add(args, CH, CMH)
+                handle_processingmodule_add(args, CH, CMH)
             if args["custommodule_command"] == "remove":
-                handle_custommodule_remove(args, CH, CMH)
+                handle_processingmodule_remove(args, CH, CMH)
             if args["custommodule_command"] == "list":
-                handle_custommodule_list(CH, CMH)
+                handle_processingmodule_list(CH, CMH)
         else:
             parser.print_help()
 
