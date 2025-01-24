@@ -2,7 +2,6 @@ from .processing_module_runner import BaseModule
 import re as re
 import urllib.parse
 import html
-import os
 
 
 class ConvertImageSRCs(BaseModule):

@@ -19,14 +19,10 @@ from obsidianknittrpy.modules.processing.processing_module_runner import (
     ProcessingPipeline,
 )
 from obsidianknittrpy.modules.rendering.renderer_v2 import RenderManager
-from obsidianknittrpy.modules.rendering.renderer import (
-    RenderingPipeline,
-)
-from obsidianknittrpy.modules.rendering.file_strings import (
+from obsidianknittrpy.modules.utils.file_strings import (
     prepare_file_strings,
     prepare_file_suffixes,
 )
-import warnings as wn
 import os as os
 import sys as sys
 import logging as logging
