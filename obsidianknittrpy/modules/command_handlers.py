@@ -22,7 +22,7 @@ from obsidianknittrpy.modules.rendering.renderer_v2 import RenderManager
 from obsidianknittrpy.modules.rendering.renderer import (
     RenderingPipeline,
 )
-from obsidianknittrpy.modules.rendering.file_strings import (
+from obsidianknittrpy.modules.utils.file_strings import (
     prepare_file_strings,
     prepare_file_suffixes,
 )
