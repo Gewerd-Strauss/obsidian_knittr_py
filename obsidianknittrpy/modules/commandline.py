@@ -258,9 +258,18 @@ def set_parser_setup(set_parser):
 
 
 def openlist_parser_setup(openlist_parser):
+    # Positional argument for the format (optional)
+    openlist_parser.add_argument(
+        "input",  # Positional argument
+        nargs="?",  # Makes this argument optional
+        help="Specify the format to open (e.g., 'quarto::html'). If not provided, the folder containing the output-files is opened.",
+        type=str,
+    )
+
+    # Positional argument for pass-through parameters (optional)
     openlist_parser.add_argument(
         "pass_through",
-        nargs="*",
+        nargs="*",  # This allows for multiple pass-through arguments, if needed
         help="""
         Pass-through arguments in format 'namespace::key=value'
         Valid Examples:
@@ -275,16 +284,7 @@ def openlist_parser_setup(openlist_parser):
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
         help="Set the logging level (default: INFO)",
     )
-    openlist_parser.add_argument(
-        '--custom_pipeline',
-        default=None,
-        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
-    )
-    openlist_parser.add_argument(
-        '--custom_format_definitions',
-        default=None,
-        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
-    )
+    return openlist_parser
 
 
 def unset_parser_setup(unset_parser):
