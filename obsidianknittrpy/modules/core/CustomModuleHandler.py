@@ -1,10 +1,12 @@
 import os
+import sys
 import shutil
 import importlib.util
 import inspect
 from pathlib import Path
 from obsidianknittrpy.modules.processing.processing_module_runner import BaseModule
 import logging
+import pkgutil
 
 
 class CustomModuleHandler:
@@ -156,7 +158,23 @@ class CustomModuleHandler:
         Retrieve all class names inheriting from BaseModule in the entire obsidianknittrpy package.
         """
         built_in_classes = set()
-        for name, obj in inspect.getmembers(BaseModule, inspect.isclass):
-            if issubclass(obj, BaseModule) and obj is not BaseModule:
-                built_in_classes.add(name)
+        package_name = "obsidianknittrpy"
+
+        # Get all modules in the package
+        for importer, module_name, is_pkg in pkgutil.walk_packages(
+            path=sys.modules[package_name].__path__, prefix=f"{package_name}."
+        ):
+            try:
+                # Import the module
+                module = importlib.import_module(module_name)
+
+                # Inspect for classes that inherit from BaseModule
+                for name, obj in inspect.getmembers(module, inspect.isclass):
+                    if issubclass(obj, BaseModule) and obj is not BaseModule:
+                        built_in_classes.add(name)
+            except Exception as e:
+                self.logger.warning(
+                    f"Warning: Failed to inspect module '{module_name}'. Error: {e}"
+                )
+
         return built_in_classes
