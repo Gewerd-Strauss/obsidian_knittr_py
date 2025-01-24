@@ -52,6 +52,8 @@ class CustomModuleHandler:
                 if not new_name.endswith(".py"):
                     raise ValueError("The new name must end with .py.")
                 destination = self.custom_modules_dir / new_name
+        else:
+            backup_path = None
 
         # Copy the new file
         shutil.copy(file_path, destination)
@@ -63,6 +65,9 @@ class CustomModuleHandler:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             self.logger.info(f"Module '{destination.stem}' imported successfully.")
+            if backup_path is not None:
+                if backup_path.exists():
+                    os.remove(backup_path)
             # TODO: remove backup file after import was found to be successfull.
             return destination
         except Exception as e:
