@@ -121,24 +121,26 @@ class CustomModuleHandler:
         built_in_classes = self._get_builtin_classes()
 
         for file in self.custom_modules_dir.glob("*.py"):
-            try:
-                spec = importlib.util.spec_from_file_location(file.stem, file)
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
+            if not file.name.endswith(".backup.py"):
+                try:
+                    spec = importlib.util.spec_from_file_location(file.stem, file)
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
 
-                for name, obj in inspect.getmembers(module, inspect.isclass):
-                    if issubclass(obj, BaseModule) and obj is not BaseModule:
-                        class_info = name
-                        if name in built_in_classes:
-                            print(
-                                f"Warning: Class '{name}' conflicts with a built-in module."
-                            )
-                        if any(r["class"] == name for r in results):
-                            class_info += f" ({file})"
-                        results.append({"class": class_info, "file": str(file)})
-
-            except Exception as e:
-                print(f"Warning: Could not process file '{file}'. Error: {e}")
+                    for name, obj in inspect.getmembers(module, inspect.isclass):
+                        if issubclass(obj, BaseModule) and obj is not BaseModule:
+                            class_info = name
+                            if name in built_in_classes:
+                                self.logger.warning(
+                                    f"Warning: Module '{name}' conflicts with a built-in module."
+                                )
+                            if any(r["class"] == name for r in results):
+                                class_info += f" ({file})"
+                            results.append({"class": class_info, "file": str(file)})
+                except Exception as e:
+                    self.logger.warning(
+                        f"Warning: Could not process file '{file}'. Error: {e}"
+                    )
 
         print("Custom Modules:")
         for entry in results:
