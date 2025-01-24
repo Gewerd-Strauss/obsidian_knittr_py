@@ -40,8 +40,9 @@ import logging
 def main():
     RL = ResourceLogger()
     parser = argparse.ArgumentParser(
-        description="Utility for converting a single note within an 'Obsidian.md'-vault to formats supported by the open-source publishing system 'Quarto', and then optionally converting them via 'Quarto'."
-        + "",
+        description="""
+        Utility for converting a single note within an 'Obsidian.md'-vault to formats supported by the open-source publishing system 'Quarto', and then optionally converting them via 'Quarto'.
+        """,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -57,12 +58,16 @@ def main():
     version_parser = version_parser_setup(version_parser)
     # --- 'export' command setup ---
     export_parser = subparsers.add_parser(
-        "export", help="Using the GUI, create a configuration to execute via 'import'."
+        "export",
+        help="Using the GUI, create a configuration to execute via 'import'.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     common_arguments(export_parser)
     # --- 'import' command setup ---
     import_parser = subparsers.add_parser(
-        "import", help="Import a previously exported configuration."
+        "import",
+        help="Import a previously exported configuration.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     import_parser = import_parser_setup(import_parser)
 
@@ -71,16 +76,24 @@ def main():
     tools_subparsers = tools_parser.add_subparsers(dest="action", required=True)
 
     # 'set' subcommand
-    set_parser = tools_subparsers.add_parser("set", help="Set a tool path.")
+    set_parser = tools_subparsers.add_parser(
+        "set", help="Set a tool path.", formatter_class=argparse.RawTextHelpFormatter
+    )
     set_parser = set_parser_setup(set_parser)
 
     # 'unset' subcommand
-    unset_parser = tools_subparsers.add_parser("unset", help="Unset a tool path.")
+    unset_parser = tools_subparsers.add_parser(
+        "unset",
+        help="Unset a tool path.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     unset_parser = unset_parser_setup(unset_parser)
 
     # 'list' subcommand
     list_parser = tools_subparsers.add_parser(
-        "list", help="List all tool configurations."
+        "list",
+        help="List all tool configurations.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     list_parser = list_parser_setup(list_parser)
 
@@ -88,13 +101,24 @@ def main():
     openlist_parser = subparsers.add_parser(
         "open",
         help="Open the directory containing the last-rendered output-formats, or a specific output-format.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     openlist_parser = openlist_parser_setup(openlist_parser)
 
     # --- 'custommodule' command setup ---
     custommodule_parser = subparsers.add_parser(
         "custommodule",
-        help="Manage custom modules (list, add, remove)",
+        description="""
+        Manage custom processing modules.
+        Add and remove them, or obtain a list of currently available custom modules.
+        Beyond adding a module via command `custommodule add <X>`, 
+        a custom pipeline-configuration must be provided via flag `--custom_pipeline` 
+        when attempting to load the module during execution of modes [gui,export,import].
+        """,
+        help="""
+        Manage custom modules (list, add, remove)",
+        """,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     custommodule_parser = custommodule_parser_setup(custommodule_parser)
 

@@ -1,3 +1,6 @@
+import argparse
+
+
 def common_arguments(parser):
     """Add common arguments to each subcommand."""
     parser.add_argument(
@@ -359,6 +362,7 @@ def custommodule_parser_setup(custommodule_parser):
     list_parser = custommodule_subparsers.add_parser(
         "list",
         help="List all custom modules.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     list_parser.add_argument(
         "--detailed",
@@ -387,6 +391,7 @@ def custommodule_parser_setup(custommodule_parser):
     add_parser = custommodule_subparsers.add_parser(
         "add",
         help="Add a new custom module.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     add_parser.add_argument(
         "module_path",
@@ -415,6 +420,7 @@ def custommodule_parser_setup(custommodule_parser):
     remove_parser = custommodule_subparsers.add_parser(
         "remove",
         help="Remove an existing custom module.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     remove_parser.add_argument(
         "module_name",
