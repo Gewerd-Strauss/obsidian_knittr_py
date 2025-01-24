@@ -6,6 +6,7 @@ from obsidianknittrpy.modules.utility import (
     get_text_file_path,
     pre_configure_obsidianhtml_fork,
     open_folder,
+    open_file,
 )
 from obsidianknittrpy.modules.guis.guis import handle_ot_guis, ObsidianKnittrGUI
 from obsidianknittrpy.modules.obsidian_html.ObsidianHTML_Limiter import (
@@ -209,7 +210,11 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
 
 
 def handle_openlist(args, pb, CH):
-    """Open the directory containing the last-rendered documents"""
+    """
+    Open the directory containing the last-rendered documents.
+    Alternatively, open a specific render-target based on
+    format-key, e.g. `quarto::html`.
+    """
     OH = ExternalHandler(
         interface_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
         loglevel=args["loglevel"],
@@ -221,8 +226,24 @@ def handle_openlist(args, pb, CH):
         if os.path.exists(yml_data["directory"]):
             logger = logging.getLogger(__name__)
             logger.setLevel(level=args["loglevel"])
-            logger.info(f"Opening output-directory '{yml_data["directory"]}'")
-            open_folder(yml_data["directory"])
+            input_format = args["input"].strip() if args["input"] else None
+            if input_format is None:
+                logger.info(f"Opening output-directory '{yml_data["directory"]}'")
+                open_folder(yml_data["directory"])
+            else:
+                if input_format not in yml_data["paths"]:
+                    raise KeyError(
+                        f"Format '{args["input"].strip()}' not found in rendered output-formats. Available formats: {list(yml_data["paths"].keys())}"
+                    )
+                target_file = yml_data["paths"][input_format]
+                try:
+                    if os.path.exists(target_file):  # check if this is a path
+                        logger.info(f"Opening output-format '{target_file}'")
+                        open_file(target_file)
+                except FileNotFoundError as e:
+                    raise FileNotFoundError(
+                        f"Output-file could not be opened. Error: '{e}'"
+                    )
     else:
         raise FileNotFoundError(
             f"Information about the previous rendering were already deleted.\nReason: The working-directory has been cleaned after the last time this utility rendered any documents.\n- Did you use the verb 'export'?\n- Did you use the verb 'gui' (without rendering to output-targets)?"

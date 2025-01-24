@@ -259,6 +259,12 @@ def set_parser_setup(set_parser):
 
 def openlist_parser_setup(openlist_parser):
     openlist_parser.add_argument(
+        "-i",
+        "--input",
+        required=False,
+        help="The render-target to open (e.g. `quarto::pdf`/`quarto::html`/`quarto::docx`,...).",
+    )
+    openlist_parser.add_argument(
         "pass_through",
         nargs="*",
         help="""
