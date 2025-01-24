@@ -332,3 +332,13 @@ def list_parser_setup(list_parser):
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
         help="Set the logging level (default: INFO)",
     )
+
+
+def version_parser_setup(version_parser):
+    version_parser.add_argument(
+        "--clean",
+        "-c",
+        default=False,
+        action="store_true",
+        help="Return version number without descriptor-string.",
+    )

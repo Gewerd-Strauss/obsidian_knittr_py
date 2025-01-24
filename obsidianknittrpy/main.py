@@ -12,6 +12,7 @@ from obsidianknittrpy.modules.commandline import (
     unset_parser_setup,
     list_parser_setup,
     openlist_parser_setup,
+    version_parser_setup,
 )
 from obsidianknittrpy.modules.command_handlers import (
     handle_gui,
@@ -47,6 +48,7 @@ def main():
     gui_parser_setup(gui_parser)
     # --- 'version' command setup ---
     version_parser = subparsers.add_parser("version", help="Get the version.")
+    version_parser = version_parser_setup(version_parser)
     # --- 'export' command setup ---
     export_parser = subparsers.add_parser(
         "export", help="Using the GUI, create a configuration to execute via 'import'."
@@ -85,7 +87,7 @@ def main():
     if args.command is None:
         parser.print_help()
     elif args.command == "version":
-        handle_version()
+        handle_version(args)
     elif args.command == "tools":
         # Command handling
         # 1. translate arguments
