@@ -26,7 +26,6 @@ from obsidianknittrpy.modules.rendering.file_strings import (
     prepare_file_strings,
     prepare_file_suffixes,
 )
-import warnings as wn
 import os as os
 import sys as sys
 import logging as logging

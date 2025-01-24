@@ -4,7 +4,6 @@ from math import floor
 import logging as logging
 import webbrowser
 import tkinter as tk
-import warnings as wn
 from tkinter import ttk, filedialog, messagebox
 
 
