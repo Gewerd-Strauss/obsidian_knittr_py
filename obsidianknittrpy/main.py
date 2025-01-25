@@ -14,6 +14,7 @@ from obsidianknittrpy.modules.command_handlers import (
     handle_processingmodule_add,
     handle_processingmodule_remove,
     handle_processingmodule_list,
+    handle_processingmodule_export,
 )
 from obsidianknittrpy.modules.utility import (
     init_picknick_basket,
@@ -112,6 +113,8 @@ def main():
                 handle_processingmodule_remove(args, CH, CMH)
             if args["custommodule_command"] == "list":
                 handle_processingmodule_list(CH, CMH)
+            if args["custommodule_command"] == "export":
+                handle_processingmodule_export(args, CH, CMH)
         else:
             parser.print_help()
 

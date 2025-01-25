@@ -446,3 +446,28 @@ def handle_processingmodule_list(CH, CMH):
     List all modules in the `custom_modules`-subdirectory in the application-directory.
     """
     CMH.list()
+
+
+def handle_processingmodule_export(args, CH, CMH):
+    """
+    Export a module's YAML-config.
+    Options:
+
+    1. python -m obsidianknittrpy processingmodules export
+        - export the configuration-YAML for all internal modules'
+    2. python -m obsidianknittrpy processingmodules export <module>
+        - export the configuration-YAML for a specific CUSTOM module
+
+    """
+    if args["module_name"] is None:
+        # export all internal modules
+        CMH.logger.info(f"Exporting current pipeline:")
+        print("\n")
+        print(yaml.dump(CH.applied_pipeline))
+        print("\n")
+        print("\n")
+        CMH.logger.info(
+            f"Exported the current pipeline\nThe above must be saved as a `.yml`-file."
+        )
+    else:
+        CMH.iterate_over_files(args["module_name"])
