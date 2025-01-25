@@ -5,8 +5,11 @@ import importlib.util
 import inspect
 from pathlib import Path
 from obsidianknittrpy.modules.processing.processing_module_runner import BaseModule
+from obsidianknittrpy.modules.utils.dynamic_loader import import_custom_module
 import logging
 import pkgutil
+import ast
+import yaml
 
 
 class CustomModuleHandler:
@@ -152,6 +155,70 @@ class CustomModuleHandler:
         print("Custom Modules:")
         for entry in results:
             print(f"{entry['class']}\n- path: {entry['file']}")
+
+    def find_class_in_file(self, file_path, needle_class):
+        # Read the file content
+        found_modules = []
+        with open(file_path, 'r') as file:
+            file_content = file.read()
+
+        # Parse the content into an Abstract Syntax Tree (AST)
+        try:
+            tree = ast.parse(file_content)
+        except SyntaxError:
+            print(f"Syntax error in file {file_path}")
+            return
+
+        # Iterate through all nodes in the AST and look for class definitions
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                # Check if the class is inheriting from BaseModule
+                for base in node.bases:
+                    if isinstance(base, ast.Name) and base.id == 'BaseModule':
+                        if node.name in needle_class:
+                            module = import_custom_module(
+                                module_path=file_path, module_name=needle_class
+                            )
+                            # Dynamically instantiate the class AddSectionHeaderIDs or needle_class
+                            class_to_instantiate = getattr(module, needle_class)
+                            instance = class_to_instantiate()
+
+                            # Only consider
+                            if hasattr(instance, 'process') and hasattr(
+                                instance, "initiate_base_config"
+                            ):
+                                try:
+                                    instance.initiate_base_config()
+                                    conf = instance.config
+                                    yaml_struct = {
+                                        "module_name": needle_class,
+                                        "config": conf,
+                                        "enabled": False,
+                                        "file_name": Path(file_path).stem,
+                                    }
+                                    print(yaml.dump(yaml_struct))
+                                except Exception as e:
+                                    raise Exception(
+                                        f"Error when calling process() on {needle_class}: {e}"
+                                    )
+                            else:
+                                if not hasattr(instance, 'process'):
+                                    self.logger.error(
+                                        f"{needle_class} [File: {file_path}] does not have a process() method."
+                                    )
+                                if not hasattr(instance, "initiate_base_config"):
+                                    self.logger.error(
+                                        f"{needle_class} [File: {file_path}] does not have a initiate_base_config() method. The module's configuration could not be retrieved."
+                                    )
+                            return
+
+    def iterate_over_files(self, needle_class):
+        # Iterate over all .py files in the specified directory
+        for root, dirs, files in os.walk(self.custom_modules_dir):
+            for file_name in files:
+                if file_name.endswith('.py') and not file_name.endswith(".backup.py"):
+                    file_path = os.path.join(root, file_name)
+                    self.find_class_in_file(file_path, needle_class)
 
     def _get_builtin_classes(self):
         """
