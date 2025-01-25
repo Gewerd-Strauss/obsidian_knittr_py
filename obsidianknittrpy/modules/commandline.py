@@ -4,9 +4,14 @@ import argparse
 def commandline_setup():
     parser = argparse.ArgumentParser(
         description="""
-        Utility for converting a single note within an 'Obsidian.md'-vault to formats supported by the open-source publishing system 'Quarto', and then optionally converting them via 'Quarto'.
-        DD
+        Utility for converting a single note within an 'Obsidian.md'-vault to formats
+        supported by the open-source publishing system 'Quarto', and then optionally 
+        converting them via 'Quarto'.
+        
         TODO: finish the description and triple-check the texts of all help arguments.
+        TODO: write description-texts for all parsers, take a look at the output of
+        `python -m obsidianknittrpy processingmodules -h` for details about how to
+        implement this.
         """,
         formatter_class=argparse.RawTextHelpFormatter,
     )
@@ -14,7 +19,12 @@ def commandline_setup():
 
     # --- 'gui' command setup ---
     gui_parser = subparsers.add_parser(
-        "gui", help="Launch GUI mode.", formatter_class=argparse.RawTextHelpFormatter
+        "gui",
+        help="Launch GUI mode.",
+        formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     common_arguments(gui_parser)  # Reuse shared arguments for 'gui'
     gui_parser_setup(gui_parser)
@@ -26,6 +36,9 @@ def commandline_setup():
         "export",
         help="Using the GUI, create a configuration to execute via 'import'.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     common_arguments(export_parser)
     # --- 'import' command setup ---
@@ -33,16 +46,33 @@ def commandline_setup():
         "import",
         help="Import a previously exported configuration.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     import_parser = import_parser_setup(import_parser)
 
     # --- 'extension' command setup ---
-    tools_parser = subparsers.add_parser("tools", help="Manage tool configurations.")
+    tools_parser = subparsers.add_parser(
+        "tools",
+        help="Manage tool configurations.",
+        description="""
+        Manage tool dependencies and other persistent settings.
+        TODO: Is it sensible to make setting up `--custom_pipeline CUSTOM_PIPELINE` and 
+        `--custom_format_definitions CUSTOM_FORMAT_DEFINITIONS` per `okpy tool` possible?
+        """,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     tools_subparsers = tools_parser.add_subparsers(dest="action", required=True)
 
     # 'set' subcommand
     set_parser = tools_subparsers.add_parser(
-        "set", help="Set a tool path.", formatter_class=argparse.RawTextHelpFormatter
+        "set",
+        help="Set a tool path.",
+        formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     set_parser = set_parser_setup(set_parser)
 
@@ -51,6 +81,9 @@ def commandline_setup():
         "unset",
         help="Unset a tool path.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     unset_parser = unset_parser_setup(unset_parser)
 
@@ -59,6 +92,9 @@ def commandline_setup():
         "list",
         help="List all tool configurations.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     list_parser = list_parser_setup(list_parser)
 
@@ -67,6 +103,9 @@ def commandline_setup():
         "open",
         help="Open the directory containing the last-rendered output-formats, or a specific output-format.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     openlist_parser = openlist_parser_setup(openlist_parser)
 
@@ -80,7 +119,8 @@ def commandline_setup():
         a custom pipeline-configuration must be provided via flag `--custom_pipeline` 
         when attempting to load the module during execution of modes [gui,export,import].
         """,
-        help="""Manage custom modules (list, add, remove)",        """,
+        help="""Manage custom modules (list, add, remove)
+        """,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     processingmodule_parser = custommodule_parser_setup(processingmodule_parser)
@@ -440,7 +480,7 @@ def custommodule_parser_setup(custommodule_parser):
 
     # Add subparsers for `custommodule`
     custommodule_subparsers = custommodule_parser.add_subparsers(
-        title="Custom Module Commands",
+        title="Commands",
         dest="custommodule_command",
     )
 
@@ -449,6 +489,9 @@ def custommodule_parser_setup(custommodule_parser):
         "list",
         help="List all custom modules.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     list_parser.add_argument(
         "pass_through",
@@ -473,6 +516,9 @@ def custommodule_parser_setup(custommodule_parser):
         "add",
         help="Add a new custom module.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     add_parser.add_argument(
         "module_path",
@@ -502,6 +548,9 @@ def custommodule_parser_setup(custommodule_parser):
         "remove",
         help="Remove an existing custom module.",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        TODO: write description for this subcommand
+        """,
     )
     remove_parser.add_argument(
         "module_name",
@@ -528,8 +577,11 @@ def custommodule_parser_setup(custommodule_parser):
 
     export_parser = custommodule_subparsers.add_parser(
         "export",
-        description="Export the YAML-configuration of the default processing-module pipeline. Alternatively by providing ",
         formatter_class=argparse.RawTextHelpFormatter,
+        description="""
+        Export the YAML-configuration of the default processing-module pipeline. Alternatively by providing ",
+        TODO: write description for this subcommand
+        """,
     )
     export_parser.add_argument(
         "module_name",
