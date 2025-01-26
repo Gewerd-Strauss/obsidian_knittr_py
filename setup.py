@@ -1,5 +1,21 @@
 from setuptools import setup, find_packages
 
+
+# Safely read the version from obsidianknittrpy/__init__.py
+def get_version():
+    version = None
+    with open("obsidianknittrpy/__init__.py", "r", encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("__version__"):
+                version = line.split("=")[1].strip().strip('"')
+                break
+    if version is None:
+        raise RuntimeError(
+            "Unable to find version string in obsidianknittrpy/__init__.py"
+        )
+    return version
+
+
 # Safely read the long description from README.md
 try:
     with open("README.md", "r", encoding="utf-8") as fh:
@@ -9,7 +25,7 @@ except FileNotFoundError:
 
 setup(
     name="obsidian_knittr_py",  # Package name
-    version="0.1.9000",  # Version
+    version=get_version(),  # Use version from __init__.py
     packages=find_packages(include=["obsidianknittrpy", "obsidianknittrpy.*"]),
     install_requires=[
         "appdirs==1.4.4",
