@@ -216,7 +216,7 @@ def open_file(file_path):
         # Path is a file
         try:
             if sys.platform == "win32":
-                subprocess.run(["start", file_path], shell=True)
+                subprocess.run(["open", file_path], shell=True)
             elif sys.platform == "darwin":
                 subprocess.run(["open", file_path])
             else:
