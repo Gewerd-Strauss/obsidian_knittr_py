@@ -110,7 +110,6 @@ class ConfigurationHandler:
                 "backup_output_before_rendering": False,
                 "full_submit": False,
             },
-            "ENGINE_CONFIGURATION": {"quarto_strip_reference_prefixes": False},
             "EXECUTION_DIRECTORIES": {"exec_dir_selection": 1},
             "OUTPUT_TYPE": [],
             "OBSIDIAN_HTML_LIMITER": {

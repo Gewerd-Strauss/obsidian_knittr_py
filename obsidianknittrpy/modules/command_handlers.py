@@ -121,7 +121,6 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
         arguments = {}
         arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
         arguments.update(CH.get_key("OBSIDIAN_HTML"))
-        arguments.update(CH.get_key("ENGINE_CONFIGURATION"))
         pipeline = ProcessingPipeline(
             config_file=CH.applied_pipeline,
             custom_module_directory=CH.get_key(
@@ -335,9 +334,6 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
     CH.merge_config_for_save(main_gui.results["obsidian_html"], "OBSIDIAN_HTML")
     CH.merge_config_for_save(
         main_gui.results["general_configuration"], "GENERAL_CONFIGURATION"
-    )
-    CH.merge_config_for_save(
-        main_gui.results["engine_configurations"], "ENGINE_CONFIGURATION"
     )
     # >> manuscript-section is saved in file-history, not here
     CH.applied_settings["OUTPUT_TYPE"] = main_gui.results["output_type"]
