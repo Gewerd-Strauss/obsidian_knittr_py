@@ -1,3 +1,92 @@
+import argparse
+
+
+def commandline_setup():
+    parser = argparse.ArgumentParser(
+        description="""
+        Utility for converting a single note within an 'Obsidian.md'-vault to formats supported by the open-source publishing system 'Quarto', and then optionally converting them via 'Quarto'.
+        DD
+        TODO: finish the description and triple-check the texts of all help arguments.
+        """,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # --- 'gui' command setup ---
+    gui_parser = subparsers.add_parser(
+        "gui", help="Launch GUI mode.", formatter_class=argparse.RawTextHelpFormatter
+    )
+    common_arguments(gui_parser)  # Reuse shared arguments for 'gui'
+    gui_parser_setup(gui_parser)
+    # --- 'version' command setup ---
+    version_parser = subparsers.add_parser("version", help="Get the version.")
+    version_parser = version_parser_setup(version_parser)
+    # --- 'export' command setup ---
+    export_parser = subparsers.add_parser(
+        "export",
+        help="Using the GUI, create a configuration to execute via 'import'.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    common_arguments(export_parser)
+    # --- 'import' command setup ---
+    import_parser = subparsers.add_parser(
+        "import",
+        help="Import a previously exported configuration.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    import_parser = import_parser_setup(import_parser)
+
+    # --- 'extension' command setup ---
+    tools_parser = subparsers.add_parser("tools", help="Manage tool configurations.")
+    tools_subparsers = tools_parser.add_subparsers(dest="action", required=True)
+
+    # 'set' subcommand
+    set_parser = tools_subparsers.add_parser(
+        "set", help="Set a tool path.", formatter_class=argparse.RawTextHelpFormatter
+    )
+    set_parser = set_parser_setup(set_parser)
+
+    # 'unset' subcommand
+    unset_parser = tools_subparsers.add_parser(
+        "unset",
+        help="Unset a tool path.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    unset_parser = unset_parser_setup(unset_parser)
+
+    # 'list' subcommand
+    list_parser = tools_subparsers.add_parser(
+        "list",
+        help="List all tool configurations.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    list_parser = list_parser_setup(list_parser)
+
+    # 'openlist' subcommand
+    openlist_parser = subparsers.add_parser(
+        "open",
+        help="Open the directory containing the last-rendered output-formats, or a specific output-format.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    openlist_parser = openlist_parser_setup(openlist_parser)
+
+    # --- 'processingmodules' command setup ---
+    processingmodule_parser = subparsers.add_parser(
+        "processingmodules",
+        description="""
+        Manage custom processing modules.
+        Add and remove them, or obtain a list of currently available custom modules.
+        Beyond adding a module via command `custommodule add <X>`, 
+        a custom pipeline-configuration must be provided via flag `--custom_pipeline` 
+        when attempting to load the module during execution of modes [gui,export,import].
+        """,
+        help="""Manage custom modules (list, add, remove)",        """,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    processingmodule_parser = custommodule_parser_setup(processingmodule_parser)
+    return parser
+
+
 def common_arguments(parser):
     """Add common arguments to each subcommand."""
     parser.add_argument(
@@ -342,3 +431,134 @@ def version_parser_setup(version_parser):
         action="store_true",
         help="Return version number without descriptor-string.",
     )
+
+
+def custommodule_parser_setup(custommodule_parser):
+    """
+    Set up the `custommodule` subparser and its subcommands: `list`, `add`, and `remove`.
+    """
+
+    # Add subparsers for `custommodule`
+    custommodule_subparsers = custommodule_parser.add_subparsers(
+        title="Custom Module Commands",
+        dest="custommodule_command",
+    )
+
+    # Subcommand: `list`
+    list_parser = custommodule_subparsers.add_parser(
+        "list",
+        help="List all custom modules.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    list_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    list_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    # Subcommand: `add`
+    add_parser = custommodule_subparsers.add_parser(
+        "add",
+        help="Add a new custom module.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    add_parser.add_argument(
+        "module_path",
+        type=str,
+        help="Path to the Python file containing the custom module.",
+    )
+    add_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    add_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    # Subcommand: `remove`
+    remove_parser = custommodule_subparsers.add_parser(
+        "remove",
+        help="Remove an existing custom module.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    remove_parser.add_argument(
+        "module_name",
+        type=str,
+        help="Name of the module to remove.",
+    )
+    remove_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    remove_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    export_parser = custommodule_subparsers.add_parser(
+        "export",
+        description="Export the YAML-configuration of the default processing-module pipeline. Alternatively by providing ",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    export_parser.add_argument(
+        "module_name",
+        type=str,
+        help="Name of the module to export.",
+        nargs="?",  # Makes this argument optional
+    )
+    export_parser.add_argument(
+        '--custom_pipeline',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
+    )
+    export_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    export_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+
+    # Set a default function to handle unknown subcommands
+    custommodule_parser.set_defaults(func=lambda args: custommodule_parser.print_help())
