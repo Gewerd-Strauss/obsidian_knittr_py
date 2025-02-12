@@ -227,6 +227,35 @@ Valid Examples:
     # Add more common arguments as needed
 
 
+def parser_add_disablers(convert_parser):
+    # Disablers
+    disablers_group = convert_parser.add_argument_group("Disablers")
+    disablers_group.add_argument(
+        "--noMove", action="store_true", help="Convert the note locally."
+    )
+    disablers_group.add_argument(
+        "--noIntermediates",
+        action="store_true",
+        help="Delete intermediate files after execution.",
+    )
+    disablers_group.add_argument(
+        "--noRender",
+        action="store_true",
+        help="Only create (q|r)md file without rendering.",
+    )
+    disablers_group.add_argument(
+        "--noOpen",
+        action="store_true",
+        help="Do not open output directory after execution.",
+    )
+    disablers_group.add_argument(
+        "--noContent",
+        action="store_true",
+        help="Generate chapter outline only, no content blocks.",
+    )
+    # Add more disabler arguments as needed
+
+
 def convert_parser_setup(parser):
     # Convert-specific arguments
     parser.add_argument(
@@ -283,38 +312,56 @@ def convert_parser_setup(parser):
     )
 
 
-def parser_add_disablers(convert_parser):
-    # Disablers
-    disablers_group = convert_parser.add_argument_group("Disablers")
-    disablers_group.add_argument(
-        "--noMove", action="store_true", help="Convert the note locally."
-    )
-    disablers_group.add_argument(
-        "--noIntermediates",
-        action="store_true",
-        help="Delete intermediate files after execution.",
-    )
-    disablers_group.add_argument(
-        "--noRender",
-        action="store_true",
-        help="Only create (q|r)md file without rendering.",
-    )
-    disablers_group.add_argument(
-        "--noOpen",
-        action="store_true",
-        help="Do not open output directory after execution.",
-    )
-    disablers_group.add_argument(
-        "--noContent",
-        action="store_true",
-        help="Generate chapter outline only, no content blocks.",
-    )
-    # Add more disabler arguments as needed
-
-
 def gui_parser_setup(gui_parser):
     # GUI-specific options
     pass
+
+
+def version_parser_setup(version_parser):
+    version_parser.add_argument(
+        "--clean",
+        "-c",
+        default=False,
+        action="store_true",
+        help="Return version number without descriptor-string.",
+    )
+
+
+def export_parser_setup(export_parser):
+    # EXPORT-specific options
+    export_parser.add_argument(
+        "-i",
+        "--input",
+        required=False,
+        help="Path to exported configuration-file for this utility.",
+    )
+    export_parser.add_argument(
+        '--custom_pipeline',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
+    )
+    export_parser.add_argument(
+        '--custom_format_definitions',
+        default=None,
+        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
+    )
+    export_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+    export_parser.add_argument(
+        "pass_through",
+        nargs="*",
+        help="""
+Pass-through arguments in format 'namespace::key=value'
+Valid Examples:
+\t- "quarto::pdf.author=Ballos"
+\t- "quarto::html.author=Professor E GADD"
+\t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+""",
+    )
 
 
 def import_parser_setup(import_parser):
@@ -361,43 +408,6 @@ Valid Examples:
     )
 
 
-def export_parser_setup(export_parser):
-    # EXPORT-specific options
-    export_parser.add_argument(
-        "-i",
-        "--input",
-        required=False,
-        help="Path to exported configuration-file for this utility.",
-    )
-    export_parser.add_argument(
-        '--custom_pipeline',
-        default=None,
-        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
-    )
-    export_parser.add_argument(
-        '--custom_format_definitions',
-        default=None,
-        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
-    )
-    export_parser.add_argument(
-        '--loglevel',
-        default='INFO',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-        help="Set the logging level (default: INFO)",
-    )
-    export_parser.add_argument(
-        "pass_through",
-        nargs="*",
-        help="""
-Pass-through arguments in format 'namespace::key=value'
-Valid Examples:
-\t- "quarto::pdf.author=Ballos"
-\t- "quarto::html.author=Professor E GADD"
-\t- "quarto::docx.author=Zote the mighty, a knight of great renown"
-""",
-    )
-
-
 def set_parser_setup(set_parser):
     set_parser.add_argument(
         "file", help="The file of the key-value-pair (e.g., obsidian-html)."
@@ -421,36 +431,6 @@ def set_parser_setup(set_parser):
         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
         help="Set the logging level (default: INFO)",
     )
-
-
-def openlist_parser_setup(openlist_parser):
-    # Positional argument for the format (optional)
-    openlist_parser.add_argument(
-        "input",  # Positional argument
-        nargs="?",  # Makes this argument optional
-        help="Specify the format to open (e.g., 'quarto::html'). If not provided, the folder containing the output-files is opened.",
-        type=str,
-    )
-
-    # Positional argument for pass-through parameters (optional)
-    openlist_parser.add_argument(
-        "pass_through",
-        nargs="*",  # This allows for multiple pass-through arguments, if needed
-        help="""
-        Pass-through arguments in format 'namespace::key=value'
-        Valid Examples:
-        \t- "quarto::pdf.author=Ballos"
-        \t- "quarto::html.author=Professor E GADD"
-        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
-        """,
-    )
-    openlist_parser.add_argument(
-        '--loglevel',
-        default='INFO',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-        help="Set the logging level (default: INFO)",
-    )
-    return openlist_parser
 
 
 def unset_parser_setup(unset_parser):
@@ -500,14 +480,34 @@ def list_parser_setup(list_parser):
     )
 
 
-def version_parser_setup(version_parser):
-    version_parser.add_argument(
-        "--clean",
-        "-c",
-        default=False,
-        action="store_true",
-        help="Return version number without descriptor-string.",
+def openlist_parser_setup(openlist_parser):
+    # Positional argument for the format (optional)
+    openlist_parser.add_argument(
+        "input",  # Positional argument
+        nargs="?",  # Makes this argument optional
+        help="Specify the format to open (e.g., 'quarto::html'). If not provided, the folder containing the output-files is opened.",
+        type=str,
     )
+
+    # Positional argument for pass-through parameters (optional)
+    openlist_parser.add_argument(
+        "pass_through",
+        nargs="*",  # This allows for multiple pass-through arguments, if needed
+        help="""
+        Pass-through arguments in format 'namespace::key=value'
+        Valid Examples:
+        \t- "quarto::pdf.author=Ballos"
+        \t- "quarto::html.author=Professor E GADD"
+        \t- "quarto::docx.author=Zote the mighty, a knight of great renown"
+        """,
+    )
+    openlist_parser.add_argument(
+        '--loglevel',
+        default='INFO',
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help="Set the logging level (default: INFO)",
+    )
+    return openlist_parser
 
 
 def custommodule_parser_setup(custommodule_parser):
