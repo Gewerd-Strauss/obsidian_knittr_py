@@ -72,6 +72,7 @@ def commandline_setup():
         """,
     )
     common_arguments(export_parser)
+    export_parser_setup(export_parser)
     # --- 'import' command setup ---
     import_parser = subparsers.add_parser(
         "import",
@@ -335,32 +336,6 @@ def export_parser_setup(export_parser):
         required=False,
         help="Path to exported configuration-file for this utility.",
     )
-    export_parser.add_argument(
-        '--custom_pipeline',
-        default=None,
-        help="Provide absolute path to a yaml-file containing a custom processing pipeline to execute. Source-files declaring Modules are expected to be placed in the processing-module-folder of the utility",
-    )
-    export_parser.add_argument(
-        '--custom_format_definitions',
-        default=None,
-        help="Provide absolute path to a yaml-file containing a custom format-definition to use.",
-    )
-    export_parser.add_argument(
-        '--loglevel',
-        default='INFO',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-        help="Set the logging level (default: INFO)",
-    )
-    export_parser.add_argument(
-        "pass_through",
-        nargs="*",
-        help="""
-Pass-through arguments in format 'namespace::key=value'
-Valid Examples:
-\t- "quarto::pdf.author=Ballos"
-\t- "quarto::html.author=Professor E GADD"
-\t- "quarto::docx.author=Zote the mighty, a knight of great renown"
-""",
     )
 
 
