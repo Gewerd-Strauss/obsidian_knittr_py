@@ -331,11 +331,10 @@ def version_parser_setup(version_parser):
 def export_parser_setup(export_parser):
     # EXPORT-specific options
     export_parser.add_argument(
-        "-i",
-        "--input",
+        "-o",
+        "--output",
         required=False,
-        help="Path to exported configuration-file for this utility.",
-    )
+        help="Path to export the generated yaml-config string to. Will ask to overwrite if path exists.",
     )
 
 

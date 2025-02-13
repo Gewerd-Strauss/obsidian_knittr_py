@@ -29,7 +29,7 @@ import logging as logging
 import yaml as yaml
 
 
-def main(pb, CH, loglevel=None, export=False, import_=False):
+def main(pb, CH, loglevel=None, export=False, import_=False, export_path=None):
     # Level = 0 > manuscript_dir > check
     # Level = -1 > true vault-root > check
     # Level > 0 = manuscript_dir - level
@@ -116,7 +116,7 @@ def main(pb, CH, loglevel=None, export=False, import_=False):
                 resource=obsidian_limiter.selected_limiter_directory,
             )
     if export:
-        CH.export_config()
+        CH.export_config(file_path=export_path)
     elif not export:
         arguments = {}
         arguments.update(CH.get_key("GENERAL_CONFIGURATION"))
@@ -388,7 +388,7 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
 
-    main(pb, CH, args["loglevel"], export=export)
+    main(pb, CH, args["loglevel"], export=export, export_path=args["output"])
 
 
 def handle_export(args, pb, CH, EH):
