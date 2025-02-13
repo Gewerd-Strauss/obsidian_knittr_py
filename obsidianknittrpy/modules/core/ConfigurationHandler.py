@@ -6,6 +6,7 @@ from appdirs import site_config_dir
 from pathlib import Path
 import logging
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
+from obsidianknittrpy.modules.utility import ask_input
 
 
 class ConfigurationHandler:
@@ -800,20 +801,48 @@ quarto::pdf
     ### EXPORTERS ###
     def export_config(self, default=False, file_path=None):
         """Export the current configuration (modified or default) to a YAML file."""
-        if file_path is not None:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                if default:
-                    yaml.dump(self.default_settings, f, allow_unicode=True)
-                    self.logger.info(
-                        f"Default Configuration exported to '{file_path}'."
-                    )
-                else:
-                    yaml.dump(self.applied_settings, f, allow_unicode=True)
-                    self.logger.info(f"Custom Configuration exported to '{file_path}'.")
-                    exit(0)
-        else:
+        confirm_overwrite = "n"
+        if file_path is None:
+            self.logger.info(f"Generated configuration exported below:\n\n\n\n")
             print(yaml.dump(self.applied_settings))
             exit(0)
+        elif file_path is not None:
+            if os.path.exists(file_path):
+                confirm_overwrite = ask_input(
+                    f"The file '{file_path}' already exists. Overwrite? (y/n): ",
+                    force_options=["y", "n"],
+                )
+                if confirm_overwrite == "n":  # print to stdout instead
+                    self.logger.info(
+                        f"The contents of the file '{file_path}' remain unchanged. The generated custom configuration is instead shown below:\n\n\n\n"
+                    )
+                    print(yaml.dump(self.applied_settings))
+                elif confirm_overwrite == "y":  # user chose to overwrite existing file
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        if default:
+                            yaml.dump(self.default_settings, f, allow_unicode=True)
+                            self.logger.info(
+                                f"Default Configuration exported to '{file_path}'."
+                            )
+                        else:
+                            yaml.dump(self.applied_settings, f, allow_unicode=True)
+                            self.logger.info(
+                                f"Custom Configuration exported to '{file_path}'."
+                            )
+                    exit(0)
+            else:  # file does not exist, so no need to ask for overwrite
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    if default:
+                        yaml.dump(self.default_settings, f, allow_unicode=True)
+                        self.logger.info(
+                            f"Default Configuration exported to '{file_path}'."
+                        )
+                    else:
+                        yaml.dump(self.applied_settings, f, allow_unicode=True)
+                        self.logger.info(
+                            f"Custom Configuration exported to '{file_path}'."
+                        )
+                        exit(0)
 
     def get_pipeline_path(self):
         """Return the path to the pipeline configuration."""
