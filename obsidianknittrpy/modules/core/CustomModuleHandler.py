@@ -6,6 +6,7 @@ import inspect
 from pathlib import Path
 from obsidianknittrpy.modules.processing.processing_module_runner import BaseModule
 from obsidianknittrpy.modules.utils.dynamic_loader import import_custom_module
+from obsidianknittrpy.modules.utility import ask_input
 import logging
 import pkgutil
 import ast
@@ -39,21 +40,17 @@ class CustomModuleHandler:
         destination = self.custom_modules_dir / file_path.name
 
         if destination.exists():
-            confirm = (
-                input(
-                    f"A file named '{file_path.name}' already exists. Overwrite? (y/n): "
-                )
-                .strip()
-                .lower()
+            confirm = ask_input(
+                f"A file named '{file_path.name}' already exists. Overwrite? (y/n): "
             )
             if confirm == "y":
                 backup_path = destination.with_suffix(".backup.py")
                 shutil.copy(destination, backup_path)
                 self.logger.info(f"Existing module backed up as '{backup_path.name}'.")
             else:
-                new_name = input(
-                    "Enter a new name for the file (with .py extension): "
-                ).strip()
+                new_name = ask_input(
+                    "Enter a new name for the file (with .py extension): ", lower=False
+                )
                 if not new_name.endswith(".py"):
                     raise ValueError("The new name must end with .py.")
                 destination = self.custom_modules_dir / new_name
@@ -107,13 +104,10 @@ class CustomModuleHandler:
         if not module_path.exists():
             raise FileNotFoundError(f"Module '{module_name}' does not exist.")
 
-        confirm = (
-            input(
-                f"Are you sure you want to remove the module '{module_path.name}',\n"
-                f"located at: '{module_path}'? (y/n): "
-            )
-            .strip()
-            .lower()
+        confirm = ask_input(
+            f"Are you sure you want to remove the module '{module_path.name}',\n"
+            f"located at: '{module_path}'? (y/n): ",
+            force_options=["y", "n"],
         )
         if confirm == "y":
             module_path.unlink()

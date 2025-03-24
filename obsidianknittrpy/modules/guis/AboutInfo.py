@@ -52,6 +52,7 @@ class AboutInfo:
         self.root.geometry("600x400")
 
         # Get tool versions and locations
+        self.logger.info("Retrieving tool information")
         info = self.get_tool_info()
 
         # Display the information in the window
@@ -107,6 +108,7 @@ class AboutInfo:
             # python_location = (
             #     subprocess.check_output(["which", "python"]).decode().strip()
             # )
+            self.logger.info(f"\t- obsidian_knittr_py")
             info.append(
                 f"obsidian_knittr_py:\n  Version: {okpy_version}\n  Path: '{okpy_location}'"
             )
@@ -117,6 +119,7 @@ class AboutInfo:
         python_version = sys.version
         python_location = sys.executable
         try:
+            self.logger.info(f"\t- Python")
             python_version = get_util_version(
                 "python", work_dir=self.settings["DIRECTORIES_PATHS"]["work_dir"]
             )
@@ -131,6 +134,7 @@ class AboutInfo:
 
         # R
         try:
+            self.logger.info(f"\t- R")
             r_version = get_util_version(
                 "R", work_dir=self.settings["DIRECTORIES_PATHS"]["work_dir"]
             )
@@ -141,6 +145,7 @@ class AboutInfo:
 
         # Quarto
         try:
+            self.logger.info(f"\t- Quarto")
             quarto_version = (
                 subprocess.check_output(
                     ["quarto", "--version"], stderr=subprocess.STDOUT
@@ -166,6 +171,7 @@ class AboutInfo:
             #     .decode()
             #     .strip()
             # )
+            self.logger.info(f"\t- Pandoc")
             pandoc_version = get_util_version(
                 "pandoc", work_dir=self.settings["DIRECTORIES_PATHS"]["work_dir"]
             )
@@ -203,7 +209,6 @@ class AboutInfo:
         """
         Special handler to retrieve version of obsidian_html used - since it can be run with a custom ohtml-path provided
         """
-        print("TODO: write OHTML_version_getter for AboutInfo-GUI")
         info = {}
         info["custom"] = {}
         info["default"] = {}
@@ -217,6 +222,7 @@ class AboutInfo:
             own_obsidian_html_location = self.settings["DIRECTORIES_PATHS"][
                 "own_ohtml_fork_dir"
             ]
+            self.logger.info(f"\t- ObsidianHTML (custom, source-code)")
             own_obsidian_html_version = (
                 subprocess.check_output(
                     ["python", "-m" "obsidianhtml", "version"],
@@ -228,6 +234,7 @@ class AboutInfo:
             info["custom"]["location"] = own_obsidian_html_location
             info["custom"]["version"] = own_obsidian_html_version
 
+        self.logger.info(f"\t- ObsidianHTML (bundled)")
         which_obsidianhtml = shutil.which('obsidianhtml')
 
         isset_default_obsidian_html = "obsidianhtml.exe" in which_obsidianhtml.lower()

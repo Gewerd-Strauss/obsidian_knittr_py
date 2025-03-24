@@ -216,7 +216,7 @@ def open_file(file_path):
         # Path is a file
         try:
             if sys.platform == "win32":
-                subprocess.run(["start", file_path], shell=True)
+                subprocess.run(["open", file_path], shell=True)
             elif sys.platform == "darwin":
                 subprocess.run(["open", file_path])
             else:
@@ -230,3 +230,21 @@ def open_file(file_path):
 def is_exe(path):
     """Check if a path points to an executable '.exe'-file."""
     return os.path.isfile(path) and path.lower().endswith('.exe')
+
+
+def ask_input(q, lower=True, force_options=[]):
+    """Utility-Function for asking question via the `input()`"""
+    if len(force_options) > 0:
+        force_options = [x.lower() for x in force_options]
+        answer = ""
+        while answer not in force_options:
+            if lower:
+                answer = input(q).strip().lower()
+            else:
+                answer = input(q).strip()
+    else:
+        if lower:
+            answer = input(q).strip().lower()
+        else:
+            answer = input(q).strip()
+    return answer

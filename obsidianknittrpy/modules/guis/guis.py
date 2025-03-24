@@ -81,11 +81,7 @@ class ObsidianKnittrGUI:
             ),
         }
         self.engine_config_selections = {
-            "quarto_strip_reference_prefixes": tk.IntVar(
-                value=settings["ENGINE_CONFIGURATION"][
-                    "quarto_strip_reference_prefixes"
-                ]
-            ),
+            # deprecated
         }
         self.exec_dir_selection = tk.IntVar(
             value=settings["EXECUTION_DIRECTORIES"]["exec_dir_selection"]
@@ -253,7 +249,9 @@ class ObsidianKnittrGUI:
             x=general_config_frame_x,
             y=general_config_frame_y,
             width=general_config_frame_width,
-            height=general_config_frame_height,
+            height=general_config_frame_height
+            + frame_margin_y  # when re-inserting the 'engine_frame' (remove the `engine_frame.place_forget()`), remove these two additions to the height-calculation of the 'general_config_frame'.
+            + last_exec_frame_height,  # ""
         )
 
         engine_frame = tk.LabelFrame(
@@ -271,6 +269,7 @@ class ObsidianKnittrGUI:
             width=engine_frame_width,
             height=engine_frame_height,
         )
+        engine_frame.place_forget()
         dynamic_label_frame = tk.LabelFrame(
             righterer_frame, text="Module Configuration", bg=bg_col
         )
@@ -416,7 +415,7 @@ class ObsidianKnittrGUI:
         ########## ENGINE-SPECIFIC STUFF ##########
         # # Right Bottom Section - "Engine-specific stuff"
         engine_opts = {
-            "quarto_strip_reference_prefixes": "Remove 'figure'/'table'/'equation' from inline references\nin quarto-documents"
+            # deprecated
         }
         for key, text in engine_opts.items():
             tk.Checkbutton(
@@ -690,13 +689,10 @@ class ObsidianKnittrGUI:
         # obsidian_html, general_configuration, engine_configurations
         results["obsidian_html"] = {}
         results["general_configuration"] = {}
-        results["engine_configurations"] = {}
         for key, var in self.obsidian_options_selections.items():
             results["obsidian_html"][key] = bool(var.get())
         for key, var in self.gen_config_selections.items():
             results["general_configuration"][key] = bool(var.get())
-        for key, var in self.engine_config_selections.items():
-            results["engine_configurations"][key] = bool(var.get())
         # manuscript
         results["manuscript"] = {}
         results["manuscript"]["manuscript_path"] = self.file_history_dropdown.get()
@@ -744,13 +740,10 @@ class ObsidianKnittrGUI:
         # obsidian_html, general_configuration, engine_configurations
         results["obsidian_html"] = {}
         results["general_configuration"] = {}
-        results["engine_configurations"] = {}
         for key, var in self.obsidian_options_selections.items():
             results["obsidian_html"][key] = bool(var.get())
         for key, var in self.gen_config_selections.items():
             results["general_configuration"][key] = bool(var.get())
-        for key, var in self.engine_config_selections.items():
-            results["engine_configurations"][key] = bool(var.get())
         # manuscript
         results["manuscript"] = {}
         results["manuscript"]["manuscript_path"] = self.file_history_dropdown.get()
