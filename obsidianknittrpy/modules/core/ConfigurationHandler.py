@@ -671,7 +671,22 @@ quarto::pdf
                     last_run_config = yaml.safe_load(f)
                 if last_run_config is not None:
                     default_dirs = self.applied_settings["DIRECTORIES_PATHS"]
-                    self.applied_settings.update(last_run_config)
+                    i = 0
+                    for section in self.applied_settings:
+                        if (section in last_run_config) and not (
+                            section in ["OUTPUT_FORMAT_VALUES"]
+                        ):
+                            i = i + 1
+                            print(i)
+                            if isinstance(self.applied_settings[section], list):
+                                self.applied_settings[section] = (
+                                    self.applied_settings[section]
+                                    + last_run_config[section]
+                                )
+                            else:
+                                self.applied_settings[section].update(
+                                    last_run_config[section]
+                                )
 
                     ## re-force overwrite the critical application-related paths regardless of what the contents of the
                     self.applied_settings["DIRECTORIES_PATHS"]["app_dir"] = (
