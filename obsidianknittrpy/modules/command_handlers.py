@@ -387,8 +387,10 @@ def handle_gui(args, pb, CH, EH, export=False, import_=False):
             logging.debug(
                 f"{arg}: Value: {value["Value"]}, Default: {value["Default"]}, Type: {value.Type}"
             )
-
-    main(pb, CH, args["loglevel"], export=export, export_path=args["output"])
+    if "output" in args:
+        main(pb, CH, args["loglevel"], export=export, export_path=args["output"])
+    else:
+        main(pb, CH, args["loglevel"], export=export, export_path=None)
 
 
 def handle_export(args, pb, CH, EH):
