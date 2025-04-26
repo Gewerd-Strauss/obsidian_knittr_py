@@ -169,14 +169,22 @@ def get_util_version(type=str, work_dir=""):
             output_dir=CH.get_key("DIRECTORIES_PATHS", "output_dir"),
         )
         # obsidianhtml_available = self.check_obsidianhtml()
-    result = subprocess.run(
-        command,
-        check=True,
-        cwd=work_dir,
-        capture_output=True,
-        text=True,
-    )
-    result = get_util_version_sub(result=result, type=type)
+    try:
+        result = subprocess.run(
+            command,
+            check=True,
+            cwd=work_dir,
+            capture_output=True,
+            text=True,
+        )
+        result = get_util_version_sub(result=result, type=type)
+    except PermissionError as e:
+        print(f"Utility {type} failed to run command {command[1]}: {e}")
+        return ""
+    except subprocess.CalledProcessError as e:
+        # If the command fails (e.g., the tool is not installed), return an empty string
+        print(f"Utility {type} failed to run command {command[1]}: {e}")
+        return ""
     return result
 
 
