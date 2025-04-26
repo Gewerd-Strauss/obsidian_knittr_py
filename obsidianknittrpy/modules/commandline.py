@@ -1,4 +1,7 @@
 import argparse
+from appdirs import site_config_dir
+from pathlib import Path
+import os
 
 
 def commandline_setup():
@@ -148,10 +151,21 @@ def commandline_setup():
     openlist_parser = openlist_parser_setup(openlist_parser)
 
     # --- 'processingmodules' command setup ---
+    app_dir__ = os.path.normpath(
+        os.path.join(
+            Path(
+                site_config_dir(
+                    appname="obsidian_knittr_py", appauthor="Gewerd-Strauss"
+                )
+            ),
+        )
+    )
+    custom_module_dir__ = os.path.normpath(os.path.join(app_dir__, "custom_modules"))
     processingmodule_parser = subparsers.add_parser(
         "processingmodules",
-        description="""
-        Manage custom processing modules.
+        description=f"""
+        Manage custom processing modules, stored in 
+        '{custom_module_dir__}'.
         Add and remove them, or obtain a list of currently available custom modules.
         Beyond adding a module via command `custommodule add <X>`, 
         a custom pipeline-configuration must be provided via flag `--custom_pipeline` 
