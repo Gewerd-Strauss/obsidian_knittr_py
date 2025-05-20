@@ -32,7 +32,7 @@ setup(
         "obsidianhtml==4.0.1",
         "pyperclip==1.9.0",
         "PyYAML==6.0.2",
-        "setuptools==75.8.0",
+        "setuptools==78.1.1",
         "tkcalendar==1.6.1",
     ],
     extras_require={"dev": ["pipreqs", "black"]},
