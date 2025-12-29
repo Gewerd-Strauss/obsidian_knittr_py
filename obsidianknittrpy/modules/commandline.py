@@ -603,6 +603,7 @@ def custommodule_parser_setup(custommodule_parser):
     export_parser = custommodule_subparsers.add_parser(
         "export",
         formatter_class=argparse.RawTextHelpFormatter,
+        help="Export the default processing pipeline as a YAML-configuration.",
         description="""
         Export the YAML-configuration of the default processing-module pipeline. Alternatively by providing ",
         TODO: write description for this subcommand
