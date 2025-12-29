@@ -92,7 +92,7 @@ def main(pb, CH, loglevel=None, export=False, import_=False, export_path=None):
         )
         obsidian_html.setup_config(RL)
 
-        obsidian_html.run()
+        obsidian_html.run(RL)
         path_ = get_text_file_path(
             obsidian_html.output["output_path"],
         )

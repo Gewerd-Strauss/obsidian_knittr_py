@@ -167,11 +167,16 @@ toggles:
             )
         return False
 
-    def validate_config(self):
+    def validate_config(self, RL):
         """Validate configuration file and entry point."""
+        RL.log(
+            action="validating",
+            module=f"{self.__module__}.setup_config",
+            resource=self.config_path,
+        )
         if not os.path.exists(self.config_path):
             self.logger.critical("Config file does not exist.")
-            return False
+            return False  # TODO: shouldn't this raise a critical error and throw?
         with open(self.config_path, "r", encoding=self.encoding) as file:
             config_contents = file.read()
             if (
@@ -182,6 +187,13 @@ toggles:
                     "Config file missing 'obsidian_entrypoint_path_str' setting."
                 )
                 return False
+            else:
+                pass  # TODO: should this pass?
+        RL.log(
+            action="validated",
+            module=f"{self.__module__}.setup_config",
+            resource=self.config_path,
+        )
         return True
 
     def construct_command(self, version=False):
@@ -253,9 +265,9 @@ toggles:
             resource=self.config_path,
         )
 
-    def run(self):
+    def run(self, RL):
         """Main method to run ObsidianHTML."""
-        if not self.validate_config():
+        if not self.validate_config(RL):
             return False
         work_dir = self.work_dir
 
