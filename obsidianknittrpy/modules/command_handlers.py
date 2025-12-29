@@ -202,6 +202,11 @@ def main(pb, CH, loglevel=None, export=False, import_=False, export_path=None):
                 module=f"{OH.__module__}.set",
                 resource=OH._get_filepath("output-data"),
             )
+        else:
+            raise NotImplementedError(
+                "A configuration was imported which does not render its input to output formats. Currently, the modifications made by the processing pipeline do not get written to the file at `<app_dir>\output\output\md\index.md`."
+            )
+        # BUG: application of processing pipeline modifications on ohtml-output not written to disk in case of render_to_outputs == FALSE. FIX!!
 
 
 def handle_openlist(args, pb, CH):
