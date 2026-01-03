@@ -30,6 +30,8 @@ def pre_configure_obsidianhtml_fork(CH, EH, args):
                     CH.is_own_ohtml_fork_available = True
             except KeyError:
                 CH.is_own_ohtml_fork_available = False
+        else:
+            CH.is_own_ohtml_fork_available = False
         if (
             ("OHTML.UseCustomFork" in args)
             and args["OHTML.UseCustomFork"]
@@ -54,6 +56,7 @@ def pre_configure_obsidianhtml_fork(CH, EH, args):
     else:  # 3. no custom fork used. Unset related config-keys.
         CH.applied_settings["OBSIDIAN_HTML"]["use_custom_fork"] = False
         CH.applied_settings["DIRECTORIES_PATHS"]["own_ohtml_fork_dir"] = None
+        CH.is_own_ohtml_fork_available = False
 
     return CH
 
