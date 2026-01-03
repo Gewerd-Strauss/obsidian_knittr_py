@@ -1,5 +1,5 @@
 import argparse
-from appdirs import site_config_dir
+from appdirs import user_config_dir
 from pathlib import Path
 import os
 
@@ -154,7 +154,7 @@ def commandline_setup():
     app_dir__ = os.path.normpath(
         os.path.join(
             Path(
-                site_config_dir(
+                user_config_dir(
                     appname="obsidian_knittr_py", appauthor="Gewerd-Strauss"
                 )
             ),
