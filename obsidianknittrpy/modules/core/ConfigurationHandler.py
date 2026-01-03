@@ -2,7 +2,7 @@ import yaml
 import os
 import argparse
 import re as re
-from appdirs import site_config_dir
+from appdirs import user_config_dir
 from pathlib import Path
 import logging
 from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
@@ -21,7 +21,7 @@ class ConfigurationHandler:
         self.application_directory = os.path.normpath(
             os.path.join(
                 Path(
-                    site_config_dir(
+                    user_config_dir(
                         appname="obsidian_knittr_py", appauthor="Gewerd-Strauss"
                     )
                 ),
