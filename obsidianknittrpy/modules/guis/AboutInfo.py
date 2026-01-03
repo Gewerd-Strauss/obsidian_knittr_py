@@ -83,6 +83,8 @@ class AboutInfo:
 
             capabilities.append(f"Quarto:\n {quarto_capabilities}")
         except subprocess.CalledProcessError:
+            capabilities.append("Quarto: Subprocess-Call 'quarto check' failed.")
+        except:
             capabilities.append("Quarto: Not installed")
 
     def get_package_path(self, package_name):
@@ -112,7 +114,7 @@ class AboutInfo:
             info.append(
                 f"obsidian_knittr_py:\n  Version: {okpy_version}\n  Path: '{okpy_location}'"
             )
-        except subprocess.CalledProcessError:
+        except:
             info.append("obsidian_knittr_py: Not installed")
 
         # Python
@@ -130,6 +132,8 @@ class AboutInfo:
                 f"Python:\n  Version: {python_version}\n  Path: '{python_location}'"
             )
         except subprocess.CalledProcessError:
+            info.append("Python: Subprocess-Call 'which python' failed.")
+        except:
             info.append("Python: Not installed")
 
         # R
@@ -141,6 +145,8 @@ class AboutInfo:
             r_location = subprocess.check_output(["which", "R"]).decode().strip()
             info.append(f"R:\n  Version: {r_version}\n  Path: '{r_location}'")
         except subprocess.CalledProcessError:
+            info.append("R: Subprocess-Call 'which R' failed.")
+        except:
             info.append("R: Not installed")
 
         # Quarto
@@ -160,6 +166,8 @@ class AboutInfo:
                 f"Quarto:\n  Version: {quarto_version}\n  Path: '{quarto_location}'"
             )
         except subprocess.CalledProcessError:
+            info.append("Quarto: Subprocess-Call 'quarto --version' failed.")
+        except:
             info.append("Quarto: Not installed")
 
         # Pandoc
@@ -182,6 +190,8 @@ class AboutInfo:
                 f"Pandoc:\n  Version: {pandoc_version}\n  Path: '{pandoc_location}'"
             )
         except subprocess.CalledProcessError:
+            info.append("Pandoc: Subprocess-Call 'which pandoc' failed.")
+        except:
             info.append("Pandoc: Not installed")
 
         # Obsidian HTML (Assuming it's some kind of software installed)
@@ -201,6 +211,8 @@ class AboutInfo:
                         f"Obsidian-HTML (custom, source-code):\n  Version: {ohtml_info["custom"]["version"].lower()}\n  Path: '{ohtml_info["custom"]["location"].lower()}'"
                     )
         except subprocess.CalledProcessError:
+            info.append("Obsidian-HTML: Could not determine path or version as custom or installed instances.")
+        except:
             info.append("Obsidian-HTML: Not installed")
         self.logger.debug(info)
         return info
