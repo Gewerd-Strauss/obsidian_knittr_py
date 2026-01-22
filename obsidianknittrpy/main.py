@@ -1,7 +1,8 @@
 # main.py
+import logging
 import os
-import sys
 import shutil
+import sys
 from obsidianknittrpy.modules.commandline import (
     commandline_setup,
 )
@@ -25,7 +26,6 @@ from obsidianknittrpy.modules.core.ResourceLogger import ResourceLogger
 from obsidianknittrpy.modules.core.ConfigurationHandler import ConfigurationHandler
 from obsidianknittrpy.modules.core.ExternalHandler import ExternalHandler
 from obsidianknittrpy.modules.core.CustomModuleHandler import CustomModuleHandler
-import logging
 
 
 def main():
